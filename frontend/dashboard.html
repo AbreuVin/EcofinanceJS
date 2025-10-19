@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Ecofinance</title>
+    <!-- Links para os novos arquivos CSS -->
+    <link rel="stylesheet" href="main.css">
+    <link rel="stylesheet" href="dashboard.css">
+</head>
+<body>
+
+    <!-- Placeholder para a barra de navegação -->
+    <div id="nav-placeholder"></div>
+
+    <!-- Conteúdo específico da página -->
+    <div class="container">
+        <h1>Painel de Contatos</h1>
+        
+        <div class="form-container">
+            <form id="contact-form">
+                <input type="hidden" id="contact-id">
+                <input type="text" id="name" placeholder="Nome do Responsável" required>
+                <input type="text" id="area" placeholder="Área Responsável">
+                <input type="email" id="email" placeholder="E-mail">
+                <input type="tel" id="phone" placeholder="Telefone">
+                <button type="submit">Salvar</button>
+                <button type="button" id="cancel-btn" class="cancel-btn" style="display: none;">Cancelar</button>
+            </form>
+        </div>
+        
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Área</th>
+                        <th>Email</th>
+                        <th>Telefone</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="contacts-tbody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Links para os scripts (agora incluindo o main.js) -->
+    <script src="main.js"></script>
+    <script src="dashboard.js"></script>
+</body>
+</html>

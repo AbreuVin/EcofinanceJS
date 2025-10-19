@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Importar Dados - Ecofinance</title>
+    <link rel="stylesheet" href="main.css">
+    <link rel="stylesheet" href="import.css">
+</head>
+<body>
+    <div id="nav-placeholder"></div>
+
+    <div class="container">
+        <h1>Importar Base de Dados</h1>
+        
+        <div class="form-group">
+            <label for="table-selector">Selecione o tipo de dados para importar:</label>
+            <select id="table-selector"></select>
+        </div>
+        
+        <div id="upload-section" style="display: none;">
+            <p id="upload-instructions"></p>
+            <form id="upload-form">
+                <input type="file" id="file-input" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel">
+                <button type="submit">Enviar e Validar</button>
+            </form>
+            <!-- NOVO/CORRIGIDO (SPRINT 13) -->
+            <div class="template-download-link">
+                <a href="#" id="download-template-btn" class="button-like-link" style="display: none;">Baixar Modelo (.csv)</a>
+            </div>
+        </div>
+        
+        <div id="table-actions" style="display: none; margin-top: 20px; margin-bottom: 20px; display: flex; gap: 10px;">
+            <button type="button" id="add-row-btn" class="add-btn">Adicionar Nova Linha</button>
+            <button type="button" id="save-data-btn" style="display: none;">Salvar Dados no Banco</button>
+        </div>
+        
+        <div id="feedback" class="feedback-area"></div>
+        <div id="table-container" class="table-container"></div>
+    </div>
+
+    <script type="module" src="importer.js"></script>
+</body>
+</html>

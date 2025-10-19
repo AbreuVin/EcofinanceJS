@@ -1,0 +1,46 @@
+/* arquivo: frontend/import.css */
+
+body { font-family: sans-serif; background-color: #f4f7f6; margin: 20px; }
+.container { max-width: 1200px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+h1 { text-align: center; color: #333; }
+.form-group { margin-bottom: 20px; }
+form { margin-bottom: 20px; padding: 20px; border: 1px solid #ddd; border-radius: 5px; display: flex; align-items: center; gap: 20px; }
+input[type="file"] { border: 1px solid #ccc; padding: 10px; border-radius: 4px; }
+select { padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 16px; }
+button { padding: 12px 20px; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
+#upload-form button { background-color: #007bff; }
+#save-data-btn { background-color: #007bff; }
+
+/* --- NOVO (SPRINT 12) --- */
+.add-btn {
+    background-color: #28a745; /* Cor verde para "adicionar" */
+}
+.add-btn:hover {
+    background-color: #218838;
+}
+/* --- FIM DO NOVO CÓDIGO --- */
+
+.feedback-area { margin: 20px 0; font-weight: bold; }
+.table-container { overflow-x: auto; margin-top: 20px; }
+table { width: 100%; border-collapse: collapse; }
+th, td { padding: 12px; border: 1px solid #ddd; text-align: left; white-space: nowrap; }
+th { background-color: #f8f9fa; }
+tr:nth-child(even) { background-color: #f2f2f2; }
+.invalid-cell { background-color: #f8d7da !important; color: #721c24; outline: 1px solid #f5c6cb; }
+td select { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; background-color: white; font-family: inherit; font-size: inherit; }
+.invalid-cell select { border-color: #f5c6cb; background-color: #f8d7da; }
+/* --- NOVO: Estilos para o botão de deletar --- */
+.delete-row-btn {
+    background-color: #dc3545; /* Vermelho "danger" */
+    color: white;
+    border: none;
+    border-radius: 4px;
+    padding: 5px 10px;
+    cursor: pointer;
+    font-weight: bold;
+    line-height: 1; /* Para alinhar melhor o "X" */
+}
+
+.delete-row-btn:hover {
+    background-color: #c82333;
+}
