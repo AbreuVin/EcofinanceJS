@@ -13,7 +13,7 @@ const db = require('./database.js');
 
 // --- 2. CONFIGURAÇÕES ---
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 const saltRounds = 10;
 const upload = multer({ dest: path.join(__dirname, 'uploads/') });
 
@@ -193,7 +193,8 @@ app.post('/api/save-data/:tableName', (req, res) => {
         });
     });
 });
-const HOST = '0.0.0.0';
+//const HOST = '0.0.0.0';
+
 // --- 6. INICIALIZAÇÃO DO SERVIDOR ---
 app.listen(PORT, () => {
     console.log(`Servidor iniciado com sucesso! Acesse em http://localhost:${PORT}`);
