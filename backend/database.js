@@ -31,8 +31,18 @@ const db = new sqlite3.Database(dbPath, (err) => {
             if (err) console.error('Erro tabela contacts:', err);
             else console.log('Tabela "contacts" pronta.');
         });
+
+        // --- TABELA FALTANTE ADICIONADA AQUI ---
+        db.run(`CREATE TABLE IF NOT EXISTS units (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            address TEXT
+        )`, (err) => {
+            if (err) console.error('Erro tabela units:', err);
+            else console.log('Tabela "units" pronta.');
+        });
+        // --- FIM DA ADIÇÃO ---
         
-        // Tabela de Combustão Móvel - VERSÃO FINAL E CORRIGIDA
         db.run(`CREATE TABLE IF NOT EXISTS mobile_combustion_data (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             ano INTEGER,
@@ -47,15 +57,14 @@ const db = new sqlite3.Database(dbPath, (err) => {
             distancia_percorrida REAL,
             unidade_distancia TEXT,
             tipo_veiculo TEXT,
-            responsavel TEXT,              -- COLUNA NECESSÁRIA
-            email_do_responsavel TEXT,     -- COLUNA NECESSÁRIA
-            telefone_do_responsavel TEXT   -- COLUNA NECESSÁRIA
+            responsavel TEXT,
+            email_do_responsavel TEXT,
+            telefone_do_responsavel TEXT
         )`, (err) => {
             if (err) console.error('Erro tabela mobile_combustion_data:', err);
             else console.log('Tabela "mobile_combustion_data" pronta.');
         });
 
-        // Tabela de Combustão Estacionária - VERSÃO FINAL E CORRIGIDA
         db.run(`CREATE TABLE IF NOT EXISTS stationary_combustion_data (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             ano INTEGER,
@@ -66,9 +75,9 @@ const db = new sqlite3.Database(dbPath, (err) => {
             combustivel TEXT,
             consumo REAL,
             unidade TEXT,
-            responsavel TEXT,              -- COLUNA NECESSÁRIA
-            email_do_responsavel TEXT,     -- COLUNA NECESSÁRIA
-            telefone_do_responsavel TEXT   -- COLUNA NECESSÁRIA
+            responsavel TEXT,
+            email_do_responsavel TEXT,
+            telefone_do_responsavel TEXT
         )`, (err) => {
             if (err) console.error('Erro tabela stationary_combustion_data:', err);
             else console.log('Tabela "stationary_combustion_data" pronta.');

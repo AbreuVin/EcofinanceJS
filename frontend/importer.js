@@ -15,19 +15,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const tableActions = document.getElementById('table-actions');
     const addRowBtn = document.getElementById('add-row-btn');
     const saveButton = document.getElementById('save-data-btn');
+    const exportBtn = document.getElementById('export-btn');
     const downloadCsvBtn = document.getElementById('download-csv-btn');
     const downloadXlsxBtn = document.getElementById('download-xlsx-btn');
 
     let currentSchema = null;
     let contactsList = [];
+    let unitsList = [];
 
     // --- 2. FUNÇÕES PRINCIPAIS E AUXILIARES ---
 
     function loadNavbar() {
         const navPlaceholder = document.getElementById('nav-placeholder');
-        if (navPlaceholder) {
-            fetch('nav.html').then(response => response.ok ? response.text() : Promise.reject('nav.html não encontrado.')).then(data => { navPlaceholder.innerHTML = data; }).catch(error => console.error('Erro ao carregar a barra de navegação:', error));
-        }
+        if (navPlaceholder) { fetch('nav.html').then(response => response.ok ? response.text() : Promise.reject('nav.html não encontrado.')).then(data => { navPlaceholder.innerHTML = data; }).catch(error => console.error('Erro ao carregar a barra de navegação:', error)); }
     }
 
     async function fetchContacts() {
@@ -35,10 +35,15 @@ document.addEventListener('DOMContentLoaded', () => {
             const response = await fetch('/api/contacts');
             if (!response.ok) throw new Error('Falha ao buscar contatos');
             contactsList = await response.json();
-        } catch (error) {
-            console.error('Erro ao buscar contatos:', error);
-            contactsList = [];
-        }
+        } catch (error) { console.error('Erro ao buscar contatos:', error); contactsList = []; }
+    }
+
+    async function fetchUnits() {
+        try {
+            const response = await fetch('/api/units');
+            if (!response.ok) throw new Error('Falha ao buscar unidades');
+            unitsList = await response.json();
+        } catch (error) { console.error('Erro ao buscar unidades:', error); unitsList = []; }
     }
     
     function generateTable(data) {
@@ -80,7 +85,18 @@ document.addEventListener('DOMContentLoaded', () => {
         headers.forEach(header => {
             const cell = document.createElement('td');
             const currentValue = rowData[header] || "";
-            if (header === 'responsavel' && currentSchema.hasResponsibles) {
+            if (header === 'unidade_empresarial' && currentSchema.hasUnits) {
+                const select = document.createElement('select');
+                select.innerHTML = '<option value="">-- Selecione --</option>';
+                unitsList.forEach(unit => {
+                    const option = document.createElement('option');
+                    option.value = unit.name;
+                    option.textContent = unit.name;
+                    if (unit.name === currentValue) option.selected = true;
+                    select.appendChild(option);
+                });
+                cell.appendChild(select);
+            } else if (header === 'responsavel' && currentSchema.hasResponsibles) {
                 const select = document.createElement('select');
                 select.innerHTML = '<option value="">-- Selecione --</option>';
                 contactsList.forEach(contact => {
@@ -149,18 +165,17 @@ document.addEventListener('DOMContentLoaded', () => {
     function checkTableAndToggleSaveButton() {
         const hasAnyErrors = tableContainer.querySelector('.invalid-cell');
         const hasRows = tableContainer.querySelector('tbody tr');
-        if (hasAnyErrors || !hasRows) {
-            saveButton.style.display = 'none';
-            if (hasAnyErrors && hasRows) {
-                feedbackDiv.textContent = "Dados inválidos. Corrija as células em vermelho.";
-                feedbackDiv.style.color = 'red';
-            } else if (!hasRows) {
-                 feedbackDiv.textContent = "";
-            }
-        } else {
-            saveButton.style.display = 'block';
-            feedbackDiv.textContent = 'Todos os dados são válidos! Você já pode salvar.';
+        const areDataValid = !hasAnyErrors && hasRows;
+        saveButton.style.display = areDataValid ? 'block' : 'none';
+        exportBtn.style.display = areDataValid ? 'block' : 'none';
+        if (hasAnyErrors && hasRows) {
+            feedbackDiv.textContent = "Dados inválidos. Corrija as células em vermelho.";
+            feedbackDiv.style.color = 'red';
+        } else if (areDataValid) {
+            feedbackDiv.textContent = 'Todos os dados são válidos! Você já pode salvar ou baixar.';
             feedbackDiv.style.color = 'green';
+        } else if (!hasRows) {
+            feedbackDiv.textContent = "";
         }
     }
     
@@ -218,18 +233,22 @@ document.addEventListener('DOMContentLoaded', () => {
             phoneCell.textContent = contact ? contact.phone || '' : '';
         }
     }
-
+    
     tableSelector.addEventListener('change', async () => {
         const selectedKey = tableSelector.value;
         currentSchema = validationSchemas[selectedKey];
         tableContainer.innerHTML = '';
         feedbackDiv.textContent = '';
         if (currentSchema) {
-            if (currentSchema.hasResponsibles) await fetchContacts();
+            const fetchPromises = [];
+            if (currentSchema.hasResponsibles) { fetchPromises.push(fetchContacts()); }
+            if (currentSchema.hasUnits) { fetchPromises.push(fetchUnits()); }
+            await Promise.all(fetchPromises);
             uploadInstructions.textContent = `Selecione um arquivo (CSV ou XLSX) para os dados de "${currentSchema.displayName}", ou adicione linhas manualmente.`;
             uploadSection.style.display = 'block';
             tableActions.style.display = 'flex';
             saveButton.style.display = 'none';
+            exportBtn.style.display = 'none';
             downloadCsvBtn.href = `/api/template/${selectedKey}?format=csv`;
             downloadXlsxBtn.href = `/api/template/${selectedKey}?format=xlsx`;
             downloadCsvBtn.style.display = 'inline-block';
@@ -277,11 +296,7 @@ document.addEventListener('DOMContentLoaded', () => {
     saveButton.addEventListener('click', async () => {
         if (!currentSchema || !tableSelector.value) return;
         const tableRows = document.querySelectorAll('#table-container tbody tr');
-        
-        const headersText = Array.from(document.querySelectorAll('#table-container thead th'))
-            .map(th => th.textContent)
-            .filter(text => text !== 'Ações');
-
+        const headersText = Array.from(document.querySelectorAll('#table-container thead th')).map(th => th.textContent).filter(text => text !== 'Ações');
         const dataToSave = [];
         tableRows.forEach(row => {
             const rowData = {};
@@ -294,13 +309,10 @@ document.addEventListener('DOMContentLoaded', () => {
                         break;
                     }
                 }
-                if (headerKey) {
-                    rowData[headerKey] = getCellValue(cell);
-                }
+                if (headerKey) { rowData[headerKey] = getCellValue(cell); }
             });
             dataToSave.push(rowData);
         });
-
         try {
             const response = await fetch(`/api/save-data/${tableSelector.value}`, {
                 method: 'POST',
@@ -315,6 +327,59 @@ document.addEventListener('DOMContentLoaded', () => {
             saveButton.style.display = 'none';
         } catch (error) {
             feedbackDiv.textContent = `Erro ao salvar: ${error.message}`;
+            feedbackDiv.style.color = 'red';
+        }
+    });
+
+    exportBtn.addEventListener('click', async () => {
+        if (!currentSchema) return;
+        const tableRows = document.querySelectorAll('#table-container tbody tr');
+        const headersText = Array.from(document.querySelectorAll('#table-container thead th')).map(th => th.textContent).filter(text => text !== 'Ações');
+        const dataToExport = [];
+        tableRows.forEach(row => {
+            const rowData = {};
+            headersText.forEach((headerText, index) => {
+                const cell = row.querySelectorAll('td')[index];
+                rowData[headerText] = getCellValue(cell);
+            });
+            dataToExport.push(rowData);
+        });
+        if (dataToExport.length === 0) {
+            alert("Não há dados para exportar.");
+            return;
+        }
+        try {
+            const payload = {
+                data: dataToExport,
+                tableName: tableSelector.value
+            };
+            const response = await fetch('/api/export', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            });
+            if (!response.ok) { throw new Error('Falha ao gerar o arquivo Excel no servidor.'); }
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            const disposition = response.headers.get('Content-Disposition');
+            let filename = `${tableSelector.value}_export.xlsx`;
+            if (disposition && disposition.indexOf('attachment') !== -1) {
+                const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+                const matches = filenameRegex.exec(disposition);
+                if (matches != null && matches[1]) { 
+                    filename = matches[1].replace(/['"]/g, '');
+                }
+            }
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            a.remove();
+        } catch (error) {
+            feedbackDiv.textContent = `Erro ao exportar: ${error.message}`;
             feedbackDiv.style.color = 'red';
         }
     });

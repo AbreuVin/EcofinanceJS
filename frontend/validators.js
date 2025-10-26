@@ -3,7 +3,8 @@
 export const validationSchemas = {
     combustao_movel: {
         displayName: "Combustão Móvel",
-        hasResponsibles: true, // <-- NOVO (SPRINT 11)
+        hasResponsibles: true, 
+        hasUnits: true,
         headerDisplayNames: {
             ano: "Ano",
             periodo: "Período",
@@ -59,6 +60,7 @@ export const validationSchemas = {
     combustao_estacionaria: {
         displayName: "Combustão Estacionária",
         hasResponsibles: true, // <-- NOVO (SPRINT 11)
+        hasUnits: true,
         headerDisplayNames: {
             ano: "Ano",
             periodo: "Período",

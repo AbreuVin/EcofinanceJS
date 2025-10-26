@@ -1,0 +1,10 @@
+# Dependencies
+node_modules/
+/backend/node_modules/
+
+# Database file
+/backend/ecofinance.db
+
+# Misc
+.DS_Store
+npm-debug.log*
