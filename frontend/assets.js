@@ -80,7 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         const schema = assetSchemas[currentSourceType];
-        formTitle.textContent = `Adicionar Nova Tipologia de ${schema.displayName}`;
+        formTitle.textContent = `Adicionar Nova Fonte de Emissão de ${schema.displayName}`;
         tableTitle.textContent = `Tipologias de ${schema.displayName} Cadastradas`;
         
         buildDynamicForm(schema);

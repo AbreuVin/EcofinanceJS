@@ -11,7 +11,7 @@
     <div id="nav-placeholder"></div>
 
     <div class="container">
-        <h1>Gerenciador de Ativos (Tipologias)</h1>
+        <h1>Gerenciador de Ativos</h1>
 
         <!-- Seletor de Fonte de Emissão -->
         <div class="form-group">
@@ -26,14 +26,14 @@
             
             <!-- Formulário para Adicionar/Editar Tipologia -->
             <div class="form-container">
-                <h2 id="form-title">Adicionar Nova Tipologia</h2>
+                <h2 id="form-title">Adicionar Nova Fonte de Emissão</h2>
                 <form id="asset-form">
                     <input type="hidden" id="asset-id">
                     
                     <!-- Campos Comuns a Todas as Tipologias -->
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="asset-description">Descrição da Tipologia</label>
+                            <label for="asset-description">Descrição da Fonte de Emissão</label>
                             <input type="text" id="asset-description" placeholder="Ex: Geradores a Diesel, Frota de Caminhões Leves" required>
                         </div>
                     </div>
@@ -54,7 +54,7 @@
                     </div>
 
                     <div class="form-actions">
-                        <button type="submit">Salvar Tipologia</button>
+                        <button type="submit">Salvar Fonte de Emissão</button>
                         <button type="button" id="cancel-btn" class="cancel-btn" style="display: none;">Cancelar Edição</button>
                     </div>
                 </form>
@@ -62,7 +62,7 @@
 
             <!-- Tabela de Tipologias Cadastradas -->
             <div class="table-container">
-                <h2 id="table-title">Tipologias Cadastradas</h2>
+                <h2 id="table-title">Fonte de Emissão Cadastradas</h2>
                 <table>
                     <thead id="assets-thead">
                         <!-- Cabeçalhos da tabela serão gerados pelo JS -->
