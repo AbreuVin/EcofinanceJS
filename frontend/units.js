@@ -34,9 +34,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     // Usando '??' (nullish coalescing operator) para garantir que strings vazias sejam exibidas
                     tr.innerHTML = `
                         <td>${unit.name ?? ''}</td>
-                        <td>${unit.address ?? ''}</td>
+                        <td>${unit.cidade ?? ''}</td>
+                        <td>${unit.estado ?? ''}</td>
+                        <td>${unit.pais ?? ''}</td>
+                        <td>${unit.cep ?? ''}</td>
                         <td>
-                            <button class="action-btn edit-btn" onclick="editUnit(${unit.id}, '${unit.name ?? ''}', '${unit.address ?? ''}')">Editar</button>
+                            <button class="action-btn edit-btn" onclick="editUnit(${unit.id}, '${unit.name ?? ''}', '${unit.cidade ?? ''}', '${unit.estado ?? ''}', '${unit.pais ?? ''}', '${unit.cep ?? ''}')">Editar</button>
                             <button class="action-btn delete-btn" onclick="deleteUnit(${unit.id})">Deletar</button>
                         </td>
                     `;
@@ -55,7 +58,10 @@ document.addEventListener('DOMContentLoaded', () => {
         const id = unitIdInput.value;
         const unitData = {
             name: document.getElementById('name').value,
-            address: document.getElementById('address').value,
+            cidade: document.getElementById('cidade').value,
+            estado: document.getElementById('estado').value,
+            pais: document.getElementById('pais').value,
+            cep: document.getElementById('cep').value,
         };
 
         const method = id ? 'PUT' : 'POST';
@@ -73,10 +79,13 @@ document.addEventListener('DOMContentLoaded', () => {
     
     cancelBtn.addEventListener('click', () => resetForm());
 
-    window.editUnit = (id, name, address) => {
+    window.editUnit = (id, name, cidade, estado, pais, cep) => {
         unitIdInput.value = id;
         document.getElementById('name').value = name;
-        document.getElementById('address').value = address;
+        document.getElementById('cidade').value = cidade;
+        document.getElementById('estado').value = estado;
+        document.getElementById('pais').value = pais;
+        document.getElementById('cep').value = cep;
         cancelBtn.style.display = 'inline-block';
     };
 

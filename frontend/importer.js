@@ -1,6 +1,6 @@
 // arquivo: frontend/importer.js
 
-import { validationSchemas } from './validators.js';
+import { validationSchemas } from '../shared/validators.js'; // CAMINHO ATUALIZADO
 
 document.addEventListener('DOMContentLoaded', () => {
     
@@ -18,6 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const exportBtn = document.getElementById('export-btn');
     const downloadCsvBtn = document.getElementById('download-csv-btn');
     const downloadXlsxBtn = document.getElementById('download-xlsx-btn');
+    const downloadIntelligentBtn = document.getElementById('download-intelligent-btn'); // NOVO BOTÃO
 
     let currentSchema = null;
     let contactsList = [];
@@ -109,6 +110,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 cell.appendChild(select);
             } else if (currentSchema.validOptions && currentSchema.validOptions[header]) {
                 const select = document.createElement('select');
+                select.innerHTML = '<option value="">-- Selecione --</option>'; // Adiciona opção vazia
                 currentSchema.validOptions[header].forEach(optionText => {
                     const option = document.createElement('option');
                     option.value = optionText;
@@ -118,7 +120,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
                 cell.appendChild(select);
             } else {
-                if (header === 'email_do_responsavel' || header === 'telefone_do_responsavel') {
+                if (header === 'email_do_responsavel' || header === 'telefone_do_responsavel' || header === 'area_do_responsavel') {
                     cell.setAttribute('contenteditable', 'false');
                     cell.style.backgroundColor = '#f0f0f0';
                 } else {
@@ -146,10 +148,12 @@ document.addEventListener('DOMContentLoaded', () => {
     
     function updateRowAppearance(rowElement, headers) {
         if (!currentSchema) return;
-        const cells = rowElement.querySelectorAll('td');
+        const cells = Array.from(rowElement.querySelectorAll('td')).slice(0, headers.length); // Ignora a célula de ações
         const rowData = {};
         headers.forEach((header, index) => { rowData[header] = getCellValue(cells[index]); });
+        
         const validation = currentSchema.validateRow(rowData);
+
         cells.forEach((cell, index) => {
             const header = headers[index];
             if (validation.errors[header]) {
@@ -222,8 +226,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const editedRow = responsibleCell.parentElement;
         const selectedName = getCellValue(responsibleCell);
         const contact = contactsList.find(c => c.name === selectedName);
+
         const emailIndex = headers.indexOf('email_do_responsavel');
         const phoneIndex = headers.indexOf('telefone_do_responsavel');
+        const areaIndex = headers.indexOf('area_do_responsavel');
+
         if (emailIndex > -1) {
             const emailCell = editedRow.querySelectorAll('td')[emailIndex];
             emailCell.textContent = contact ? contact.email || '' : '';
@@ -231,6 +238,10 @@ document.addEventListener('DOMContentLoaded', () => {
         if (phoneIndex > -1) {
             const phoneCell = editedRow.querySelectorAll('td')[phoneIndex];
             phoneCell.textContent = contact ? contact.phone || '' : '';
+        }
+        if (areaIndex > -1) {
+            const areaCell = editedRow.querySelectorAll('td')[areaIndex];
+            areaCell.textContent = contact ? contact.area || '' : '';
         }
     }
     
@@ -253,11 +264,13 @@ document.addEventListener('DOMContentLoaded', () => {
             downloadXlsxBtn.href = `/api/template/${selectedKey}?format=xlsx`;
             downloadCsvBtn.style.display = 'inline-block';
             downloadXlsxBtn.style.display = 'inline-block';
+            downloadIntelligentBtn.style.display = 'inline-block'; // MOSTRA O NOVO BOTÃO
         } else {
             uploadSection.style.display = 'none';
             tableActions.style.display = 'none';
             downloadCsvBtn.style.display = 'none';
             downloadXlsxBtn.style.display = 'none';
+            downloadIntelligentBtn.style.display = 'none'; // ESCONDE O NOVO BOTÃO
         }
     });
 
@@ -278,6 +291,51 @@ document.addEventListener('DOMContentLoaded', () => {
             feedbackDiv.style.color = 'red';
         }
     });
+    
+    // --- NOVO EVENT LISTENER (SPRINT 15 - FASE 2) ---
+    downloadIntelligentBtn.addEventListener('click', async () => {
+        const sourceType = tableSelector.value;
+        if (!sourceType) return;
+        
+        feedbackDiv.textContent = 'Gerando template inteligente...';
+        feedbackDiv.style.color = 'blue';
+
+        try {
+            const response = await fetch(`/api/intelligent-template/${sourceType}`);
+            if (!response.ok) {
+                const error = await response.json();
+                throw new Error(error.message || 'Falha ao gerar o arquivo no servidor.');
+            }
+
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            
+            const disposition = response.headers.get('Content-Disposition');
+            let filename = `${sourceType}_template_preenchido.xlsx`;
+            if (disposition && disposition.indexOf('attachment') !== -1) {
+                const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+                const matches = filenameRegex.exec(disposition);
+                if (matches != null && matches[1]) { 
+                    filename = matches[1].replace(/['"]/g, '');
+                }
+            }
+            a.download = filename;
+
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            a.remove();
+            feedbackDiv.textContent = 'Template gerado com sucesso!';
+            feedbackDiv.style.color = 'green';
+        } catch (error) {
+            feedbackDiv.textContent = `Erro ao gerar template: ${error.message}`;
+            feedbackDiv.style.color = 'red';
+        }
+    });
+
 
     addRowBtn.addEventListener('click', () => {
         if (!currentSchema) return;
@@ -296,23 +354,29 @@ document.addEventListener('DOMContentLoaded', () => {
     saveButton.addEventListener('click', async () => {
         if (!currentSchema || !tableSelector.value) return;
         const tableRows = document.querySelectorAll('#table-container tbody tr');
-        const headersText = Array.from(document.querySelectorAll('#table-container thead th')).map(th => th.textContent).filter(text => text !== 'Ações');
+        const headers = Object.keys(currentSchema.headerDisplayNames);
         const dataToSave = [];
+
         tableRows.forEach(row => {
             const rowData = {};
-            headersText.forEach((headerText, index) => {
-                const cell = row.querySelectorAll('td')[index];
-                let headerKey = '';
-                for (const key in currentSchema.headerDisplayNames) {
-                    if (currentSchema.headerDisplayNames[key] === headerText) {
-                        headerKey = key;
-                        break;
-                    }
+            const cells = row.querySelectorAll('td');
+            headers.forEach((headerKey, index) => {
+                // Só adiciona a chave se não for um campo de preenchimento automático
+                if (!['email_do_responsavel', 'telefone_do_responsavel', 'area_do_responsavel'].includes(headerKey)) {
+                    rowData[headerKey] = getCellValue(cells[index]);
                 }
-                if (headerKey) { rowData[headerKey] = getCellValue(cell); }
             });
+
+            // Adiciona os dados do responsável separadamente para garantir que estejam atualizados
+            const selectedContact = contactsList.find(c => c.name === rowData.responsavel);
+            if (selectedContact) {
+                rowData.email_do_responsavel = selectedContact.email || '';
+                rowData.telefone_do_responsavel = selectedContact.phone || '';
+            }
+
             dataToSave.push(rowData);
         });
+
         try {
             const response = await fetch(`/api/save-data/${tableSelector.value}`, {
                 method: 'POST',
