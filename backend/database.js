@@ -167,14 +167,14 @@ const db = new sqlite3.Database(dbPath, (err) => {
             else console.log('Tabela "fertilizers_data" pronta.');
         });
 
-        // --- NOVAS TABELAS (SPRINT 15 - FASE 1) ---
-
+        // --- TABELA DE TIPOLOGIAS ATUALIZADA (SPRINT 15.5) ---
+        db.run(`DROP TABLE IF EXISTS asset_typologies`); // Força a recriação
         db.run(`CREATE TABLE IF NOT EXISTS asset_typologies (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_id INTEGER,
             unit_id INTEGER NOT NULL,
             source_type TEXT NOT NULL,
-            quantity INTEGER NOT NULL,
+            -- quantity foi REMOVIDA
             description TEXT NOT NULL,
             asset_fields TEXT,
             is_active BOOLEAN DEFAULT TRUE

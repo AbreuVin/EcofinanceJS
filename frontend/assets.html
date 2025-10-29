@@ -3,17 +3,21 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Gerenciar Ativos - Ecofinance</title>
+    <title>Cadastrar Fontes - Ecofinance</title> <!-- Título Atualizado -->
     <link rel="stylesheet" href="main.css">
     <link rel="stylesheet" href="dashboard.css">
+    <style>
+        .custom-options-list { list-style: none; padding: 0; }
+        .custom-options-list li { display: flex; justify-content: space-between; align-items: center; padding: 8px; border-bottom: 1px solid #eee; }
+        .custom-options-list button { background-color: #dc3545; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; }
+    </style>
 </head>
 <body>
     <div id="nav-placeholder"></div>
 
     <div class="container">
-        <h1>Gerenciador de Ativos</h1>
+        <h1>Cadastro de Fontes de Emissão</h1> 
 
-        <!-- Seletor de Fonte de Emissão -->
         <div class="form-group">
             <label for="source-selector">Selecione uma Fonte de Emissão para gerenciar:</label>
             <select id="source-selector">
@@ -21,61 +25,92 @@
             </select>
         </div>
 
-        <!-- Seção de Formulário e Tabela (será exibida após seleção) -->
         <div id="asset-management-section" style="display: none;">
             
-            <!-- Formulário para Adicionar/Editar Tipologia -->
             <div class="form-container">
-                <h2 id="form-title">Adicionar Nova Fonte de Emissão</h2>
+                <h2 style="font-size: 1.2rem; margin-bottom: 1rem;">Configuração da Fonte</h2>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="reporting-frequency">Frequência de Reporte</label>
+                        <select id="reporting-frequency">
+                            <option value="anual">Anual</option>
+                            <option value="mensal">Mensal</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="justify-content: flex-end;">
+                        <button type="button" id="save-frequency-btn" class="action-btn edit-btn" style="width: auto; padding: 0.75rem 1.5rem;">Salvar Frequência</button>
+                    </div>
+                </div>
+                 <div id="frequency-feedback" class="feedback-area" style="text-align: left; margin-top: 0.5rem; margin-bottom: 0;"></div>
+            </div>
+
+            <div class="form-container">
+                <h2 id="form-title">Adicionar Nova Fonte</h2> <!-- Título Atualizado -->
                 <form id="asset-form">
                     <input type="hidden" id="asset-id">
                     
-                    <!-- Campos Comuns a Todas as Tipologias -->
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="asset-description">Descrição da Fonte de Emissão</label>
+                            <label for="asset-description">Descrição da Fonte</label> <!-- Label Atualizada -->
                             <input type="text" id="asset-description" placeholder="Ex: Geradores a Diesel, Frota de Caminhões Leves" required>
                         </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
+                         <div class="form-group">
                             <label for="asset-unit">Unidade Empresarial</label>
                             <select id="asset-unit" required></select>
                         </div>
-                        <div class="form-group">
-                            <label for="asset-quantity">Quantidade</label>
-                            <input type="number" id="asset-quantity" min="1" step="1" placeholder="Nº de ativos deste tipo" required>
-                        </div>
                     </div>
                     
-                    <!-- Contêiner para Campos Específicos da Fonte -->
-                    <div id="specific-fields-container">
-                        <!-- O JavaScript irá inserir os campos específicos aqui -->
-                    </div>
+                    <!-- O campo de Quantidade foi removido daqui -->
+                    
+                    <div id="specific-fields-container"></div>
 
                     <div class="form-actions">
-                        <button type="submit">Salvar Fonte de Emissão</button>
+                        <button type="submit">Salvar Fonte</button> <!-- Texto do Botão Atualizado -->
                         <button type="button" id="cancel-btn" class="cancel-btn" style="display: none;">Cancelar Edição</button>
                     </div>
                 </form>
             </div>
 
-            <!-- Tabela de Tipologias Cadastradas -->
             <div class="table-container">
-                <h2 id="table-title">Fonte de Emissão Cadastradas</h2>
+                <h2 id="table-title">Fontes Cadastradas</h2> <!-- Título Atualizado -->
                 <table>
-                    <thead id="assets-thead">
-                        <!-- Cabeçalhos da tabela serão gerados pelo JS -->
-                    </thead>
-                    <tbody id="assets-tbody">
-                        <!-- Linhas da tabela serão geradas pelo JS -->
-                    </tbody>
+                    <thead id="assets-thead"></thead>
+                    <tbody id="assets-tbody"></tbody>
                 </table>
             </div>
+            
+            <div class="form-container" style="margin-top: 2rem;">
+                <h2 style="font-size: 1.2rem; margin-bottom: 1rem;">Gerenciar Opções Customizáveis</h2>
+                <p>Adicione ou remova opções para os campos de seleção que aparecem nos formulários acima.</p>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="custom-option-field-selector">Selecione o Campo para Customizar</label>
+                        <select id="custom-option-field-selector">
+                            <option value="">-- Selecione --</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div id="custom-option-manager" style="display: none;">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="new-custom-option-value">Nova Opção</label>
+                            <input type="text" id="new-custom-option-value" placeholder="Ex: Óleo Diesel B5">
+                        </div>
+                        <div class="form-group" style="justify-content: flex-end;">
+                             <button type="button" id="add-custom-option-btn" class="action-btn edit-btn" style="width: auto; padding: 0.75rem 1.5rem;">Adicionar</button>
+                        </div>
+                    </div>
+                    <div id="custom-option-feedback" class="feedback-area" style="text-align: left; margin-top: 0;"></div>
+                    
+                    <h3>Opções Atuais:</h3>
+                    <ul id="custom-options-list-container" class="custom-options-list"></ul>
+                </div>
+            </div>
 
-        </div> <!-- Fim de #asset-management-section -->
+        </div>
 
-    </div> <!-- Fim de .container -->
+    </div>
 
     <script type="module" src="assets.js"></script>
 </body>
