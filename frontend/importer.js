@@ -1,6 +1,6 @@
 // arquivo: frontend/importer.js
 
-import { validationSchemas } from '../shared/validators.js'; // CAMINHO ATUALIZADO
+import { validationSchemas } from '../shared/validators.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     
@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const exportBtn = document.getElementById('export-btn');
     const downloadCsvBtn = document.getElementById('download-csv-btn');
     const downloadXlsxBtn = document.getElementById('download-xlsx-btn');
-    const downloadIntelligentBtn = document.getElementById('download-intelligent-btn'); // NOVO BOTÃO
+    const downloadIntelligentBtn = document.getElementById('download-intelligent-btn');
 
     let currentSchema = null;
     let contactsList = [];
@@ -53,7 +53,17 @@ document.addEventListener('DOMContentLoaded', () => {
         const tbody = tableContainer.querySelector('tbody');
         const headers = Object.keys(currentSchema.headerDisplayNames);
         data.forEach(rowData => {
-            const row = buildTableRow(rowData, headers);
+            // Converte nomes de cabeçalho do Excel para chaves de schema
+            const mappedRowData = {};
+            for (const excelHeader in rowData) {
+                const schemaKey = Object.keys(currentSchema.headerDisplayNames).find(
+                    key => currentSchema.headerDisplayNames[key] === excelHeader
+                );
+                if (schemaKey) {
+                    mappedRowData[schemaKey] = rowData[excelHeader];
+                }
+            }
+            const row = buildTableRow(mappedRowData, headers);
             tbody.appendChild(row);
             updateRowAppearance(row, headers);
         });
@@ -110,7 +120,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 cell.appendChild(select);
             } else if (currentSchema.validOptions && currentSchema.validOptions[header]) {
                 const select = document.createElement('select');
-                select.innerHTML = '<option value="">-- Selecione --</option>'; // Adiciona opção vazia
+                select.innerHTML = '<option value="">-- Selecione --</option>';
                 currentSchema.validOptions[header].forEach(optionText => {
                     const option = document.createElement('option');
                     option.value = optionText;
@@ -120,7 +130,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
                 cell.appendChild(select);
             } else {
-                if (header === 'email_do_responsavel' || header === 'telefone_do_responsavel' || header === 'area_do_responsavel') {
+                if (['email_do_responsavel', 'telefone_do_responsavel', 'area_do_responsavel', 'unidade'].includes(header)) {
                     cell.setAttribute('contenteditable', 'false');
                     cell.style.backgroundColor = '#f0f0f0';
                 } else {
@@ -148,7 +158,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     function updateRowAppearance(rowElement, headers) {
         if (!currentSchema) return;
-        const cells = Array.from(rowElement.querySelectorAll('td')).slice(0, headers.length); // Ignora a célula de ações
+        const cells = Array.from(rowElement.querySelectorAll('td')).slice(0, headers.length);
         const rowData = {};
         headers.forEach((header, index) => { rowData[header] = getCellValue(cells[index]); });
         
@@ -208,9 +218,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const targetCellIndex = headers.indexOf(targetHeader);
                     if (targetCellIndex > -1) {
                         const targetCell = editedRow.querySelectorAll('td')[targetCellIndex];
-                        const targetInput = targetCell.querySelector('select, input');
-                        if (targetInput) targetInput.value = targetValue;
-                        else targetCell.textContent = targetValue;
+                        targetCell.textContent = targetValue;
                     }
                 }
             }
@@ -231,18 +239,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const phoneIndex = headers.indexOf('telefone_do_responsavel');
         const areaIndex = headers.indexOf('area_do_responsavel');
 
-        if (emailIndex > -1) {
-            const emailCell = editedRow.querySelectorAll('td')[emailIndex];
-            emailCell.textContent = contact ? contact.email || '' : '';
-        }
-        if (phoneIndex > -1) {
-            const phoneCell = editedRow.querySelectorAll('td')[phoneIndex];
-            phoneCell.textContent = contact ? contact.phone || '' : '';
-        }
-        if (areaIndex > -1) {
-            const areaCell = editedRow.querySelectorAll('td')[areaIndex];
-            areaCell.textContent = contact ? contact.area || '' : '';
-        }
+        if (emailIndex > -1) { editedRow.querySelectorAll('td')[emailIndex].textContent = contact ? contact.email || '' : ''; }
+        if (phoneIndex > -1) { editedRow.querySelectorAll('td')[phoneIndex].textContent = contact ? contact.phone || '' : ''; }
+        if (areaIndex > -1) { editedRow.querySelectorAll('td')[areaIndex].textContent = contact ? contact.area || '' : ''; }
     }
     
     tableSelector.addEventListener('change', async () => {
@@ -255,7 +254,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (currentSchema.hasResponsibles) { fetchPromises.push(fetchContacts()); }
             if (currentSchema.hasUnits) { fetchPromises.push(fetchUnits()); }
             await Promise.all(fetchPromises);
-            uploadInstructions.textContent = `Selecione um arquivo (CSV ou XLSX) para os dados de "${currentSchema.displayName}", ou adicione linhas manualmente.`;
+            uploadInstructions.textContent = `Faça o upload de um arquivo (CSV ou XLSX), ou adicione linhas manualmente.`;
             uploadSection.style.display = 'block';
             tableActions.style.display = 'flex';
             saveButton.style.display = 'none';
@@ -264,13 +263,13 @@ document.addEventListener('DOMContentLoaded', () => {
             downloadXlsxBtn.href = `/api/template/${selectedKey}?format=xlsx`;
             downloadCsvBtn.style.display = 'inline-block';
             downloadXlsxBtn.style.display = 'inline-block';
-            downloadIntelligentBtn.style.display = 'inline-block'; // MOSTRA O NOVO BOTÃO
+            downloadIntelligentBtn.style.display = 'inline-block';
         } else {
             uploadSection.style.display = 'none';
             tableActions.style.display = 'none';
             downloadCsvBtn.style.display = 'none';
             downloadXlsxBtn.style.display = 'none';
-            downloadIntelligentBtn.style.display = 'none'; // ESCONDE O NOVO BOTÃO
+            downloadIntelligentBtn.style.display = 'none';
         }
     });
 
@@ -292,16 +291,21 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
     
-    // --- NOVO EVENT LISTENER (SPRINT 15 - FASE 2) ---
     downloadIntelligentBtn.addEventListener('click', async () => {
         const sourceType = tableSelector.value;
         if (!sourceType) return;
         
+        const year = prompt("Por favor, digite o ano de reporte (ex: 2024):", new Date().getFullYear());
+        if (!year || isNaN(parseInt(year)) || year.length !== 4) {
+            alert("Ano inválido. Por favor, digite um ano com 4 dígitos.");
+            return;
+        }
+
         feedbackDiv.textContent = 'Gerando template inteligente...';
         feedbackDiv.style.color = 'blue';
 
         try {
-            const response = await fetch(`/api/intelligent-template/${sourceType}`);
+            const response = await fetch(`/api/intelligent-template/${sourceType}?year=${year}`);
             if (!response.ok) {
                 const error = await response.json();
                 throw new Error(error.message || 'Falha ao gerar o arquivo no servidor.');
@@ -361,19 +365,8 @@ document.addEventListener('DOMContentLoaded', () => {
             const rowData = {};
             const cells = row.querySelectorAll('td');
             headers.forEach((headerKey, index) => {
-                // Só adiciona a chave se não for um campo de preenchimento automático
-                if (!['email_do_responsavel', 'telefone_do_responsavel', 'area_do_responsavel'].includes(headerKey)) {
-                    rowData[headerKey] = getCellValue(cells[index]);
-                }
+                rowData[headerKey] = getCellValue(cells[index]);
             });
-
-            // Adiciona os dados do responsável separadamente para garantir que estejam atualizados
-            const selectedContact = contactsList.find(c => c.name === rowData.responsavel);
-            if (selectedContact) {
-                rowData.email_do_responsavel = selectedContact.email || '';
-                rowData.telefone_do_responsavel = selectedContact.phone || '';
-            }
-
             dataToSave.push(rowData);
         });
 
