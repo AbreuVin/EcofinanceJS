@@ -81,7 +81,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const schema = assetSchemas[currentSourceType];
         formTitle.textContent = `Adicionar Nova Fonte de Emissão de ${schema.displayName}`;
-        tableTitle.textContent = `Tipologias de ${schema.displayName} Cadastradas`;
+        tableTitle.textContent = `Fonte de Emissões de ${schema.displayName} Cadastradas`;
         
         buildDynamicForm(schema);
         buildDynamicTableHeaders(schema);
@@ -165,7 +165,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 assetsTbody.appendChild(tr);
             });
         } catch (error) {
-            console.error("Erro ao carregar tipologias:", error);
+            console.error("Erro ao carregar fonte de emissão:", error);
         }
     }
 
@@ -196,7 +196,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data)
             });
-            if (!response.ok) throw new Error('Falha ao salvar a tipologia.');
+            if (!response.ok) throw new Error('Falha ao salvar a fonte de emissão.');
 
             resetForm();
             loadAssetTypologies();
@@ -233,7 +233,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 window.scrollTo(0,0); // Rola a página para o topo
             }
         } else if (target.classList.contains('delete-btn')) {
-            if (confirm('Tem certeza que deseja deletar esta tipologia?')) {
+            if (confirm('Tem certeza que deseja deletar esta Fonte de Emissão?')) {
                 try {
                     await fetch(`/api/asset-typologies/${id}`, { method: 'DELETE' });
                     loadAssetTypologies();
@@ -247,7 +247,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function resetForm() {
         form.reset();
         assetIdInput.value = '';
-        formTitle.textContent = `Adicionar Nova Tipologia de ${assetSchemas[currentSourceType].displayName}`;
+        formTitle.textContent = `Adicionar Nova Fonte de Emissão de ${assetSchemas[currentSourceType].displayName}`;
         cancelBtn.style.display = 'none';
     }
 
