@@ -19,8 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const downloadCsvBtn = document.getElementById('download-csv-btn');
     const downloadXlsxBtn = document.getElementById('download-xlsx-btn');
     const downloadIntelligentBtn = document.getElementById('download-intelligent-btn');
-
-    // --- ATENÇÃO: Lista de campos numéricos para formatação ---
+    
     const NUMERIC_FIELDS = [
         'consumo', 'distancia_percorrida', 'quantidade_vendida', 
         'quantidade_reposta', 'percentual_emissao', 'quantidade_kg', 
@@ -28,8 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
     ];
 
     let currentSchema = null;
-    let contactsList = [];
-    let unitsList = [];
+    let unitsList = []; // A lista de contatos foi removida
 
     // --- 2. FUNÇÕES PRINCIPAIS E AUXILIARES ---
 
@@ -38,13 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (navPlaceholder) { fetch('nav.html').then(response => response.ok ? response.text() : Promise.reject('nav.html não encontrado.')).then(data => { navPlaceholder.innerHTML = data; }).catch(error => console.error('Erro ao carregar a barra de navegação:', error)); }
     }
 
-    async function fetchContacts() {
-        try {
-            const response = await fetch('/api/contacts');
-            if (!response.ok) throw new Error('Falha ao buscar contatos');
-            contactsList = await response.json();
-        } catch (error) { console.error('Erro ao buscar contatos:', error); contactsList = []; }
-    }
+    // A função fetchContacts() foi removida daqui
 
     async function fetchUnits() {
         try {
@@ -104,17 +96,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     select.appendChild(option);
                 });
                 cell.appendChild(select);
-            } else if (header === 'responsavel' && currentSchema.hasResponsibles) {
-                const select = document.createElement('select');
-                select.innerHTML = '<option value="">-- Selecione --</option>';
-                contactsList.forEach(contact => {
-                    const option = document.createElement('option');
-                    option.value = contact.name;
-                    option.textContent = contact.name;
-                    if (contact.name === currentValue) option.selected = true;
-                    select.appendChild(option);
-                });
-                cell.appendChild(select);
+            // O bloco if para 'responsavel' foi completamente removido
             } else if (currentSchema.validOptions && currentSchema.validOptions[header]) {
                 const select = document.createElement('select');
                 select.innerHTML = '<option value="">-- Selecione --</option>';
@@ -127,24 +109,22 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
                 cell.appendChild(select);
             } else {
-                if (['email_do_responsavel', 'telefone_do_responsavel', 'area_do_responsavel', 'unidade'].includes(header)) {
+                // Removidas as referências a 'email_do_responsavel', etc daqui
+                if (['unidade'].includes(header)) {
                     cell.setAttribute('contenteditable', 'false');
                     cell.style.backgroundColor = '#f0f0f0';
                 } else {
                     cell.setAttribute('contenteditable', 'true');
                 }
                 
-                // --- ATENÇÃO: Formatação do número para exibição ---
                 let displayValue = currentValue;
                 if (NUMERIC_FIELDS.includes(header) && currentValue !== '' && !isNaN(parseFloat(currentValue))) {
-                    // Converte para número e depois para o formato pt-BR
                     displayValue = parseFloat(currentValue).toLocaleString('pt-BR', {
-                        minimumFractionDigits: 2, // Garante pelo menos 2 casas decimais
-                        maximumFractionDigits: 20 // Permite mais casas decimais se necessário
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 20
                     });
                 }
                 cell.textContent = displayValue;
-                // --- FIM DA MUDANÇA ---
             }
             row.appendChild(cell);
         });
@@ -155,32 +135,26 @@ document.addEventListener('DOMContentLoaded', () => {
         deleteBtn.title = 'Deletar esta linha';
         actionsCell.appendChild(deleteBtn);
         row.appendChild(actionsCell);
-        if (rowData.responsavel) {
-            const responsavelCell = Array.from(row.cells)[headers.indexOf('responsavel')];
-            if (responsavelCell) handleResponsibleChange(responsavelCell, headers);
-        }
+        // A chamada a handleResponsibleChange foi removida
         return row;
     }
     
-    // --- ATENÇÃO: Função de leitura atualizada ---
     function getCellValue(cell, header) {
         const input = cell.querySelector('select, input');
         let value = input ? input.value : cell.textContent;
 
-        // Se for um campo numérico, converte a vírgula de volta para ponto
         if (NUMERIC_FIELDS.includes(header) && typeof value === 'string') {
+            // Remove pontos de milhar e substitui a vírgula decimal por ponto
             return value.replace(/\./g, '').replace(',', '.');
         }
         return value;
     }
-    // --- FIM DA MUDANÇA ---
     
     function updateRowAppearance(rowElement, headers) {
         if (!currentSchema) return;
         const cells = Array.from(rowElement.querySelectorAll('td')).slice(0, headers.length);
         const rowData = {};
         headers.forEach((header, index) => { 
-            // Passa o header para a função getCellValue
             rowData[header] = getCellValue(cells[index], header); 
         });
         
@@ -244,38 +218,24 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
             }
-            if (headerOfEditedCell === 'responsavel' && currentSchema.hasResponsibles) {
-                handleResponsibleChange(cell, headers);
-            }
+            // A chamada a handleResponsibleChange foi removida
             updateRowAppearance(editedRow, headers);
             checkTableAndToggleSaveButton();
         }
     }
 
-    function handleResponsibleChange(responsibleCell, headers) {
-        const editedRow = responsibleCell.parentElement;
-        const selectedName = getCellValue(responsibleCell, 'responsavel');
-        const contact = contactsList.find(c => c.name === selectedName);
+    // A função handleResponsibleChange foi completamente removida
 
-        const emailIndex = headers.indexOf('email_do_responsavel');
-        const phoneIndex = headers.indexOf('telefone_do_responsavel');
-        const areaIndex = headers.indexOf('area_do_responsavel');
-
-        if (emailIndex > -1) { editedRow.querySelectorAll('td')[emailIndex].textContent = contact ? contact.email || '' : ''; }
-        if (phoneIndex > -1) { editedRow.querySelectorAll('td')[phoneIndex].textContent = contact ? contact.phone || '' : ''; }
-        if (areaIndex > -1) { editedRow.querySelectorAll('td')[areaIndex].textContent = contact ? contact.area || '' : ''; }
-    }
-    
     tableSelector.addEventListener('change', async () => {
         const selectedKey = tableSelector.value;
         currentSchema = validationSchemas[selectedKey];
         tableContainer.innerHTML = '';
         feedbackDiv.textContent = '';
         if (currentSchema) {
-            const fetchPromises = [];
-            if (currentSchema.hasResponsibles) { fetchPromises.push(fetchContacts()); }
-            if (currentSchema.hasUnits) { fetchPromises.push(fetchUnits()); }
-            await Promise.all(fetchPromises);
+            // A chamada a fetchContacts() foi removida daqui
+            if (currentSchema.hasUnits) {
+                await fetchUnits();
+            }
             uploadInstructions.textContent = `Faça o upload de um arquivo (CSV ou XLSX), ou adicione linhas manualmente.`;
             uploadSection.style.display = 'block';
             tableActions.style.display = 'flex';
@@ -421,7 +381,6 @@ document.addEventListener('DOMContentLoaded', () => {
             headersText.forEach((headerText, index) => {
                 const cell = row.querySelectorAll('td')[index];
                 const schemaKey = Object.keys(currentSchema.headerDisplayNames).find(key => currentSchema.headerDisplayNames[key] === headerText);
-                // No export, mandamos o valor bruto (com ponto), pois a API espera assim
                 rowData[headerText] = getCellValue(cell, schemaKey);
             });
             dataToExport.push(rowData);

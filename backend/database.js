@@ -44,6 +44,7 @@ const db = new sqlite3.Database(dbPath, (err) => {
             else console.log('Tabela "units" pronta.');
         });
         
+        // --- ATENÇÃO: COLUNAS DE RESPONSÁVEL REMOVIDAS ---
         db.run(`CREATE TABLE IF NOT EXISTS mobile_combustion_data (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             ano INTEGER,
@@ -57,35 +58,28 @@ const db = new sqlite3.Database(dbPath, (err) => {
             unidade_consumo TEXT,
             distancia_percorrida REAL,
             unidade_distancia TEXT,
-            tipo_veiculo TEXT,
-            responsavel TEXT,
-            email_do_responsavel TEXT,
-            telefone_do_responsavel TEXT
+            tipo_veiculo TEXT
         )`, (err) => {
             if (err) console.error('Erro tabela mobile_combustion_data:', err);
             else console.log('Tabela "mobile_combustion_data" pronta.');
         });
 
-        // --- ATENÇÃO: MUDANÇA AQUI ---
+        // --- ATENÇÃO: COLUNAS DE RESPONSÁVEL REMOVIDAS ---
         db.run(`CREATE TABLE IF NOT EXISTS stationary_combustion_data (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             ano INTEGER,
             periodo TEXT,
             unidade_empresarial TEXT,
             descricao_da_fonte TEXT,
-            -- tipo_da_fonte TEXT, <-- COLUNA REMOVIDA
             combustivel TEXT,
             consumo REAL,
-            unidade TEXT,
-            responsavel TEXT,
-            email_do_responsavel TEXT,
-            telefone_do_responsavel TEXT
+            unidade TEXT
         )`, (err) => {
             if (err) console.error('Erro tabela stationary_combustion_data:', err);
             else console.log('Tabela "stationary_combustion_data" pronta.');
         });
-        // --- FIM DA MUDANÇA ---
 
+        // --- ATENÇÃO: COLUNAS DE RESPONSÁVEL REMOVIDAS ---
         db.run(`CREATE TABLE IF NOT EXISTS production_sales_data (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             ano INTEGER NOT NULL,
@@ -95,10 +89,6 @@ const db = new sqlite3.Database(dbPath, (err) => {
             quantidade_vendida INTEGER CHECK(quantidade_vendida > 0),
             unidade_medida TEXT NOT NULL,
             uso_final_produtos TEXT NOT NULL,
-            responsavel TEXT NOT NULL,
-            area_responsavel TEXT,
-            email_do_responsavel TEXT,
-            telefone_do_responsavel TEXT,
             rastreabilidade TEXT,
             comentarios TEXT
         )`, (err) => {
@@ -106,6 +96,7 @@ const db = new sqlite3.Database(dbPath, (err) => {
             else console.log('Tabela "production_sales_data" pronta.');
         });
 
+        // --- ATENÇÃO: COLUNAS DE RESPONSÁVEL REMOVIDAS ---
         db.run(`CREATE TABLE IF NOT EXISTS lubricants_ippu_data (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             ano INTEGER,
@@ -116,15 +107,13 @@ const db = new sqlite3.Database(dbPath, (err) => {
             consumo REAL,
             unidade TEXT,
             utilizacao TEXT,
-            controlado_empresa BOOLEAN,
-            responsavel TEXT,
-            email_do_responsavel TEXT,
-            telefone_do_responsavel TEXT
+            controlado_empresa BOOLEAN
         )`, (err) => {
             if (err) console.error('Erro tabela lubricants_ippu_data:', err);
             else console.log('Tabela "lubricants_ippu_data" pronta.');
         });
 
+        // --- ATENÇÃO: COLUNAS DE RESPONSÁVEL REMOVIDAS ---
         db.run(`CREATE TABLE IF NOT EXISTS fugitive_emissions_data (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             ano INTEGER,
@@ -137,9 +126,6 @@ const db = new sqlite3.Database(dbPath, (err) => {
             nome_comercial_gas TEXT,
             gas_emissor_composicao TEXT,
             percentual_emissao REAL,
-            responsavel TEXT,
-            email_do_responsavel TEXT,
-            telefone_do_responsavel TEXT,
             rastreabilidade TEXT,
             comentarios TEXT
         )`, (err) => {
@@ -147,6 +133,7 @@ const db = new sqlite3.Database(dbPath, (err) => {
             else console.log('Tabela "fugitive_emissions_data" pronta.');
         });
 
+        // --- ATENÇÃO: COLUNAS DE RESPONSÁVEL REMOVIDAS ---
         db.run(`CREATE TABLE IF NOT EXISTS fertilizers_data (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             ano INTEGER,
@@ -159,9 +146,6 @@ const db = new sqlite3.Database(dbPath, (err) => {
             percentual_nitrogenio REAL,
             percentual_carbonato REAL,
             controlado_empresa BOOLEAN,
-            responsavel TEXT,
-            email_do_responsavel TEXT,
-            telefone_do_responsavel TEXT,
             rastreabilidade TEXT,
             comentarios TEXT
         )`, (err) => {
@@ -204,6 +188,18 @@ const db = new sqlite3.Database(dbPath, (err) => {
             if (err) console.error('Erro tabela source_configurations:', err);
             else console.log('Tabela "source_configurations" pronta.');
         });
+
+        // --- ATENÇÃO: NOVA TABELA DE ASSOCIAÇÃO ---
+        db.run(`CREATE TABLE IF NOT EXISTS contact_source_associations (
+            contact_id INTEGER NOT NULL,
+            source_type TEXT NOT NULL,
+            PRIMARY KEY (contact_id, source_type),
+            FOREIGN KEY (contact_id) REFERENCES contacts (id) ON DELETE CASCADE
+        )`, (err) => {
+            if (err) console.error('Erro tabela contact_source_associations:', err);
+            else console.log('Tabela "contact_source_associations" pronta.');
+        });
+        // --- FIM DA NOVA TABELA ---
 
     });
   }

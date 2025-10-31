@@ -69,37 +69,100 @@ app.post('/api/login', (req, res) => {
     });
 });
 
-// Rotas de Responsáveis (Contacts)
+// --- ATENÇÃO: ROTAS DE RESPONSÁVEIS (CONTACTS) ATUALIZADAS ---
+
+// GET: Lista todos os contatos e suas fontes associadas
 app.get('/api/contacts', (req, res) => {
-    db.all("SELECT * FROM contacts ORDER BY name", [], (err, rows) => {
+    const sqlContacts = "SELECT * FROM contacts ORDER BY name";
+    db.all(sqlContacts, [], (err, contacts) => {
         if (err) return res.status(500).json({ "error": err.message });
-        res.json(rows);
+
+        const sqlAssociations = "SELECT * FROM contact_source_associations";
+        db.all(sqlAssociations, [], (err, associations) => {
+            if (err) return res.status(500).json({ "error": err.message });
+            
+            // Mapeia as associações para cada contato
+            const contactsWithSources = contacts.map(contact => {
+                const associatedSources = associations
+                    .filter(assoc => assoc.contact_id === contact.id)
+                    .map(assoc => assoc.source_type);
+                return { ...contact, sources: associatedSources };
+            });
+
+            res.json(contactsWithSources);
+        });
     });
 });
 
+// POST: Cria um novo contato e suas associações
 app.post('/api/contacts', (req, res) => {
-    const { name, area, email, phone } = req.body;
+    const { name, area, email, phone, sources = [] } = req.body;
     if (!name) return res.status(400).json({ "error": "O nome é obrigatório." });
+
     db.run("INSERT INTO contacts (name, area, email, phone) VALUES (?, ?, ?, ?)", [name, area, email, phone], function(err) {
         if (err) return res.status(500).json({ "error": err.message });
-        res.status(201).json({ "id": this.lastID });
+        
+        const contactId = this.lastID;
+        if (sources.length === 0) {
+            return res.status(201).json({ "id": contactId });
+        }
+
+        const placeholders = sources.map(() => '(?, ?)').join(',');
+        const sql = `INSERT INTO contact_source_associations (contact_id, source_type) VALUES ${placeholders}`;
+        
+        const params = [];
+        sources.forEach(sourceType => {
+            params.push(contactId, sourceType);
+        });
+
+        db.run(sql, params, function(err) {
+            if (err) return res.status(500).json({ "error": `Erro ao salvar associações: ${err.message}` });
+            res.status(201).json({ "id": contactId });
+        });
     });
 });
 
+// PUT: Atualiza um contato e suas associações
 app.put('/api/contacts/:id', (req, res) => {
-    const { name, area, email, phone } = req.body;
-    db.run("UPDATE contacts SET name = ?, area = ?, email = ?, phone = ? WHERE id = ?", [name, area, email, phone, req.params.id], function(err) {
-        if (err) return res.status(500).json({ "error": err.message });
-        res.status(200).json({ changes: this.changes });
+    const contactId = req.params.id;
+    const { name, area, email, phone, sources = [] } = req.body;
+
+    db.serialize(() => {
+        db.run("BEGIN TRANSACTION");
+
+        // 1. Atualiza os dados do contato
+        db.run("UPDATE contacts SET name = ?, area = ?, email = ?, phone = ? WHERE id = ?", [name, area, email, phone, contactId]);
+
+        // 2. Deleta as associações antigas
+        db.run("DELETE FROM contact_source_associations WHERE contact_id = ?", [contactId]);
+
+        // 3. Insere as novas associações (se houver)
+        if (sources.length > 0) {
+            const placeholders = sources.map(() => '(?, ?)').join(',');
+            const sql = `INSERT INTO contact_source_associations (contact_id, source_type) VALUES ${placeholders}`;
+            const params = [];
+            sources.forEach(sourceType => params.push(contactId, sourceType));
+            db.run(sql, params);
+        }
+
+        db.run("COMMIT", (err) => {
+            if (err) {
+                db.run("ROLLBACK");
+                return res.status(500).json({ "error": `Erro na transação: ${err.message}` });
+            }
+            res.status(200).json({ changes: 1 }); // Retorna 1 para indicar sucesso
+        });
     });
 });
 
+// DELETE: Deleta o contato (as associações são deletadas em cascata pelo DB)
 app.delete('/api/contacts/:id', (req, res) => {
     db.run("DELETE FROM contacts WHERE id = ?", [req.params.id], function(err) {
         if (err) return res.status(500).json({ "error": err.message });
         res.status(200).json({ deleted: this.changes });
     });
 });
+// --- FIM DAS ATUALIZAÇÕES NAS ROTAS DE CONTATOS ---
 
 // Rotas de Unidades Empresariais
 app.get('/api/units', (req, res) => {
@@ -202,7 +265,7 @@ app.post('/api/upload', upload.single('file'), (req, res) => {
             });
             
             processAndSendData(results);
-        } else { // Fallback para CSV e outros
+        } else {
             let results = [];
             fs.createReadStream(filePath)
                 .pipe(csv({
@@ -221,6 +284,7 @@ app.post('/api/upload', upload.single('file'), (req, res) => {
         res.status(500).json({ message: 'Erro interno ao processar o arquivo.' });
     }
 });
+
 
 // Rota de Download de Template
 app.get('/api/template/:tableName', (req, res) => {

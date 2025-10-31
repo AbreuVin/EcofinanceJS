@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ippu_lubrificantes: {
             displayName: "IPPU - Lubrificantes - Escopo 3",
             fields: {
-                tipo_lubrificante: { label: "Tipo", type: "select", isCustomizable: true, options: ["Lubrificante", "Graxa"]},
+                tipo_lubrificante: { label: "Tipo de Lubrificante", type: "select", isCustomizable: true, options: ["Lubrificante", "Graxa"]},
                 unidade: { label: "Unidade de Consumo", type: "select", options: ["Litros", "kg"]},
                 utilizacao: { label: "Utilização Padrão", type: "text" }
             }
