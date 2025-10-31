@@ -4,30 +4,31 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // --- 1. SCHEMAS DE CONFIGURAÇÃO DOS ATIVOS ---
     const assetSchemas = {
+        // --- ATENÇÃO: displayName ATUALIZADO COM ESCOPO ---
         combustao_estacionaria: {
-            displayName: "Combustão Estacionária",
+            displayName: "Combustão Estacionária - Escopo 1",
             fields: {
-                tipo_da_fonte: { label: "Tipo da Fonte", type: "select", options: ["Gerador de Energia", "Caldeira", "Forno", "Aquecedor", "Outro"] },
+                // O campo 'tipo_da_fonte' foi REMOVIDO daqui.
                 combustivel: { label: "Combustível", type: "select", isCustomizable: true, options: ["Gás Natural", "Óleo Diesel", "Gás Liquefeito de Petróleo", "Carvão Mineral", "Lenha", "Biogás"] }
             }
         },
         combustao_movel: {
-            displayName: "Combustão Móvel",
+            displayName: "Combustão Móvel - Escopo 1",
             fields: {
                 tipo_veiculo: { label: "Tipo de Veículo", type: "select", options: [ "Automóvel a gasolina", "Automóvel a etanol", "Automóvel flex a gasolina", "Automóvel flex a etanol", "Motocicleta a gasolina", "Motocicleta flex a gasolina", "Motocicleta flex a etanol", "Veículo comercial leve a gasolina", "Veículo comercial leve a etanol", "Veículo comercial leve flex a gasolina", "Veículo comercial leve flex a etanol", "Veículo comercial leve a diesel", "Micro-ônibus a diesel", "Ônibus rodoviário a diesel", "Ônibus urbano a diesel", "Caminhão - rígido (3,5 a 7,5 toneladas)", "Caminhão - rígido (7,5 a 17 toneladas)", "Caminhão - rígido (acima de 17 toneladas)", "Caminhão - rígido (média)", "Caminhão - articulado (3,5 a 33 toneladas)", "Caminhão - articulado (acima de 33 toneladas)", "Caminhão - articulado (média)", "Caminhão - caminhão (média)", "Caminhão refrigerado - rígido (3,5 a 7,5 toneladas)", "Caminhão refrigerado - rígido (7,5 a 17 toneladas)", "Caminhão refrigerado - rígido (acima de 17 toneladas)", "Caminhão refrigerado - rígido (média)", "Caminhão refrigerado - articulado (3,5 a 33 toneladas)", "Caminhão refrigerado - articulado (acima de 33 toneladas)", "Caminhão refrigerado - articulado (média)", "Caminhão refrigerado - caminhão (média)", "Automóvel a GNV" ] },
                 controlado_empresa: { label: "Controlado pela Empresa?", type: "select", options: ["Sim", "Não"] }
             }
         },
         dados_producao_venda: {
-            displayName: "Dados de Produção e Venda",
+            displayName: "Dados de Produção e Venda - Escopo 3",
             fields: {
-                produto: { label: "Nome do Produto", type: "text" },
+                // O campo 'produto' foi removido daqui pois agora a 'description' principal o substitui.
                 unidade_medida: { label: "Unidade de Medida", type: "text", isCustomizable: true },
                 uso_final_produtos: { label: "Uso Final (Padrão)", type: "text" }
             }
         },
         ippu_lubrificantes: {
-            displayName: "IPPU - Lubrificantes",
+            displayName: "IPPU - Lubrificantes - Escopo 3",
             fields: {
                 tipo_lubrificante: { label: "Tipo", type: "select", isCustomizable: true, options: ["Lubrificante", "Graxa"]},
                 unidade: { label: "Unidade de Consumo", type: "select", options: ["Litros", "kg"]},
@@ -35,19 +36,20 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         },
         emissoes_fugitivas: {
-            displayName: "Emissões Fugitivas",
+            displayName: "Emissões Fugitivas - Escopo 1",
             fields: {
                 tipo_gas: { label: "Tipo de Gás Padrão", type: "select", options: ["Dióxido de carbono (CO2)", "Metano (CH4)", "Óxido nitroso (N2O)", "HFC-134a", "HFC-404A", "HFC-410A", "HCFC-22", "HFC-32", "Outro (Gás Composto)"] }
             }
         },
         fertilizantes: {
-            displayName: "Fertilizantes",
+            displayName: "Fertilizantes - Escopo 3",
             fields: {
-                tipo_fertilizante: { label: "Tipo de Fertilizante", type: "text", isCustomizable: true },
+                // 'tipo_fertilizante' removido pois a 'description' o substitui.
                 percentual_nitrogenio: { label: "Percentual de Nitrogênio (%)", type: "number", min: 0, max: 100, step: 0.01 },
                 percentual_carbonato: { label: "Percentual de Carbonato (%)", type: "number", min: 0, max: 100, step: 0.01 }
             }
         }
+        // --- FIM DAS MUDANÇAS NOS SCHEMAS ---
     };
 
     // --- 2. REFERÊNCIAS DO DOM ---
@@ -109,6 +111,16 @@ document.addEventListener('DOMContentLoaded', () => {
             const unitsList = await unitsResponse.json();
             allConfigs = await configsResponse.json();
             unitSelect.innerHTML = '<option value="">-- Selecione --</option>';
+
+            // --- ATENÇÃO: Adicionando a opção "Todas as Unidades" ---
+            if (unitsList.length > 1) { // Só mostra se houver mais de uma unidade
+                const allUnitsOption = document.createElement('option');
+                allUnitsOption.value = 'all';
+                allUnitsOption.textContent = '*** TODAS AS UNIDADES ***';
+                unitSelect.appendChild(allUnitsOption);
+            }
+            // --- FIM DA MUDANÇA ---
+            
             unitsList.forEach(unit => {
                 const option = document.createElement('option');
                 option.value = unit.id;
@@ -144,7 +156,6 @@ document.addEventListener('DOMContentLoaded', () => {
     function buildDynamicTableHeaders(schema) {
         assetsThead.innerHTML = '';
         const headerRow = document.createElement('tr');
-        // Coluna "Qtd." foi REMOVIDA
         let headers = '<th>Descrição</th><th>Unidade</th>';
         for (const key in schema.fields) {
             headers += `<th>${schema.fields[key].label}</th>`;
@@ -163,7 +174,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
             typologies.forEach(typo => {
                 const tr = document.createElement('tr');
-                // Coluna "quantity" foi REMOVIDA
                 let rowHtml = `<td>${typo.description}</td><td>${typo.unit_name}</td>`;
                 
                 const schema = assetSchemas[currentSourceType];
@@ -191,11 +201,21 @@ document.addEventListener('DOMContentLoaded', () => {
         specificFieldsContainer.querySelectorAll('input, select').forEach(input => {
             asset_fields[input.dataset.key] = input.value;
         });
+        
+        const unitValue = document.getElementById('asset-unit').value;
 
-        // "quantity" foi REMOVIDO do objeto de dados
+        // Se "Todas as unidades" for selecionado, precisamos tratar isso no back-end
+        // Por enquanto, vamos enviar um identificador especial. A lógica completa será no server.js
+        if (unitValue === 'all') {
+            alert("A funcionalidade 'Todas as Unidades' será implementada em breve no backend. Por favor, selecione uma unidade específica por enquanto.");
+            // NOTA: Em um passo futuro, aqui nós faríamos um loop e várias chamadas à API, ou uma chamada especial que o backend entenderia.
+            // Por agora, vamos apenas impedir o envio para evitar erros.
+            return; 
+        }
+
         const data = {
             description: document.getElementById('asset-description').value,
-            unit_id: document.getElementById('asset-unit').value,
+            unit_id: unitValue,
             source_type: currentSourceType,
             asset_fields: asset_fields
         };
@@ -234,7 +254,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 assetIdInput.value = typoToEdit.id;
                 document.getElementById('asset-description').value = typoToEdit.description;
                 document.getElementById('asset-unit').value = typoToEdit.unit_id;
-                // "quantity" foi REMOVIDO daqui
                 
                 await buildDynamicForm(assetSchemas[currentSourceType]); 
                 specificFieldsContainer.querySelectorAll('input, select').forEach(input => {
@@ -266,10 +285,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         cancelBtn.style.display = 'none';
     }
-
-    // --- Demais funções e Listeners ---
-    // (buildDynamicForm, handleAddCustomOption, etc. permanecem como no prompt anterior)
-    async function buildDynamicForm(schema) { specificFieldsContainer.innerHTML = ''; for (const key in schema.fields) { const field = schema.fields[key]; const formRow = document.createElement('div'); formRow.className = 'form-row'; const formGroup = document.createElement('div'); formGroup.className = 'form-group'; const label = document.createElement('label'); label.setAttribute('for', `field-${key}`); label.textContent = field.label; let input; if (field.type === 'select') { input = document.createElement('select'); input.innerHTML = '<option value="">-- Selecione --</option>'; let options = field.options || []; if (field.isCustomizable) { try { const response = await fetch(`/api/custom-options?field_key=${key}`); const customOptions = await response.json(); options = customOptions.map(opt => opt.value); } catch (error) { console.error(`Erro ao buscar opções para ${key}:`, error); } } options.forEach(opt => { input.innerHTML += `<option value="${opt}">${opt}</option>`; }); } else { input = document.createElement('input'); input.type = field.type || 'text'; if (field.type === 'number') { if (field.min !== undefined) input.min = field.min; if (field.max !== undefined) input.max = field.max; if (field.step !== undefined) input.step = field.step; } } input.id = `field-${key}`; input.dataset.key = key; input.required = true; formGroup.appendChild(label); formGroup.appendChild(input); formRow.appendChild(formGroup); specificFieldsContainer.appendChild(formRow); } }
+    async function buildDynamicForm(schema) { specificFieldsContainer.innerHTML = ''; for (const key in schema.fields) { const field = schema.fields[key]; const formRow = document.createElement('div'); formRow.className = 'form-row'; const formGroup = document.createElement('div'); formGroup.className = 'form-group'; const label = document.createElement('label'); label.setAttribute('for', `field-${key}`); label.textContent = field.label; let input; if (field.type === 'select') { input = document.createElement('select'); input.innerHTML = '<option value="">-- Selecione --</option>'; let options = field.options || []; if (field.isCustomizable) { try { const response = await fetch(`/api/custom-options?field_key=${key}`); const customOptions = await response.json(); const allOptions = [...new Set([...(field.options || []), ...customOptions.map(opt => opt.value)])]; options = allOptions; } catch (error) { console.error(`Erro ao buscar opções para ${key}:`, error); } } options.forEach(opt => { input.innerHTML += `<option value="${opt}">${opt}</option>`; }); } else { input = document.createElement('input'); input.type = field.type || 'text'; if (field.type === 'number') { if (field.min !== undefined) input.min = field.min; if (field.max !== undefined) input.max = field.max; if (field.step !== undefined) input.step = field.step; } } input.id = `field-${key}`; input.dataset.key = key; input.required = true; formGroup.appendChild(label); formGroup.appendChild(input); formRow.appendChild(formGroup); specificFieldsContainer.appendChild(formRow); } }
     async function handleSaveFrequency() { if (!currentSourceType) return; frequencyFeedback.textContent = 'Salvando...'; frequencyFeedback.style.color = 'blue'; try { const response = await fetch('/api/source-configurations', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ source_type: currentSourceType, reporting_frequency: reportingFrequencySelect.value }) }); if (!response.ok) throw new Error('Falha ao salvar configuração.'); const existingConfig = allConfigs.find(c => c.source_type === currentSourceType); if (existingConfig) { existingConfig.reporting_frequency = reportingFrequencySelect.value; } else { allConfigs.push({ source_type: currentSourceType, reporting_frequency: reportingFrequencySelect.value }); } frequencyFeedback.textContent = 'Frequência salva com sucesso!'; frequencyFeedback.style.color = 'green'; } catch (error) { console.error('Erro ao salvar frequência:', error); frequencyFeedback.textContent = 'Erro ao salvar.'; frequencyFeedback.style.color = 'red'; } }
     async function handleCustomFieldSelection() { const fieldKey = customOptionFieldSelector.value; if (!fieldKey) { customOptionManager.style.display = 'none'; return; } await loadCustomOptions(fieldKey); customOptionManager.style.display = 'block'; }
     async function loadCustomOptions(fieldKey) { customOptionsListContainer.innerHTML = '<li>Carregando...</li>'; try { const response = await fetch(`/api/custom-options?field_key=${fieldKey}`); const options = await response.json(); customOptionsListContainer.innerHTML = ''; if (options.length === 0) { customOptionsListContainer.innerHTML = '<li>Nenhuma opção cadastrada.</li>'; } options.forEach(opt => { const li = document.createElement('li'); li.textContent = opt.value; const deleteBtn = document.createElement('button'); deleteBtn.textContent = 'X'; deleteBtn.dataset.id = opt.id; deleteBtn.onclick = () => handleDeleteCustomOption(opt.id); li.appendChild(deleteBtn); customOptionsListContainer.appendChild(li); }); } catch (error) { console.error('Erro ao carregar opções:', error); customOptionsListContainer.innerHTML = '<li>Erro ao carregar opções.</li>'; } }

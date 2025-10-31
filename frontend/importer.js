@@ -4,7 +4,7 @@ import { validationSchemas } from '../shared/validators.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     
-    // --- 1. REFERÊNCIAS ---
+    // --- 1. REFERÊNCIAS E CONSTANTES ---
     const tableSelector = document.getElementById('table-selector');
     const uploadSection = document.getElementById('upload-section');
     const uploadInstructions = document.getElementById('upload-instructions');
@@ -19,6 +19,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const downloadCsvBtn = document.getElementById('download-csv-btn');
     const downloadXlsxBtn = document.getElementById('download-xlsx-btn');
     const downloadIntelligentBtn = document.getElementById('download-intelligent-btn');
+
+    // --- ATENÇÃO: Lista de campos numéricos para formatação ---
+    const NUMERIC_FIELDS = [
+        'consumo', 'distancia_percorrida', 'quantidade_vendida', 
+        'quantidade_reposta', 'percentual_emissao', 'quantidade_kg', 
+        'percentual_nitrogenio', 'percentual_carbonato'
+    ];
 
     let currentSchema = null;
     let contactsList = [];
@@ -53,17 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const tbody = tableContainer.querySelector('tbody');
         const headers = Object.keys(currentSchema.headerDisplayNames);
         data.forEach(rowData => {
-            // Converte nomes de cabeçalho do Excel para chaves de schema
-            const mappedRowData = {};
-            for (const excelHeader in rowData) {
-                const schemaKey = Object.keys(currentSchema.headerDisplayNames).find(
-                    key => currentSchema.headerDisplayNames[key] === excelHeader
-                );
-                if (schemaKey) {
-                    mappedRowData[schemaKey] = rowData[excelHeader];
-                }
-            }
-            const row = buildTableRow(mappedRowData, headers);
+            const row = buildTableRow(rowData, headers);
             tbody.appendChild(row);
             updateRowAppearance(row, headers);
         });
@@ -136,7 +133,18 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else {
                     cell.setAttribute('contenteditable', 'true');
                 }
-                cell.textContent = currentValue;
+                
+                // --- ATENÇÃO: Formatação do número para exibição ---
+                let displayValue = currentValue;
+                if (NUMERIC_FIELDS.includes(header) && currentValue !== '' && !isNaN(parseFloat(currentValue))) {
+                    // Converte para número e depois para o formato pt-BR
+                    displayValue = parseFloat(currentValue).toLocaleString('pt-BR', {
+                        minimumFractionDigits: 2, // Garante pelo menos 2 casas decimais
+                        maximumFractionDigits: 20 // Permite mais casas decimais se necessário
+                    });
+                }
+                cell.textContent = displayValue;
+                // --- FIM DA MUDANÇA ---
             }
             row.appendChild(cell);
         });
@@ -154,13 +162,27 @@ document.addEventListener('DOMContentLoaded', () => {
         return row;
     }
     
-    function getCellValue(cell) { const input = cell.querySelector('select, input'); return input ? input.value : cell.textContent; }
+    // --- ATENÇÃO: Função de leitura atualizada ---
+    function getCellValue(cell, header) {
+        const input = cell.querySelector('select, input');
+        let value = input ? input.value : cell.textContent;
+
+        // Se for um campo numérico, converte a vírgula de volta para ponto
+        if (NUMERIC_FIELDS.includes(header) && typeof value === 'string') {
+            return value.replace(/\./g, '').replace(',', '.');
+        }
+        return value;
+    }
+    // --- FIM DA MUDANÇA ---
     
     function updateRowAppearance(rowElement, headers) {
         if (!currentSchema) return;
         const cells = Array.from(rowElement.querySelectorAll('td')).slice(0, headers.length);
         const rowData = {};
-        headers.forEach((header, index) => { rowData[header] = getCellValue(cells[index]); });
+        headers.forEach((header, index) => { 
+            // Passa o header para a função getCellValue
+            rowData[header] = getCellValue(cells[index], header); 
+        });
         
         const validation = currentSchema.validateRow(rowData);
 
@@ -211,7 +233,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const editedRow = cell.parentElement;
             if (currentSchema.autoFillMap && currentSchema.autoFillMap[headerOfEditedCell]) {
                 const rule = currentSchema.autoFillMap[headerOfEditedCell];
-                const triggerValue = getCellValue(cell);
+                const triggerValue = getCellValue(cell, headerOfEditedCell);
                 const targetValue = rule.map[triggerValue];
                 if (targetValue !== undefined) {
                     const targetHeader = rule.targetColumn;
@@ -232,7 +254,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function handleResponsibleChange(responsibleCell, headers) {
         const editedRow = responsibleCell.parentElement;
-        const selectedName = getCellValue(responsibleCell);
+        const selectedName = getCellValue(responsibleCell, 'responsavel');
         const contact = contactsList.find(c => c.name === selectedName);
 
         const emailIndex = headers.indexOf('email_do_responsavel');
@@ -280,6 +302,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!file) { feedbackDiv.textContent = 'Por favor, selecione um arquivo.'; return; }
         const formData = new FormData();
         formData.append('file', file);
+        formData.append('source_type', tableSelector.value); 
         try {
             const response = await fetch('/api/upload', { method: 'POST', body: formData });
             if (!response.ok) throw new Error(`Erro: ${response.statusText}`);
@@ -340,7 +363,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-
     addRowBtn.addEventListener('click', () => {
         if (!currentSchema) return;
         let tbody = tableContainer.querySelector('tbody');
@@ -365,7 +387,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const rowData = {};
             const cells = row.querySelectorAll('td');
             headers.forEach((headerKey, index) => {
-                rowData[headerKey] = getCellValue(cells[index]);
+                rowData[headerKey] = getCellValue(cells[index], headerKey);
             });
             dataToSave.push(rowData);
         });
@@ -393,14 +415,18 @@ document.addEventListener('DOMContentLoaded', () => {
         const tableRows = document.querySelectorAll('#table-container tbody tr');
         const headersText = Array.from(document.querySelectorAll('#table-container thead th')).map(th => th.textContent).filter(text => text !== 'Ações');
         const dataToExport = [];
+        
         tableRows.forEach(row => {
             const rowData = {};
             headersText.forEach((headerText, index) => {
                 const cell = row.querySelectorAll('td')[index];
-                rowData[headerText] = getCellValue(cell);
+                const schemaKey = Object.keys(currentSchema.headerDisplayNames).find(key => currentSchema.headerDisplayNames[key] === headerText);
+                // No export, mandamos o valor bruto (com ponto), pois a API espera assim
+                rowData[headerText] = getCellValue(cell, schemaKey);
             });
             dataToExport.push(rowData);
         });
+
         if (dataToExport.length === 0) {
             alert("Não há dados para exportar.");
             return;

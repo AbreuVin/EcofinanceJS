@@ -1,4 +1,4 @@
-// arquivo: frontend/importer.js
+// arquivo: frontend/import.js
 
 import { validationSchemas } from './validators.js';
 

@@ -20,29 +20,30 @@ document.addEventListener('DOMContentLoaded', () => {
         try {
             const response = await fetch(API_URL);
             if (!response.ok) {
-                // Se a resposta não for OK, lança um erro para ser pego pelo catch
                 throw new Error(`Erro do servidor: ${response.status}`);
             }
             const units = await response.json();
             
             unitsTbody.innerHTML = '';
             
-            // Verifica se a resposta é de fato um array antes de iterar
             if (Array.isArray(units)) {
                 units.forEach(unit => {
                     const tr = document.createElement('tr');
-                    // Usando '??' (nullish coalescing operator) para garantir que strings vazias sejam exibidas
+                    
+                    // --- ATENÇÃO: MUDANÇA AQUI ---
                     tr.innerHTML = `
                         <td>${unit.name ?? ''}</td>
                         <td>${unit.cidade ?? ''}</td>
                         <td>${unit.estado ?? ''}</td>
                         <td>${unit.pais ?? ''}</td>
-                        <td>${unit.cep ?? ''}</td>
+                        <td>${unit.numero_colaboradores ?? ''}</td>
                         <td>
-                            <button class="action-btn edit-btn" onclick="editUnit(${unit.id}, '${unit.name ?? ''}', '${unit.cidade ?? ''}', '${unit.estado ?? ''}', '${unit.pais ?? ''}', '${unit.cep ?? ''}')">Editar</button>
+                            <button class="action-btn edit-btn" onclick="editUnit(${unit.id}, '${unit.name ?? ''}', '${unit.cidade ?? ''}', '${unit.estado ?? ''}', '${unit.pais ?? ''}', '${unit.numero_colaboradores ?? ''}')">Editar</button>
                             <button class="action-btn delete-btn" onclick="deleteUnit(${unit.id})">Deletar</button>
                         </td>
                     `;
+                    // --- FIM DA MUDANÇA ---
+
                     unitsTbody.appendChild(tr);
                 });
             } else {
@@ -56,13 +57,16 @@ document.addEventListener('DOMContentLoaded', () => {
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
         const id = unitIdInput.value;
+        
+        // --- ATENÇÃO: MUDANÇA AQUI ---
         const unitData = {
             name: document.getElementById('name').value,
             cidade: document.getElementById('cidade').value,
             estado: document.getElementById('estado').value,
             pais: document.getElementById('pais').value,
-            cep: document.getElementById('cep').value,
+            numero_colaboradores: document.getElementById('numero-colaboradores').value,
         };
+        // --- FIM DA MUDANÇA ---
 
         const method = id ? 'PUT' : 'POST';
         const url = id ? `${API_URL}/${id}` : API_URL;
@@ -78,16 +82,18 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     
     cancelBtn.addEventListener('click', () => resetForm());
-
-    window.editUnit = (id, name, cidade, estado, pais, cep) => {
+    
+    // --- ATENÇÃO: MUDANÇA AQUI ---
+    window.editUnit = (id, name, cidade, estado, pais, numero_colaboradores) => {
         unitIdInput.value = id;
         document.getElementById('name').value = name;
         document.getElementById('cidade').value = cidade;
         document.getElementById('estado').value = estado;
         document.getElementById('pais').value = pais;
-        document.getElementById('cep').value = cep;
+        document.getElementById('numero-colaboradores').value = numero_colaboradores;
         cancelBtn.style.display = 'inline-block';
     };
+    // --- FIM DA MUDANÇA ---
 
     window.deleteUnit = async (id) => {
         if (confirm('Tem certeza que deseja deletar esta unidade?')) {

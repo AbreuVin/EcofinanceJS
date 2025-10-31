@@ -38,7 +38,7 @@ const db = new sqlite3.Database(dbPath, (err) => {
             cidade TEXT,
             estado TEXT,
             pais TEXT,
-            cep TEXT
+            numero_colaboradores INTEGER
         )`, (err) => {
             if (err) console.error('Erro tabela units:', err);
             else console.log('Tabela "units" pronta.');
@@ -66,13 +66,14 @@ const db = new sqlite3.Database(dbPath, (err) => {
             else console.log('Tabela "mobile_combustion_data" pronta.');
         });
 
+        // --- ATENÇÃO: MUDANÇA AQUI ---
         db.run(`CREATE TABLE IF NOT EXISTS stationary_combustion_data (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             ano INTEGER,
             periodo TEXT,
             unidade_empresarial TEXT,
             descricao_da_fonte TEXT,
-            tipo_da_fonte TEXT,
+            -- tipo_da_fonte TEXT, <-- COLUNA REMOVIDA
             combustivel TEXT,
             consumo REAL,
             unidade TEXT,
@@ -83,6 +84,7 @@ const db = new sqlite3.Database(dbPath, (err) => {
             if (err) console.error('Erro tabela stationary_combustion_data:', err);
             else console.log('Tabela "stationary_combustion_data" pronta.');
         });
+        // --- FIM DA MUDANÇA ---
 
         db.run(`CREATE TABLE IF NOT EXISTS production_sales_data (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -166,15 +168,13 @@ const db = new sqlite3.Database(dbPath, (err) => {
             if (err) console.error('Erro tabela fertilizers_data:', err);
             else console.log('Tabela "fertilizers_data" pronta.');
         });
-
-        // --- TABELA DE TIPOLOGIAS ATUALIZADA (SPRINT 15.5) ---
+        
         db.run(`DROP TABLE IF EXISTS asset_typologies`); // Força a recriação
         db.run(`CREATE TABLE IF NOT EXISTS asset_typologies (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_id INTEGER,
             unit_id INTEGER NOT NULL,
             source_type TEXT NOT NULL,
-            -- quantity foi REMOVIDA
             description TEXT NOT NULL,
             asset_fields TEXT,
             is_active BOOLEAN DEFAULT TRUE

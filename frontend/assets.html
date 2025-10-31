@@ -3,7 +3,8 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Cadastrar Fontes - Ecofinance</title> <!-- Título Atualizado -->
+    <!-- Título da Página Atualizado -->
+    <title>Cadastro de Fontes - Ecofinance</title> 
     <link rel="stylesheet" href="main.css">
     <link rel="stylesheet" href="dashboard.css">
     <style>
@@ -16,6 +17,7 @@
     <div id="nav-placeholder"></div>
 
     <div class="container">
+        <!-- Título Principal Atualizado -->
         <h1>Cadastro de Fontes de Emissão</h1> 
 
         <div class="form-group">
@@ -45,13 +47,15 @@
             </div>
 
             <div class="form-container">
-                <h2 id="form-title">Adicionar Nova Fonte</h2> <!-- Título Atualizado -->
+                <!-- Título do Formulário Atualizado -->
+                <h2 id="form-title">Adicionar Nova Fonte</h2> 
                 <form id="asset-form">
                     <input type="hidden" id="asset-id">
                     
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="asset-description">Descrição da Fonte</label> <!-- Label Atualizada -->
+                            <!-- Label Atualizada -->
+                            <label for="asset-description">Descrição da Fonte</label> 
                             <input type="text" id="asset-description" placeholder="Ex: Geradores a Diesel, Frota de Caminhões Leves" required>
                         </div>
                          <div class="form-group">
@@ -60,19 +64,19 @@
                         </div>
                     </div>
                     
-                    <!-- O campo de Quantidade foi removido daqui -->
-                    
                     <div id="specific-fields-container"></div>
 
                     <div class="form-actions">
-                        <button type="submit">Salvar Fonte</button> <!-- Texto do Botão Atualizado -->
+                        <!-- Texto do Botão Atualizado -->
+                        <button type="submit">Salvar Fonte</button> 
                         <button type="button" id="cancel-btn" class="cancel-btn" style="display: none;">Cancelar Edição</button>
                     </div>
                 </form>
             </div>
 
             <div class="table-container">
-                <h2 id="table-title">Fontes Cadastradas</h2> <!-- Título Atualizado -->
+                <!-- Título da Tabela Atualizado -->
+                <h2 id="table-title">Fontes Cadastradas</h2> 
                 <table>
                     <thead id="assets-thead"></thead>
                     <tbody id="assets-tbody"></tbody>
