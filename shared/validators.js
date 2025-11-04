@@ -2,14 +2,14 @@
 
 export const validationSchemas = {
     combustao_movel: {
-        displayName: "Combustão Móvel (E1)",
+        displayName: "Combustão Móvel", // Escopo removido
         hasUnits: true,
         headerDisplayNames: {
             ano: "Ano",
             periodo: "Período",
             unidade_empresarial: "Unidade Empresarial",
             descricao_fonte: "Descrição da Fonte",
-            controlado_empresa: "Controlado pela Empresa?",
+            controlado_empresa: "Controlado pela Empresa?", // Campo adicionado
             tipo_entrada: "Tipo de Entrada",
             combustivel: "Combustível",
             consumo: "Consumo",
@@ -20,7 +20,7 @@ export const validationSchemas = {
         },
         validOptions: {
             periodo: ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro", "Anual"],
-            controlado_empresa: ["Sim", "Não"],
+            controlado_empresa: ["Sim", "Não"], // Opção adicionada
             tipo_entrada: ["consumo", "distancia"],
             combustivel: ["Óleo Diesel", "Gasolina", "Gás Natural Veicular", "Gás Liquefeito de Petróleo", "Querosene de Aviação", "Gasolina de Aviação", "Lubrificantes", "Óleo combustível residual", "Etanol", "Biodiesel"],
             unidade_consumo: ["Litros", "m³", "kg"],
@@ -38,14 +38,14 @@ export const validationSchemas = {
             if (!rowData.ano || isNaN(parseInt(rowData.ano)) || String(rowData.ano).length !== 4) errors.ano = "Deve ser um ano com 4 dígitos.";
             if (!this.validOptions.periodo.includes(rowData.periodo)) errors.periodo = `Período inválido.`;
             if (!rowData.descricao_fonte) errors.descricao_fonte = "Obrigatório.";
-            if (!this.validOptions.controlado_empresa.includes(rowData.controlado_empresa)) errors.controlado_empresa = "Deve ser 'Sim' ou 'Não'.";
+            if (!this.validOptions.controlado_empresa.includes(rowData.controlado_empresa)) errors.controlado_empresa = "Deve ser 'Sim' ou 'Não'."; // Validação adicionada
             if (!this.validOptions.tipo_entrada.includes(rowData.tipo_entrada)) errors.tipo_entrada = "Deve ser 'consumo' ou 'distancia'.";
             if (rowData.tipo_entrada === 'consumo') {
                 if (!this.validOptions.combustivel.includes(rowData.combustivel)) errors.combustivel = "Combustível inválido.";
-                if (rowData.consumo === '' || isNaN(parseFloat(String(rowData.consumo)))) errors.consumo = "Deve ser um número.";
+                if (rowData.consumo === '' || isNaN(parseFloat(rowData.consumo))) errors.consumo = "Deve ser um número."; // Validação mantida simples
                 if (this.autoFillMap.combustivel.map[rowData.combustivel] !== rowData.unidade_consumo) errors.unidade_consumo = `Unidade incorreta para o combustível.`;
             } else if (rowData.tipo_entrada === 'distancia') {
-                if (rowData.distancia_percorrida === '' || isNaN(parseFloat(String(rowData.distancia_percorrida)))) errors.distancia_percorrida = "Deve ser um número.";
+                if (rowData.distancia_percorrida === '' || isNaN(parseFloat(rowData.distancia_percorrida))) errors.distancia_percorrida = "Deve ser um número."; // Validação mantida simples
                 if (!this.validOptions.unidade_distancia.includes(rowData.unidade_distancia)) errors.unidade_distancia = "Deve ser 'Km' ou 'Milhas'.";
                 if (!this.validOptions.tipo_veiculo.includes(rowData.tipo_veiculo)) errors.tipo_veiculo = "Tipo de veículo inválido.";
             }
@@ -53,7 +53,7 @@ export const validationSchemas = {
         }
     },
     combustao_estacionaria: {
-        displayName: "Combustão Estacionária (E1)",
+        displayName: "Combustão Estacionária", // Escopo removido
         hasUnits: true,
         headerDisplayNames: {
             ano: "Ano",
@@ -63,11 +63,13 @@ export const validationSchemas = {
             combustivel: "Combustível",
             consumo: "Consumo",
             unidade: "Unidade",
+            controlado_empresa: "Controlado pela Empresa?", // Campo adicionado
         },
         validOptions: {
             periodo: ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro", "Anual"],
             combustivel: ["Gás Natural", "Óleo Diesel", "Gás Liquefeito de Petróleo", "Carvão Mineral", "Lenha", "Biogás"],
-            unidade: ["m³", "Litros", "kg", "toneladas"]
+            unidade: ["m³", "Litros", "kg", "toneladas"],
+            controlado_empresa: ["Sim", "Não"], // Opção adicionada
         },
         autoFillMap: {
             combustivel: {
@@ -81,13 +83,14 @@ export const validationSchemas = {
             if (!this.validOptions.periodo.includes(rowData.periodo)) errors.periodo = "Período inválido.";
             if (!rowData.descricao_da_fonte) errors.descricao_da_fonte = "Obrigatório.";
             if (!this.validOptions.combustivel.includes(rowData.combustivel)) errors.combustivel = "Combustível inválido.";
-            if (rowData.consumo === '' || isNaN(parseFloat(String(rowData.consumo)))) errors.consumo = "Deve ser um número.";
+            if (rowData.consumo === '' || isNaN(parseFloat(rowData.consumo))) errors.consumo = "Deve ser um número."; // Validação mantida simples
             if (this.autoFillMap.combustivel.map[rowData.combustivel] !== rowData.unidade) errors.unidade = `Unidade incorreta para o combustível.`;
+            if (!this.validOptions.controlado_empresa.includes(rowData.controlado_empresa)) errors.controlado_empresa = "Deve ser 'Sim' ou 'Não'."; // Validação adicionada
             return { isValid: Object.keys(errors).length === 0, errors: errors };
         }
     },
     dados_producao_venda: {
-        displayName: "Produção e Venda (E3)",
+        displayName: "Dados de Produção e Venda", // Escopo removido
         hasUnits: true,
         headerDisplayNames: {
             ano: "Ano",
@@ -106,15 +109,14 @@ export const validationSchemas = {
         autoFillMap: {},
         validateRow: function(rowData) {
             const errors = {};
-            const ano = parseInt(rowData.ano, 10);
-            if (!ano || !Number.isInteger(ano) || String(rowData.ano).length !== 4) errors.ano = "Deve ser um ano com 4 dígitos.";
+            if (!rowData.ano || isNaN(parseInt(rowData.ano)) || String(rowData.ano).length !== 4) errors.ano = "Deve ser um ano com 4 dígitos.";
             if (!this.validOptions.periodo.includes(rowData.periodo)) errors.periodo = "Período inválido.";
             if (!rowData.unidade_empresarial) errors.unidade_empresarial = "Obrigatório.";
             if (!rowData.produto) errors.produto = "Obrigatório.";
             if (!rowData.unidade_medida) errors.unidade_medida = "Obrigatório.";
             if (!rowData.uso_final_produtos) errors.uso_final_produtos = "Obrigatório.";
             if (!rowData.rastreabilidade) errors.rastreabilidade = "Obrigatório.";
-            const quantidade = parseInt(String(rowData.quantidade_vendida), 10);
+            const quantidade = parseInt(rowData.quantidade_vendida, 10);
             if (isNaN(quantidade) || quantidade <= 0 || String(rowData.quantidade_vendida).includes('.') || String(rowData.quantidade_vendida).includes(',')) {
                 errors.quantidade_vendida = "Deve ser um número inteiro e positivo.";
             }
@@ -122,7 +124,7 @@ export const validationSchemas = {
         }
     },
     ippu_lubrificantes: {
-        displayName: "IPPU - Lubrificantes (E3)",
+        displayName: "IPPU - Lubrificantes", // Escopo removido
         hasUnits: true,
         headerDisplayNames: {
             ano: "Ano",
@@ -148,7 +150,7 @@ export const validationSchemas = {
             if (!this.validOptions.periodo.includes(rowData.periodo)) errors.periodo = "Período inválido.";
             if (!rowData.fonte_emissao) errors.fonte_emissao = "Obrigatório.";
             if (!this.validOptions.tipo_lubrificante.includes(rowData.tipo_lubrificante)) errors.tipo_lubrificante = "Tipo inválido.";
-            if (rowData.consumo === '' || isNaN(parseFloat(String(rowData.consumo))) || parseFloat(String(rowData.consumo)) <= 0) errors.consumo = "Deve ser um número positivo.";
+            if (rowData.consumo === '' || isNaN(parseFloat(rowData.consumo)) || parseFloat(rowData.consumo) <= 0) errors.consumo = "Deve ser um número positivo.";
             if (!this.validOptions.unidade.includes(rowData.unidade)) errors.unidade = "Unidade inválida.";
             if (!rowData.utilizacao) errors.utilizacao = "Obrigatório.";
             if (!this.validOptions.controlado_empresa.includes(rowData.controlado_empresa)) errors.controlado_empresa = "Deve ser 'Sim' ou 'Não'.";
@@ -156,7 +158,7 @@ export const validationSchemas = {
         }
     },
     emissoes_fugitivas: {
-        displayName: "Emissões Fugitivas (E1)",
+        displayName: "Emissões Fugitivas", // Escopo removido
         hasUnits: true,
         headerDisplayNames: {
             ano: "Ano",
@@ -166,6 +168,7 @@ export const validationSchemas = {
             tipo_gas: "Tipo de Gás",
             quantidade_reposta: "Quantidade Reposta",
             unidade: "Unidade",
+            controlado_empresa: "Controlado pela Empresa?", // Campo adicionado
             nome_comercial_gas: "Nome Comercial (Gás Composto)",
             gas_emissor_composicao: "Gás Emissor (na Composição)",
             percentual_emissao: "Percentual (%) na Composição",
@@ -177,7 +180,8 @@ export const validationSchemas = {
             return {
                 periodo: ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro", "Anual"],
                 tipo_gas: this.gasList,
-                gas_emissor_composicao: this.gasList
+                gas_emissor_composicao: this.gasList,
+                controlado_empresa: ["Sim", "Não"], // Opção adicionada
             };
         },
         autoFillMap: {},
@@ -188,8 +192,9 @@ export const validationSchemas = {
             if (!rowData.unidade_empresarial) errors.unidade_empresarial = "Obrigatório.";
             if (!rowData.fonte_emissao) errors.fonte_emissao = "Obrigatório.";
             if (!this.validOptions.tipo_gas.includes(rowData.tipo_gas)) errors.tipo_gas = "Obrigatório.";
+            if (!this.validOptions.controlado_empresa.includes(rowData.controlado_empresa)) errors.controlado_empresa = "Deve ser 'Sim' ou 'Não'."; // Validação adicionada
             
-            const quantidade = parseFloat(String(rowData.quantidade_reposta));
+            const quantidade = parseFloat(rowData.quantidade_reposta);
             if (isNaN(quantidade) || quantidade <= 0) errors.quantidade_reposta = "Deve ser um número positivo.";
             
             if (rowData.unidade !== 'kg') errors.unidade = "Unidade deve ser 'kg'.";
@@ -199,7 +204,7 @@ export const validationSchemas = {
                 if (!rowData.nome_comercial_gas) errors.nome_comercial_gas = "Obrigatório se preencher composição.";
                 if (!this.validOptions.gas_emissor_composicao.includes(rowData.gas_emissor_composicao)) errors.gas_emissor_composicao = "Obrigatório selecionar um gás da lista.";
                 
-                const percentual = parseFloat(String(rowData.percentual_emissao));
+                const percentual = parseFloat(rowData.percentual_emissao);
                 if (isNaN(percentual) || percentual <= 0 || percentual > 100) {
                     errors.percentual_emissao = "Deve ser um número entre 0 e 100.";
                 }
@@ -209,7 +214,7 @@ export const validationSchemas = {
         }
     },
     fertilizantes: {
-        displayName: "Fertilizantes (E3)",
+        displayName: "Fertilizantes", // Escopo removido
         hasUnits: true,
         headerDisplayNames: {
             ano: "Ano",
@@ -238,15 +243,15 @@ export const validationSchemas = {
             if (!rowData.especificacoes_insumo) errors.especificacoes_insumo = "Obrigatório.";
             if (!rowData.tipo_fertilizante) errors.tipo_fertilizante = "Obrigatório.";
             
-            const quantidade = parseFloat(String(rowData.quantidade_kg));
+            const quantidade = parseFloat(rowData.quantidade_kg);
             if (isNaN(quantidade) || quantidade <= 0) errors.quantidade_kg = "Deve ser um número positivo.";
 
             if (rowData.unidade !== 'kg') errors.unidade = "Unidade deve ser 'kg'.";
 
-            const percN = parseFloat(String(rowData.percentual_nitrogenio));
+            const percN = parseFloat(rowData.percentual_nitrogenio);
             if (isNaN(percN) || percN < 0 || percN > 100) errors.percentual_nitrogenio = "Deve ser um número obrigatório entre 0 e 100.";
             
-            const percC = parseFloat(String(rowData.percentual_carbonato));
+            const percC = parseFloat(rowData.percentual_carbonato);
             if (isNaN(percC) || percC < 0 || percC > 100) errors.percentual_carbonato = "Deve ser um número obrigatório entre 0 e 100.";
 
             if (!this.validOptions.controlado_empresa.includes(rowData.controlado_empresa)) errors.controlado_empresa = "Deve ser 'Sim' ou 'Não'.";

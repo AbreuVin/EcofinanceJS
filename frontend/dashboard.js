@@ -10,25 +10,31 @@ document.addEventListener('DOMContentLoaded', () => {
     const contactIdInput = document.getElementById('contact-id');
     const contactsTbody = document.getElementById('contacts-tbody');
     const cancelBtn = document.getElementById('cancel-btn');
-    const sourcesCheckboxContainer = document.getElementById('sources-checkbox-container'); // Nova referência
+    const sourcesCheckboxContainer = document.getElementById('sources-checkbox-container');
+    const phoneInput = document.getElementById('phone');
+    
+    const phoneMask = IMask(phoneInput, {
+        mask: [
+            { mask: '(00) 0000-0000' },
+            { mask: '(00) 00000-0000' }
+        ]
+    });
     
     const API_URL = '/api/contacts';
 
     // --- 2. FUNÇÕES PRINCIPAIS ---
 
-    // Função que roda na inicialização
     const initializePage = () => {
-        // Carrega a navbar
         if (navPlaceholder) {
             fetch('nav.html').then(response => response.text()).then(data => {
                 navPlaceholder.innerHTML = data;
             }).catch(error => console.error('Erro ao carregar navbar:', error));
         }
 
-        // Gera os checkboxes das fontes de emissão
-        sourcesCheckboxContainer.innerHTML = ''; // Limpa o container
+        sourcesCheckboxContainer.innerHTML = '';
         for (const key in validationSchemas) {
             const schema = validationSchemas[key];
+            
             const itemDiv = document.createElement('div');
             itemDiv.className = 'checkbox-item';
 
@@ -36,8 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
             checkbox.type = 'checkbox';
             checkbox.id = `source-${key}`;
             checkbox.value = key;
-            checkbox.dataset.sourceName = schema.displayName;
-
+            
             const label = document.createElement('label');
             label.htmlFor = `source-${key}`;
             label.textContent = schema.displayName;
@@ -47,11 +52,9 @@ document.addEventListener('DOMContentLoaded', () => {
             sourcesCheckboxContainer.appendChild(itemDiv);
         }
         
-        // Carrega os contatos existentes
         fetchContacts();
     };
 
-    // READ: Carrega e exibe todos os contatos
     const fetchContacts = async () => {
         try {
             const response = await fetch(API_URL);
@@ -60,16 +63,20 @@ document.addEventListener('DOMContentLoaded', () => {
             contacts.forEach(contact => {
                 const tr = document.createElement('tr');
                 
-                // Mapeia os source_types para seus displayNames
                 const sourceNames = (contact.sources || [])
                     .map(key => validationSchemas[key]?.displayName || key)
                     .join(', ');
+
+                // --- ATENÇÃO: CORREÇÃO AQUI ---
+                // Usamos phoneMask diretamente, que contém as opções corretas.
+                const formattedPhone = contact.phone ? IMask.pipe(contact.phone, phoneMask) : '';
+                // --- FIM DA CORREÇÃO ---
 
                 tr.innerHTML = `
                     <td>${contact.name || ''}</td>
                     <td>${contact.area || ''}</td>
                     <td>${contact.email || ''}</td>
-                    <td>${contact.phone || ''}</td>
+                    <td>${formattedPhone}</td>
                     <td>${sourceNames}</td>
                     <td>
                         <button class="action-btn edit-btn">Editar</button>
@@ -77,7 +84,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     </td>
                 `;
 
-                // Adiciona os event listeners diretamente aos botões
                 tr.querySelector('.edit-btn').addEventListener('click', () => editContact(contact));
                 tr.querySelector('.delete-btn').addEventListener('click', () => deleteContact(contact.id));
                 
@@ -88,12 +94,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // CREATE / UPDATE: Salva um contato (novo ou existente)
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
         const id = contactIdInput.value;
         
-        // Coleta os checkboxes marcados
         const selectedSources = [];
         sourcesCheckboxContainer.querySelectorAll('input[type="checkbox"]:checked').forEach(checkbox => {
             selectedSources.push(checkbox.value);
@@ -103,8 +107,8 @@ document.addEventListener('DOMContentLoaded', () => {
             name: document.getElementById('name').value,
             area: document.getElementById('area').value,
             email: document.getElementById('email').value,
-            phone: document.getElementById('phone').value,
-            sources: selectedSources // Envia o array de fontes
+            phone: phoneMask.unmaskedValue,
+            sources: selectedSources
         };
 
         const method = id ? 'PUT' : 'POST';
@@ -120,7 +124,6 @@ document.addEventListener('DOMContentLoaded', () => {
         fetchContacts();
     });
     
-    // Botão de cancelar edição
     cancelBtn.addEventListener('click', () => resetForm());
 
     // --- 3. FUNÇÕES GLOBAIS E AUXILIARES ---
@@ -130,14 +133,12 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('name').value = contact.name;
         document.getElementById('area').value = contact.area;
         document.getElementById('email').value = contact.email;
-        document.getElementById('phone').value = contact.phone;
+        phoneMask.value = contact.phone || '';
         
-        // Desmarca todos os checkboxes primeiro
         sourcesCheckboxContainer.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
             checkbox.checked = false;
         });
 
-        // Marca os checkboxes correspondentes às fontes do contato
         if (contact.sources && contact.sources.length > 0) {
             contact.sources.forEach(sourceKey => {
                 const checkbox = document.getElementById(`source-${sourceKey}`);
@@ -148,7 +149,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         cancelBtn.style.display = 'inline-block';
-        window.scrollTo(0, 0); // Rola a página para o topo para ver o formulário
+        window.scrollTo(0, 0);
     };
 
     window.deleteContact = async (id) => {
@@ -160,11 +161,10 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // Limpa o formulário e o ID oculto
     window.resetForm = () => {
         form.reset();
         contactIdInput.value = '';
-        // Garante que todos os checkboxes sejam desmarcados ao resetar
+        phoneMask.value = '';
         sourcesCheckboxContainer.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
             checkbox.checked = false;
         });
