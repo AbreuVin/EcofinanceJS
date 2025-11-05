@@ -375,16 +375,20 @@ app.get('/api/asset-typologies', (req, res) => {
         params.push(source_type);
     }
     sql += " ORDER BY U.name, T.description";
+    
     db.all(sql, params, (err, rows) => {
-        if (err) { res.status(500).json({ "error": err.message }); return; }
+        if (err) {
+            res.status(500).json({ "error": err.message });
+            return;
+        }
+        
         const results = rows.map(row => {
-            try {
-                return { ...row, asset_fields: JSON.parse(row.asset_fields) };
-            } catch (e) {
-                console.error(`Invalid JSON in asset_fields for typology id ${row.id}:`, row.asset_fields);
-                return row;
-            }
+            // Lógica de parse robusta: Garante que asset_fields seja sempre um objeto.
+            // Se row.asset_fields for null, undefined, ou uma string vazia, ele usa '{}' como padrão.
+            const fields = JSON.parse(row.asset_fields || '{}');
+            return { ...row, asset_fields: fields };
         });
+        
         res.json(results);
     });
 });
@@ -499,7 +503,7 @@ app.post('/api/source-configurations', (req, res) => {
     });
 });
 
-// Rota de Template Inteligente - Sem alterações
+// Rota de Template Inteligente
 app.get('/api/intelligent-template/:sourceType', (req, res) => {
     const { sourceType } = req.params;
     const { unitId, year } = req.query;
@@ -510,6 +514,7 @@ app.get('/api/intelligent-template/:sourceType', (req, res) => {
     
     const getFrequency = new Promise((resolve, reject) => { db.get("SELECT reporting_frequency FROM source_configurations WHERE source_type = ?", [sourceType], (err, row) => { if (err) return reject(err); resolve(row ? row.reporting_frequency : 'anual'); }); });
     
+    // A função getTypologies não precisa mudar, ela entrega os dados "crus"
     const getTypologies = new Promise((resolve, reject) => {
         let sql = "SELECT T.*, U.name as unit_name FROM asset_typologies T JOIN units U ON T.unit_id = U.id WHERE T.source_type = ?";
         const params = [sourceType];
@@ -526,17 +531,45 @@ app.get('/api/intelligent-template/:sourceType', (req, res) => {
         const periods = frequency === 'mensal' ? ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"] : ["Anual"];
 
         typologies.forEach(typo => {
+            
+            // --- ATENÇÃO: CORREÇÃO DEFINITIVA APLICADA AQUI ---
+            // Fazemos o parse robusto da string JSON que vem do banco
             const assetFields = JSON.parse(typo.asset_fields || '{}');
+            
             periods.forEach(period => {
                 const row = {};
                 headerKeys.forEach(key => { row[headers[key]] = ''; });
+
                 row[headers['ano']] = reportYear;
                 row[headers['periodo']] = period;
                 row[headers['unidade_empresarial']] = typo.unit_name;
                 if (mainDescriptionKey && headers[mainDescriptionKey]) { row[headers[mainDescriptionKey]] = typo.description; }
-                for (const assetKey in assetFields) { if (headers.hasOwnProperty(assetKey)) { row[headers[assetKey]] = assetFields[assetKey]; } }
                 
-                if (schema.autoFillMap) {
+                for (const assetKey in assetFields) { 
+                    if (headers.hasOwnProperty(assetKey)) { 
+                        row[headers[assetKey]] = assetFields[assetKey]; 
+                    } 
+                }
+                
+                if (sourceType === 'combustao_movel') {
+                    const tipoEntrada = assetFields.tipo_entrada;
+                    if (tipoEntrada === 'Por Consumo') {
+                        row[headers['tipo_entrada']] = 'consumo';
+                        if (schema.autoFillMap && schema.autoFillMap.combustivel) {
+                            const rule = schema.autoFillMap.combustivel;
+                            const triggerValue = assetFields.combustivel;
+                            if (triggerValue) {
+                                const targetValue = rule.map[triggerValue];
+                                if (targetValue !== undefined) {
+                                    row[headers[rule.targetColumn]] = targetValue;
+                                }
+                            }
+                        }
+                    } else if (tipoEntrada === 'Por Distância') {
+                        row[headers['tipo_entrada']] = 'distancia';
+                    }
+                }
+                else if (schema.autoFillMap) {
                     for (const triggerKey in schema.autoFillMap) {
                         const rule = schema.autoFillMap[triggerKey];
                         const triggerValue = row[headers[triggerKey]];
@@ -573,6 +606,7 @@ app.get('/api/intelligent-template/:sourceType', (req, res) => {
         res.status(500).json({ message: "Erro interno ao processar a geração do template." });
     });
 });
+
 
 // --- 6. INICIALIZAÇÃO ---
 
