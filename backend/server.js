@@ -9,7 +9,7 @@ const csv = require('csv-parser');
 const xlsx = require('xlsx');
 const fs = require('fs');
 const bcrypt = require('bcrypt');
-const db = require('./database.js');
+const db = require('./database.js'); 
 const { validationSchemas } = require('../shared/validators.js');
 
 // --- 2. CONFIGURAÇÕES ---
@@ -38,7 +38,7 @@ app.get('/', (req, res) => {
 
 // --- 5. ROTAS DA API ---
 
-// Rota de Registro
+// Rota de Registro - Sem alterações
 app.post('/api/register', async (req, res) => {
     try {
         const { email, password } = req.body;
@@ -53,7 +53,7 @@ app.post('/api/register', async (req, res) => {
     }
 });
 
-// Rota de Login
+// Rota de Login - Sem alterações
 app.post('/api/login', (req, res) => {
     const { email, password } = req.body;
     if (!email || !password) return res.status(400).json({ message: 'E-mail e senha são obrigatórios.' });
@@ -69,9 +69,18 @@ app.post('/api/login', (req, res) => {
     });
 });
 
-// Rotas de Responsáveis (Contacts)
+// --- ATENÇÃO: ROTAS DE RESPONSÁVEIS (CONTACTS) MODIFICADAS ---
+
 app.get('/api/contacts', (req, res) => {
-    const sqlContacts = "SELECT * FROM contacts ORDER BY name";
+    // A consulta agora usa LEFT JOIN para buscar o nome da unidade.
+    const sqlContacts = `
+        SELECT 
+            c.id, c.name, c.unit_id, c.area, c.email, c.phone,
+            u.name as unit_name 
+        FROM contacts c
+        LEFT JOIN units u ON c.unit_id = u.id
+        ORDER BY c.name
+    `;
     db.all(sqlContacts, [], (err, contacts) => {
         if (err) return res.status(500).json({ "error": err.message });
 
@@ -92,10 +101,12 @@ app.get('/api/contacts', (req, res) => {
 });
 
 app.post('/api/contacts', (req, res) => {
-    const { name, area, email, phone, sources = [] } = req.body;
+    // A rota agora espera 'unit_id' no corpo da requisição
+    const { name, unit_id, area, email, phone, sources = [] } = req.body;
     if (!name) return res.status(400).json({ "error": "O nome é obrigatório." });
 
-    db.run("INSERT INTO contacts (name, area, email, phone) VALUES (?, ?, ?, ?)", [name, area, email, phone], function(err) {
+    // O SQL agora inclui a coluna 'unit_id'
+    db.run("INSERT INTO contacts (name, unit_id, area, email, phone) VALUES (?, ?, ?, ?, ?)", [name, unit_id, area, email, phone], function(err) {
         if (err) return res.status(500).json({ "error": err.message });
         
         const contactId = this.lastID;
@@ -120,11 +131,13 @@ app.post('/api/contacts', (req, res) => {
 
 app.put('/api/contacts/:id', (req, res) => {
     const contactId = req.params.id;
-    const { name, area, email, phone, sources = [] } = req.body;
+    // A rota agora espera 'unit_id' no corpo da requisição
+    const { name, unit_id, area, email, phone, sources = [] } = req.body;
 
     db.serialize(() => {
         db.run("BEGIN TRANSACTION");
-        db.run("UPDATE contacts SET name = ?, area = ?, email = ?, phone = ? WHERE id = ?", [name, area, email, phone, contactId]);
+        // O SQL de UPDATE agora inclui a coluna 'unit_id'
+        db.run("UPDATE contacts SET name = ?, unit_id = ?, area = ?, email = ?, phone = ? WHERE id = ?", [name, unit_id, area, email, phone, contactId]);
         db.run("DELETE FROM contact_source_associations WHERE contact_id = ?", [contactId]);
 
         if (sources.length > 0) {
@@ -152,14 +165,13 @@ app.delete('/api/contacts/:id', (req, res) => {
     });
 });
 
-// Rotas de Unidades Empresariais
+// Rotas de Unidades Empresariais - Sem alterações
 app.get('/api/units', (req, res) => {
     db.all("SELECT * FROM units ORDER BY name", [], (err, rows) => {
         if (err) { res.status(500).json({ "error": err.message }); return; }
         res.json(rows);
     });
 });
-
 app.post('/api/units', (req, res) => {
     const { name, cidade, estado, pais, numero_colaboradores } = req.body;
     if (!name) { return res.status(400).json({ "error": "O nome da unidade é obrigatório." }); }
@@ -170,7 +182,6 @@ app.post('/api/units', (req, res) => {
         res.status(201).json({ "id": this.lastID });
     });
 });
-
 app.put('/api/units/:id', (req, res) => {
     const { name, cidade, estado, pais, numero_colaboradores } = req.body;
     const sql = "UPDATE units SET name = ?, cidade = ?, estado = ?, pais = ?, numero_colaboradores = ? WHERE id = ?";
@@ -180,7 +191,6 @@ app.put('/api/units/:id', (req, res) => {
         res.status(200).json({ changes: this.changes });
     });
 });
-
 app.delete('/api/units/:id', (req, res) => {
     db.run("DELETE FROM units WHERE id = ?", [req.params.id], function(err) {
         if (err) { res.status(500).json({ "error": err.message }); return; }
@@ -188,7 +198,8 @@ app.delete('/api/units/:id', (req, res) => {
     });
 });
 
-// Rota de Upload de Arquivo
+
+// Rota de Upload de Arquivo - Sem alterações
 app.post('/api/upload', upload.single('file'), (req, res) => {
     try {
         if (!req.file) {
@@ -274,7 +285,7 @@ app.post('/api/upload', upload.single('file'), (req, res) => {
 });
 
 
-// Rota de Download de Template
+// Rota de Download de Template - Sem alterações
 app.get('/api/template/:tableName', (req, res) => {
     const { tableName } = req.params;
     const { format = 'csv' } = req.query;
@@ -297,7 +308,7 @@ app.get('/api/template/:tableName', (req, res) => {
     }
 });
 
-// Rota de Exportação de Dados da Tela
+// Rota de Exportação de Dados da Tela - Sem alterações
 app.post('/api/export', (req, res) => {
     const { data, tableName } = req.body;
     if (!Array.isArray(data) || data.length === 0) { return res.status(400).send('Nenhum dado fornecido para exportação.'); }
@@ -324,7 +335,7 @@ app.post('/api/export', (req, res) => {
     }
 });
 
-// Rota para Salvar Dados das Fontes
+// Rota para Salvar Dados das Fontes - Sem alterações
 app.post('/api/save-data/:tableName', (req, res) => {
     const { tableName } = req.params;
     const dataRows = req.body;
@@ -354,7 +365,7 @@ app.post('/api/save-data/:tableName', (req, res) => {
     });
 });
 
-// Rotas de Tipologias de Fontes (Assets)
+// Rotas de Tipologias de Fontes (Assets) - Sem alterações
 app.get('/api/asset-typologies', (req, res) => {
     const { source_type } = req.query;
     let sql = "SELECT T.*, U.name as unit_name FROM asset_typologies T JOIN units U ON T.unit_id = U.id";
@@ -377,7 +388,6 @@ app.get('/api/asset-typologies', (req, res) => {
         res.json(results);
     });
 });
-
 app.post('/api/asset-typologies', (req, res) => {
     const { unit_id, source_type, description, asset_fields } = req.body;
     if (!unit_id || !source_type || !description || !asset_fields) { return res.status(400).json({ "error": "Campos obrigatórios faltando." }); }
@@ -414,7 +424,6 @@ app.post('/api/asset-typologies', (req, res) => {
         });
     }
 });
-
 app.put('/api/asset-typologies/:id', (req, res) => {
     const { unit_id, source_type, description, asset_fields } = req.body;
     if (!unit_id || !source_type || !description || !asset_fields) { return res.status(400).json({ "error": "Campos obrigatórios faltando." }); }
@@ -425,7 +434,6 @@ app.put('/api/asset-typologies/:id', (req, res) => {
         res.status(200).json({ changes: this.changes });
     });
 });
-
 app.delete('/api/asset-typologies/:id', (req, res) => {
     db.run("DELETE FROM asset_typologies WHERE id = ?", [req.params.id], function(err) {
         if (err) { res.status(500).json({ "error": err.message }); return; }
@@ -433,40 +441,48 @@ app.delete('/api/asset-typologies/:id', (req, res) => {
     });
 });
 
-// Rotas de Opções Customizáveis
-app.get('/api/custom-options', (req, res) => {
+// --- ATENÇÃO: ROTAS DE OPÇÕES CUSTOMIZÁVEIS FORAM RENOMEADAS E REFATORADAS ---
+// Agora chamadas de "Opções Gerenciadas"
+app.get('/api/options', (req, res) => {
     const { field_key } = req.query;
     if (!field_key) { return res.status(400).json({ "error": "O parâmetro 'field_key' é obrigatório." }); }
-    db.all("SELECT * FROM custom_options WHERE field_key = ? ORDER BY value", [field_key], (err, rows) => {
+    
+    db.all("SELECT * FROM managed_options WHERE field_key = ? ORDER BY value", [field_key], (err, rows) => {
         if (err) { res.status(500).json({ "error": err.message }); return; }
         res.json(rows);
     });
 });
 
-app.post('/api/custom-options', (req, res) => {
+app.post('/api/options', (req, res) => {
     const { field_key, value } = req.body;
     if (!field_key || !value) { return res.status(400).json({ "error": "Campos 'field_key' e 'value' são obrigatórios." }); }
-    db.run("INSERT INTO custom_options (field_key, value) VALUES (?, ?)", [field_key, value], function(err) {
-        if (err) { res.status(500).json({ "error": err.message }); return; }
+    
+    db.run("INSERT INTO managed_options (field_key, value) VALUES (?, ?)", [field_key, value], function(err) {
+        if (err) { 
+            // Retorna um erro mais genérico, mas no console logamos o erro específico
+            console.error("Erro ao inserir em managed_options:", err.message);
+            res.status(500).json({ "error": err.message }); 
+            return;
+        }
         res.status(201).json({ "id": this.lastID });
     });
 });
 
-app.delete('/api/custom-options/:id', (req, res) => {
-    db.run("DELETE FROM custom_options WHERE id = ?", [req.params.id], function(err) {
+app.delete('/api/options/:id', (req, res) => {
+    db.run("DELETE FROM managed_options WHERE id = ?", [req.params.id], function(err) {
         if (err) { res.status(500).json({ "error": err.message }); return; }
         res.status(200).json({ deleted: this.changes });
     });
 });
+// --- FIM DA REFATORAÇÃO DAS ROTAS ---
 
-// Rota de Configuração de Fontes
+// Rota de Configuração de Fontes - Sem alterações
 app.get('/api/source-configurations', (req, res) => {
     db.all("SELECT * FROM source_configurations", [], (err, rows) => {
         if (err) { res.status(500).json({ "error": err.message }); return; }
         res.json(rows);
     });
 });
-
 app.post('/api/source-configurations', (req, res) => {
     const { source_type, reporting_frequency } = req.body;
     if (!source_type || !reporting_frequency) { return res.status(400).json({ "error": "Campos 'source_type' e 'reporting_frequency' são obrigatórios." }); }
@@ -483,7 +499,7 @@ app.post('/api/source-configurations', (req, res) => {
     });
 });
 
-// Rota de Template Inteligente
+// Rota de Template Inteligente - Sem alterações
 app.get('/api/intelligent-template/:sourceType', (req, res) => {
     const { sourceType } = req.params;
     const { unitId, year } = req.query;
@@ -558,7 +574,8 @@ app.get('/api/intelligent-template/:sourceType', (req, res) => {
     });
 });
 
-// --- 6. INICIALIZAÇÃO DO SERVIDOR ---
+// --- 6. INICIALIZAÇÃO ---
+
 app.listen(PORT, () => {
     console.log(`Servidor iniciado com sucesso na porta ${PORT}`);
 });

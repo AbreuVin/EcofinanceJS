@@ -3,12 +3,29 @@
 document.addEventListener('DOMContentLoaded', () => {
     
     // --- 1. SCHEMAS E CONFIGURAÇÕES ---
-    // Precisamos de uma definição de quais campos são customizáveis.
-    // Em vez de importar o schema gigante, definimos apenas o que precisamos.
-    const customizableFieldsConfig = {
-        combustivel: "Combustível (Comb. Estacionária)",
-        tipo_lubrificante: "Tipo de Lubrificante (IPPU)",
-        // ATENÇÃO: "unidade_medida" foi removido daqui conforme a decisão da reunião.
+    // ATENÇÃO: Esta lista agora inclui TODOS os campos de dropdown que a Ecofinance pode gerenciar.
+    // As chaves (ex: 'combustivel_movel') são únicas para evitar conflitos, mas podem apontar para o mesmo
+    // field_key no banco de dados ('combustivel').
+    const managedFieldsConfig = {
+        // --- Combustão Móvel ---
+        combustivel_movel: { displayName: "Combustível (Móvel)", fieldKey: "combustivel" },
+        tipo_veiculo: { displayName: "Tipo de Veículo (Móvel)", fieldKey: "tipo_veiculo" },
+        unidade_consumo: { displayName: "Unidade de Consumo (Móvel)", fieldKey: "unidade_consumo" },
+        unidade_distancia: { displayName: "Unidade de Distância (Móvel)", fieldKey: "unidade_distancia" },
+        
+        // --- Combustão Estacionária ---
+        combustivel_estacionaria: { displayName: "Combustível (Estacionária)", fieldKey: "combustivel" },
+        unidade_estacionaria: { displayName: "Unidade (Estacionária)", fieldKey: "unidade" },
+        
+        // --- IPPU Lubrificantes ---
+        tipo_lubrificante: { displayName: "Tipo de Lubrificante (IPPU)", fieldKey: "tipo_lubrificante" },
+        unidade_lubrificante: { displayName: "Unidade (IPPU)", fieldKey: "unidade" },
+        
+        // --- Emissões Fugitivas ---
+        tipo_gas: { displayName: "Tipo de Gás (Fugitivas)", fieldKey: "tipo_gas" },
+        
+        // --- Outros ---
+        periodo: { displayName: "Período de Reporte (Global)", fieldKey: "periodo" },
     };
 
     // --- 2. REFERÊNCIAS DO DOM ---
@@ -19,32 +36,38 @@ document.addEventListener('DOMContentLoaded', () => {
     const addCustomOptionBtn = document.getElementById('add-custom-option-btn');
     const customOptionsListContainer = document.getElementById('custom-options-list-container');
     const customOptionFeedback = document.getElementById('custom-option-feedback');
+    
+    let currentFieldKey = null; // Armazena a chave do campo selecionado para o DB
 
     // --- 3. FUNÇÕES DE LÓGICA ---
 
-    // Lógica movida de assets.js
     async function handleCustomFieldSelection() {
-        const fieldKey = customOptionFieldSelector.value;
-        if (!fieldKey) {
+        const selectedManagerKey = customOptionFieldSelector.value;
+        if (!selectedManagerKey) {
             customOptionManager.style.display = 'none';
+            currentFieldKey = null;
             return;
         }
-        await loadCustomOptions(fieldKey);
+        
+        // Pega a chave real para consultar o banco de dados
+        currentFieldKey = managedFieldsConfig[selectedManagerKey].fieldKey;
+        
+        await loadCustomOptions(currentFieldKey);
         customOptionManager.style.display = 'block';
     }
 
-    // Lógica movida de assets.js
     async function loadCustomOptions(fieldKey) {
         customOptionsListContainer.innerHTML = '<li>Carregando...</li>';
         try {
-            const response = await fetch(`/api/custom-options?field_key=${fieldKey}`);
+            // ATENÇÃO: A URL da API foi atualizada para /api/options
+            const response = await fetch(`/api/options?field_key=${fieldKey}`);
             if (!response.ok) throw new Error('Falha ao buscar opções.');
             
             const options = await response.json();
             customOptionsListContainer.innerHTML = '';
             
             if (options.length === 0) {
-                customOptionsListContainer.innerHTML = '<li>Nenhuma opção customizada cadastrada para este campo.</li>';
+                customOptionsListContainer.innerHTML = '<li>Nenhuma opção cadastrada para este campo.</li>';
             } else {
                 options.forEach(opt => {
                     const li = document.createElement('li');
@@ -64,27 +87,25 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Lógica movida de assets.js
     async function handleAddCustomOption() {
-        const fieldKey = customOptionFieldSelector.value;
         const value = newCustomOptionValueInput.value.trim();
 
-        if (!fieldKey || !value) {
+        if (!currentFieldKey || !value) {
             customOptionFeedback.textContent = 'Por favor, selecione um campo e digite um valor para a nova opção.';
             customOptionFeedback.style.color = 'red';
             return;
         }
 
         try {
-            const response = await fetch('/api/custom-options', {
+            // ATENÇÃO: A URL da API foi atualizada para /api/options
+            const response = await fetch('/api/options', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ field_key: fieldKey, value: value })
+                body: JSON.stringify({ field_key: currentFieldKey, value: value })
             });
 
             if (!response.ok) {
                  const errorData = await response.json();
-                 // Trata erro de duplicidade que pode vir do banco (UNIQUE constraint)
                  if (response.status === 500 && errorData.error.includes('UNIQUE constraint failed')) {
                      throw new Error(`A opção "${value}" já existe para este campo.`);
                  }
@@ -93,7 +114,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             newCustomOptionValueInput.value = '';
             customOptionFeedback.textContent = '';
-            await loadCustomOptions(fieldKey); // Recarrega a lista
+            await loadCustomOptions(currentFieldKey);
 
         } catch (error) {
             console.error('Erro ao adicionar opção:', error);
@@ -102,16 +123,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Lógica movida de assets.js
     async function handleDeleteCustomOption(optionId) {
         if (!confirm('Tem certeza que deseja deletar esta opção? Ela será removida de todos os lugares onde aparece.')) return;
         
         try {
-            const response = await fetch(`/api/custom-options/${optionId}`, { method: 'DELETE' });
+            // ATENÇÃO: A URL da API foi atualizada para /api/options
+            const response = await fetch(`/api/options/${optionId}`, { method: 'DELETE' });
             if (!response.ok) throw new Error('Falha ao deletar opção.');
 
-            const fieldKey = customOptionFieldSelector.value;
-            await loadCustomOptions(fieldKey); // Recarrega a lista
+            await loadCustomOptions(currentFieldKey);
 
         } catch (error) {
             console.error('Erro ao deletar opção:', error);
@@ -121,7 +141,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- 4. INICIALIZAÇÃO DA PÁGINA ---
     function initializePage() {
-        // Carrega a barra de navegação
         if (navPlaceholder) {
             fetch('nav.html')
                 .then(response => response.ok ? response.text() : Promise.reject('nav.html não encontrado.'))
@@ -129,16 +148,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 .catch(error => console.error('Erro ao carregar a barra de navegação:', error));
         }
 
-        // Popula o seletor de campos customizáveis
         customOptionFieldSelector.innerHTML = '<option value="">-- Selecione um Campo --</option>';
-        for (const key in customizableFieldsConfig) {
+        // Popula o seletor usando a nova configuração
+        for (const key in managedFieldsConfig) {
             const option = document.createElement('option');
-            option.value = key;
-            option.textContent = customizableFieldsConfig[key];
+            option.value = key; // Usa a chave única do objeto (ex: combustivel_movel)
+            option.textContent = managedFieldsConfig[key].displayName; // Mostra o nome amigável
             customOptionFieldSelector.appendChild(option);
         }
 
-        // Adiciona os event listeners aos elementos da página
         customOptionFieldSelector.addEventListener('change', handleCustomFieldSelection);
         addCustomOptionBtn.addEventListener('click', handleAddCustomOption);
     }

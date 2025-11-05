@@ -3,7 +3,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     
     // --- 1. SCHEMAS DE CONFIGURAÇÃO DOS ATIVOS ---
-    // (O schema permanece, pois ele define a estrutura das fontes)
     const assetSchemas = {
         combustao_estacionaria: {
             displayName: "Combustão Estacionária",
@@ -15,14 +14,14 @@ document.addEventListener('DOMContentLoaded', () => {
         combustao_movel: {
             displayName: "Combustão Móvel",
             fields: {
-                tipo_veiculo: { label: "Tipo de Veículo", type: "select", options: [ "Automóvel a gasolina", "Automóvel a etanol", "Automóvel flex a gasolina", "Automóvel flex a etanol", "Motocicleta a gasolina", "Motocicleta flex a gasolina", "Motocicleta flex a etanol", "Veículo comercial leve a gasolina", "Veículo comercial leve a etanol", "Veículo comercial leve flex a gasolina", "Veículo comercial leve flex a etanol", "Veículo comercial leve a diesel", "Micro-ônibus a diesel", "Ônibus rodoviário a diesel", "Ônibus urbano a diesel", "Caminhão - rígido (3,5 a 7,5 toneladas)", "Caminhão - rígido (7,5 a 17 toneladas)", "Caminhão - rígido (acima de 17 toneladas)", "Caminhão - rígido (média)", "Caminhão - articulado (3,5 a 33 toneladas)", "Caminhão - articulado (acima de 33 toneladas)", "Caminhão - articulado (média)", "Caminhão - caminhão (média)", "Caminhão refrigerado - rígido (3,5 a 7,5 toneladas)", "Caminhão refrigerado - rígido (7,5 a 17 toneladas)", "Caminhão refrigerado - rígido (acima de 17 toneladas)", "Caminhão refrigerado - rígido (média)", "Caminhão refrigerado - articulado (3,5 a 33 toneladas)", "Caminhão refrigerado - articulado (acima de 33 toneladas)", "Caminhão refrigerado - articulado (média)", "Caminhão refrigerado - caminhão (média)", "Automóvel a GNV" ] },
+                tipo_veiculo: { label: "Tipo de Veículo", type: "select", options: [ "Automóvel a gasolina" /* ... (lista original completa aqui) ... */, "Automóvel a GNV" ] },
                 controlado_empresa: { label: "Controlado pela Empresa?", type: "select", options: ["Sim", "Não"] }
             }
         },
         dados_producao_venda: {
             displayName: "Dados de Produção e Venda",
             fields: {
-                unidade_medida: { label: "Unidade de Medida", type: "text", isCustomizable: true },
+                unidade_medida: { label: "Unidade de Medida", type: "text" }, // Não é mais customizável aqui
                 uso_final_produtos: { label: "Uso Final (Padrão)", type: "text" }
             }
         },
@@ -68,11 +67,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const reportingFrequencySelect = document.getElementById('reporting-frequency');
     const saveFrequencyBtn = document.getElementById('save-frequency-btn');
     const frequencyFeedback = document.getElementById('frequency-feedback');
-    
-    // --- ATENÇÃO: Referências da seção de customização foram REMOVIDAS daqui ---
-    // const customOptionFieldSelector = ...
-    // const customOptionManager = ...
-    // etc.
 
     let currentSourceType = null;
     let allConfigs = []; 
@@ -82,7 +76,6 @@ document.addEventListener('DOMContentLoaded', () => {
     async function initializePage() {
         if (navPlaceholder) { fetch('nav.html').then(response => response.text()).then(data => { navPlaceholder.innerHTML = data; }); }
         
-        // Popula o seletor de fontes
         for (const sourceType in assetSchemas) {
             const option = document.createElement('option');
             option.value = sourceType;
@@ -90,8 +83,6 @@ document.addEventListener('DOMContentLoaded', () => {
             sourceSelector.appendChild(option);
         }
         
-        // A lógica que populava o seletor de campos customizáveis foi REMOVIDA
-
         try {
             const [unitsResponse, configsResponse] = await Promise.all([ fetch('/api/units'), fetch('/api/source-configurations') ]);
             const unitsList = await unitsResponse.json();
@@ -137,6 +128,7 @@ document.addEventListener('DOMContentLoaded', () => {
         assetManagementSection.style.display = 'block';
     }
 
+    // A função buildDynamicTableHeaders permanece inalterada
     function buildDynamicTableHeaders(schema) {
         assetsThead.innerHTML = '';
         const headerRow = document.createElement('tr');
@@ -148,7 +140,8 @@ document.addEventListener('DOMContentLoaded', () => {
         headerRow.innerHTML = headers;
         assetsThead.appendChild(headerRow);
     }
-
+    
+    // A função loadAssetTypologies permanece inalterada
     async function loadAssetTypologies() {
         if (!currentSourceType) return;
         try {
@@ -177,27 +170,23 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     
+    // A função handleFormSubmit permanece inalterada
     async function handleFormSubmit(e) {
         e.preventDefault();
         const id = assetIdInput.value;
-        
         const asset_fields = {};
         specificFieldsContainer.querySelectorAll('input, select').forEach(input => {
             asset_fields[input.dataset.key] = input.value;
         });
-        
         const unitValue = document.getElementById('asset-unit').value;
-
         const data = {
             description: document.getElementById('asset-description').value,
             unit_id: unitValue,
             source_type: currentSourceType,
             asset_fields: asset_fields
         };
-
         const method = id ? 'PUT' : 'POST';
         const url = id ? `/api/asset-typologies/${id}` : '/api/asset-typologies';
-
         try {
             const response = await fetch(url, {
                 method: method,
@@ -205,36 +194,31 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify(data)
             });
             if (!response.ok) throw new Error('Falha ao salvar a fonte.');
-
             resetForm();
             loadAssetTypologies();
-
         } catch (error) {
             console.error("Erro ao salvar:", error);
             alert('Ocorreu um erro ao salvar. Verifique o console para mais detalhes.');
         }
     }
 
+    // A função handleTableClick permanece inalterada
     async function handleTableClick(e) {
         const target = e.target;
         const id = target.dataset.id;
         if (!id) return;
-
         if (target.classList.contains('edit-btn')) {
             const response = await fetch(`/api/asset-typologies?source_type=${currentSourceType}`);
             const typologies = await response.json();
             const typoToEdit = typologies.find(t => t.id == id);
-            
             if (typoToEdit) {
                 assetIdInput.value = typoToEdit.id;
                 document.getElementById('asset-description').value = typoToEdit.description;
                 document.getElementById('asset-unit').value = typoToEdit.unit_id;
-                
                 await buildDynamicForm(assetSchemas[currentSourceType]); 
                 specificFieldsContainer.querySelectorAll('input, select').forEach(input => {
                     input.value = typoToEdit.asset_fields[input.dataset.key] || '';
                 });
-
                 formTitle.textContent = `Editando Fonte: ${typoToEdit.description}`;
                 cancelBtn.style.display = 'inline-block';
                 window.scrollTo(0,0);
@@ -252,6 +236,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
     
+    // A função resetForm permanece inalterada
     function resetForm() {
         form.reset();
         assetIdInput.value = '';
@@ -261,6 +246,7 @@ document.addEventListener('DOMContentLoaded', () => {
         cancelBtn.style.display = 'none';
     }
 
+    // --- ATENÇÃO: MUDANÇA SIGNIFICATIVA AQUI ---
     async function buildDynamicForm(schema) { 
         specificFieldsContainer.innerHTML = ''; 
         for (const key in schema.fields) { 
@@ -273,25 +259,31 @@ document.addEventListener('DOMContentLoaded', () => {
             label.setAttribute('for', `field-${key}`); 
             label.textContent = field.label; 
             let input; 
-            if (field.type === 'select') { 
+            
+            // Lógica refatorada para buscar opções da API
+            if (field.type === 'select') {
                 input = document.createElement('select'); 
-                input.innerHTML = '<option value="">-- Selecione --</option>'; 
-                let options = field.options || []; 
-                if (field.isCustomizable) { 
-                    try { 
-                        // A busca por opções customizadas continua aqui, pois o formulário de cadastro ainda precisa delas.
-                        const response = await fetch(`/api/custom-options?field_key=${key}`); 
-                        const customOptions = await response.json(); 
-                        const allOptions = [...new Set([...(field.options || []), ...customOptions.map(opt => opt.value)])]; 
-                        options = allOptions; 
-                    } catch (error) { 
-                        console.error(`Erro ao buscar opções para ${key}:`, error); 
-                    } 
-                } 
-                options.forEach(opt => { 
-                    input.innerHTML += `<option value="${opt}">${opt}</option>`; 
-                }); 
-            } else { 
+                input.innerHTML = '<option value="">-- Carregando... --</option>'; 
+                
+                try {
+                    // Chave para buscar no DB (ex: 'combustivel', 'tipo_veiculo')
+                    const fieldKeyForApi = key; 
+                    
+                    // As opções agora vêm da API, não do schema local
+                    const response = await fetch(`/api/options?field_key=${fieldKeyForApi}`);
+                    const optionsFromApi = await response.json();
+                    
+                    input.innerHTML = '<option value="">-- Selecione --</option>'; // Limpa o "Carregando..."
+                    
+                    optionsFromApi.forEach(opt => { 
+                        input.innerHTML += `<option value="${opt.value}">${opt.value}</option>`; 
+                    });
+                } catch (error) {
+                    console.error(`Erro ao buscar opções para ${key}:`, error);
+                    input.innerHTML = '<option value="">-- Erro ao carregar --</option>';
+                }
+
+            } else { // Para inputs de texto, número, etc.
                 input = document.createElement('input'); 
                 input.type = field.type || 'text'; 
                 if (field.type === 'number') { 
@@ -300,6 +292,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (field.step !== undefined) input.step = field.step; 
                 } 
             } 
+            
             input.id = `field-${key}`; 
             input.dataset.key = key; 
             input.required = true; 
@@ -310,6 +303,7 @@ document.addEventListener('DOMContentLoaded', () => {
         } 
     }
     
+    // A função handleSaveFrequency permanece inalterada
     async function handleSaveFrequency() { 
         if (!currentSourceType) return; 
         frequencyFeedback.textContent = 'Salvando...'; 
@@ -331,17 +325,10 @@ document.addEventListener('DOMContentLoaded', () => {
             frequencyFeedback.style.color = 'red'; 
         } 
     }
-
-    // --- ATENÇÃO: Funções relacionadas à customização foram REMOVIDAS daqui ---
-    // async function handleCustomFieldSelection() { ... }
-    // async function loadCustomOptions(fieldKey) { ... }
-    // async function handleAddCustomOption() { ... }
-    // async function handleDeleteCustomOption(optionId) { ... }
     
     // Adicionando os event listeners
     sourceSelector.addEventListener('change', handleSourceSelection);
     saveFrequencyBtn.addEventListener('click', handleSaveFrequency);
-    // Event listeners dos botões de customização foram REMOVIDOS
     form.addEventListener('submit', handleFormSubmit);
     assetsTbody.addEventListener('click', handleTableClick);
     cancelBtn.addEventListener('click', resetForm);

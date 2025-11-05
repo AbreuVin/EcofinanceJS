@@ -27,16 +27,16 @@ document.addEventListener('DOMContentLoaded', () => {
     ];
 
     let currentSchema = null;
-    let unitsList = []; // A lista de contatos foi removida
+    let unitsList = [];
+    
+    let managedOptionsCache = {}; 
 
-    // --- 2. FUNÇÕES PRINCIPAIS E AUXILIARES ---
+    
 
     function loadNavbar() {
         const navPlaceholder = document.getElementById('nav-placeholder');
         if (navPlaceholder) { fetch('nav.html').then(response => response.ok ? response.text() : Promise.reject('nav.html não encontrado.')).then(data => { navPlaceholder.innerHTML = data; }).catch(error => console.error('Erro ao carregar a barra de navegação:', error)); }
     }
-
-    // A função fetchContacts() foi removida daqui
 
     async function fetchUnits() {
         try {
@@ -44,6 +44,31 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!response.ok) throw new Error('Falha ao buscar unidades');
             unitsList = await response.json();
         } catch (error) { console.error('Erro ao buscar unidades:', error); unitsList = []; }
+    }
+
+    
+    async function fetchManagedOptions(schema) {
+        managedOptionsCache = {}; 
+        const optionKeysToFetch = Object.keys(schema.validOptions || {});
+        
+        try {
+            const fetchPromises = optionKeysToFetch.map(key =>
+                fetch(`/api/options?field_key=${key}`)
+                    .then(res => res.ok ? res.json() : Promise.reject(`Falha ao buscar opções para ${key}`))
+                    .then(options => ({ key, options: options.map(opt => opt.value) }))
+            );
+
+            const results = await Promise.all(fetchPromises);
+            
+            results.forEach(({ key, options }) => {
+                managedOptionsCache[key] = options;
+            });
+            console.log("Opções gerenciadas carregadas:", managedOptionsCache);
+        } catch (error) {
+            console.error("Erro fatal ao carregar opções gerenciadas:", error);
+            feedbackDiv.textContent = 'Erro ao carregar opções de seleção. A página pode não funcionar corretamente.';
+            feedbackDiv.style.color = 'red';
+        }
     }
     
     function generateTable(data) {
@@ -80,11 +105,14 @@ document.addEventListener('DOMContentLoaded', () => {
         tbody.addEventListener('change', (e) => handleTableChange(e, headers));
     }
 
+    
     function buildTableRow(rowData, headers) {
         const row = document.createElement('tr');
         headers.forEach(header => {
             const cell = document.createElement('td');
             const currentValue = rowData[header] || "";
+            
+            
             if (header === 'unidade_empresarial' && currentSchema.hasUnits) {
                 const select = document.createElement('select');
                 select.innerHTML = '<option value="">-- Selecione --</option>';
@@ -96,11 +124,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     select.appendChild(option);
                 });
                 cell.appendChild(select);
-            // O bloco if para 'responsavel' foi completamente removido
-            } else if (currentSchema.validOptions && currentSchema.validOptions[header]) {
+            
+            
+            } else if (managedOptionsCache[header]) {
                 const select = document.createElement('select');
                 select.innerHTML = '<option value="">-- Selecione --</option>';
-                currentSchema.validOptions[header].forEach(optionText => {
+                
+                const options = managedOptionsCache[header] || [];
+                options.forEach(optionText => {
                     const option = document.createElement('option');
                     option.value = optionText;
                     option.textContent = optionText;
@@ -108,8 +139,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     select.appendChild(option);
                 });
                 cell.appendChild(select);
+
             } else {
-                // Removidas as referências a 'email_do_responsavel', etc daqui
                 if (['unidade'].includes(header)) {
                     cell.setAttribute('contenteditable', 'false');
                     cell.style.backgroundColor = '#f0f0f0';
@@ -135,16 +166,14 @@ document.addEventListener('DOMContentLoaded', () => {
         deleteBtn.title = 'Deletar esta linha';
         actionsCell.appendChild(deleteBtn);
         row.appendChild(actionsCell);
-        // A chamada a handleResponsibleChange foi removida
         return row;
     }
+    
     
     function getCellValue(cell, header) {
         const input = cell.querySelector('select, input');
         let value = input ? input.value : cell.textContent;
-
         if (NUMERIC_FIELDS.includes(header) && typeof value === 'string') {
-            // Remove pontos de milhar e substitui a vírgula decimal por ponto
             return value.replace(/\./g, '').replace(',', '.');
         }
         return value;
@@ -158,7 +187,8 @@ document.addEventListener('DOMContentLoaded', () => {
             rowData[header] = getCellValue(cells[index], header); 
         });
         
-        const validation = currentSchema.validateRow(rowData);
+        
+        const validation = currentSchema.validateRow(rowData, managedOptionsCache);
 
         cells.forEach((cell, index) => {
             const header = headers[index];
@@ -218,13 +248,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
             }
-            // A chamada a handleResponsibleChange foi removida
             updateRowAppearance(editedRow, headers);
             checkTableAndToggleSaveButton();
         }
     }
-
-    // A função handleResponsibleChange foi completamente removida
 
     tableSelector.addEventListener('change', async () => {
         const selectedKey = tableSelector.value;
@@ -232,10 +259,12 @@ document.addEventListener('DOMContentLoaded', () => {
         tableContainer.innerHTML = '';
         feedbackDiv.textContent = '';
         if (currentSchema) {
-            // A chamada a fetchContacts() foi removida daqui
-            if (currentSchema.hasUnits) {
-                await fetchUnits();
-            }
+            
+            await Promise.all([
+                currentSchema.hasUnits ? fetchUnits() : Promise.resolve(),
+                fetchManagedOptions(currentSchema) 
+            ]);
+
             uploadInstructions.textContent = `Faça o upload de um arquivo (CSV ou XLSX), ou adicione linhas manualmente.`;
             uploadSection.style.display = 'block';
             tableActions.style.display = 'flex';
@@ -255,176 +284,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    uploadForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        feedbackDiv.textContent = 'Enviando e validando arquivo...';
-        const file = fileInput.files[0];
-        if (!file) { feedbackDiv.textContent = 'Por favor, selecione um arquivo.'; return; }
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('source_type', tableSelector.value); 
-        try {
-            const response = await fetch('/api/upload', { method: 'POST', body: formData });
-            if (!response.ok) throw new Error(`Erro: ${response.statusText}`);
-            const data = await response.json();
-            generateTable(data);
-        } catch (error) {
-            feedbackDiv.textContent = `Falha no upload: ${error.message}`;
-            feedbackDiv.style.color = 'red';
-        }
-    });
     
-    downloadIntelligentBtn.addEventListener('click', async () => {
-        const sourceType = tableSelector.value;
-        if (!sourceType) return;
-        
-        const year = prompt("Por favor, digite o ano de reporte (ex: 2024):", new Date().getFullYear());
-        if (!year || isNaN(parseInt(year)) || year.length !== 4) {
-            alert("Ano inválido. Por favor, digite um ano com 4 dígitos.");
-            return;
-        }
-
-        feedbackDiv.textContent = 'Gerando template inteligente...';
-        feedbackDiv.style.color = 'blue';
-
-        try {
-            const response = await fetch(`/api/intelligent-template/${sourceType}?year=${year}`);
-            if (!response.ok) {
-                const error = await response.json();
-                throw new Error(error.message || 'Falha ao gerar o arquivo no servidor.');
-            }
-
-            const blob = await response.blob();
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.style.display = 'none';
-            a.href = url;
-            
-            const disposition = response.headers.get('Content-Disposition');
-            let filename = `${sourceType}_template_preenchido.xlsx`;
-            if (disposition && disposition.indexOf('attachment') !== -1) {
-                const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
-                const matches = filenameRegex.exec(disposition);
-                if (matches != null && matches[1]) { 
-                    filename = matches[1].replace(/['"]/g, '');
-                }
-            }
-            a.download = filename;
-
-            document.body.appendChild(a);
-            a.click();
-            window.URL.revokeObjectURL(url);
-            a.remove();
-            feedbackDiv.textContent = 'Template gerado com sucesso!';
-            feedbackDiv.style.color = 'green';
-        } catch (error) {
-            feedbackDiv.textContent = `Erro ao gerar template: ${error.message}`;
-            feedbackDiv.style.color = 'red';
-        }
-    });
-
-    addRowBtn.addEventListener('click', () => {
-        if (!currentSchema) return;
-        let tbody = tableContainer.querySelector('tbody');
-        if (!tbody) {
-            createEmptyTableAndHeaders();
-            tbody = tableContainer.querySelector('tbody');
-        }
-        const headers = Object.keys(currentSchema.headerDisplayNames);
-        const newRow = buildTableRow({}, headers);
-        tbody.appendChild(newRow);
-        updateRowAppearance(newRow, headers);
-        checkTableAndToggleSaveButton();
-    });
-
-    saveButton.addEventListener('click', async () => {
-        if (!currentSchema || !tableSelector.value) return;
-        const tableRows = document.querySelectorAll('#table-container tbody tr');
-        const headers = Object.keys(currentSchema.headerDisplayNames);
-        const dataToSave = [];
-
-        tableRows.forEach(row => {
-            const rowData = {};
-            const cells = row.querySelectorAll('td');
-            headers.forEach((headerKey, index) => {
-                rowData[headerKey] = getCellValue(cells[index], headerKey);
-            });
-            dataToSave.push(rowData);
-        });
-
-        try {
-            const response = await fetch(`/api/save-data/${tableSelector.value}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(dataToSave),
-            });
-            const result = await response.json();
-            if (!response.ok) throw new Error(result.message);
-            const friendlyTableName = currentSchema.displayName;
-            feedbackDiv.textContent = `Dados de "${friendlyTableName}" salvos com sucesso!`;
-            feedbackDiv.style.color = 'green';
-            saveButton.style.display = 'none';
-        } catch (error) {
-            feedbackDiv.textContent = `Erro ao salvar: ${error.message}`;
-            feedbackDiv.style.color = 'red';
-        }
-    });
-
-    exportBtn.addEventListener('click', async () => {
-        if (!currentSchema) return;
-        const tableRows = document.querySelectorAll('#table-container tbody tr');
-        const headersText = Array.from(document.querySelectorAll('#table-container thead th')).map(th => th.textContent).filter(text => text !== 'Ações');
-        const dataToExport = [];
-        
-        tableRows.forEach(row => {
-            const rowData = {};
-            headersText.forEach((headerText, index) => {
-                const cell = row.querySelectorAll('td')[index];
-                const schemaKey = Object.keys(currentSchema.headerDisplayNames).find(key => currentSchema.headerDisplayNames[key] === headerText);
-                rowData[headerText] = getCellValue(cell, schemaKey);
-            });
-            dataToExport.push(rowData);
-        });
-
-        if (dataToExport.length === 0) {
-            alert("Não há dados para exportar.");
-            return;
-        }
-        try {
-            const payload = {
-                data: dataToExport,
-                tableName: tableSelector.value
-            };
-            const response = await fetch('/api/export', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload),
-            });
-            if (!response.ok) { throw new Error('Falha ao gerar o arquivo Excel no servidor.'); }
-            const blob = await response.blob();
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.style.display = 'none';
-            a.href = url;
-            const disposition = response.headers.get('Content-Disposition');
-            let filename = `${tableSelector.value}_export.xlsx`;
-            if (disposition && disposition.indexOf('attachment') !== -1) {
-                const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
-                const matches = filenameRegex.exec(disposition);
-                if (matches != null && matches[1]) { 
-                    filename = matches[1].replace(/['"]/g, '');
-                }
-            }
-            a.download = filename;
-            document.body.appendChild(a);
-            a.click();
-            window.URL.revokeObjectURL(url);
-            a.remove();
-        } catch (error) {
-            feedbackDiv.textContent = `Erro ao exportar: ${error.message}`;
-            feedbackDiv.style.color = 'red';
-        }
-    });
+    uploadForm.addEventListener('submit', async (e) => { e.preventDefault(); feedbackDiv.textContent = 'Enviando e validando arquivo...'; const file = fileInput.files[0]; if (!file) { feedbackDiv.textContent = 'Por favor, selecione um arquivo.'; return; } const formData = new FormData(); formData.append('file', file); formData.append('source_type', tableSelector.value); try { const response = await fetch('/api/upload', { method: 'POST', body: formData }); if (!response.ok) throw new Error(`Erro: ${response.statusText}`); const data = await response.json(); generateTable(data); } catch (error) { feedbackDiv.textContent = `Falha no upload: ${error.message}`; feedbackDiv.style.color = 'red'; } });
+    downloadIntelligentBtn.addEventListener('click', async () => { const sourceType = tableSelector.value; if (!sourceType) return; const year = prompt("Por favor, digite o ano de reporte (ex: 2024):", new Date().getFullYear()); if (!year || isNaN(parseInt(year)) || year.length !== 4) { alert("Ano inválido. Por favor, digite um ano com 4 dígitos."); return; } feedbackDiv.textContent = 'Gerando template inteligente...'; feedbackDiv.style.color = 'blue'; try { const response = await fetch(`/api/intelligent-template/${sourceType}?year=${year}`); if (!response.ok) { const error = await response.json(); throw new Error(error.message || 'Falha ao gerar o arquivo no servidor.'); } const blob = await response.blob(); const url = window.URL.createObjectURL(blob); const a = document.createElement('a'); a.style.display = 'none'; a.href = url; const disposition = response.headers.get('Content-Disposition'); let filename = `${sourceType}_template_preenchido.xlsx`; if (disposition && disposition.indexOf('attachment') !== -1) { const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/; const matches = filenameRegex.exec(disposition); if (matches != null && matches[1]) { filename = matches[1].replace(/['"]/g, ''); } } a.download = filename; document.body.appendChild(a); a.click(); window.URL.revokeObjectURL(url); a.remove(); feedbackDiv.textContent = 'Template gerado com sucesso!'; feedbackDiv.style.color = 'green'; } catch (error) { feedbackDiv.textContent = `Erro ao gerar template: ${error.message}`; feedbackDiv.style.color = 'red'; } });
+    addRowBtn.addEventListener('click', () => { if (!currentSchema) return; let tbody = tableContainer.querySelector('tbody'); if (!tbody) { createEmptyTableAndHeaders(); tbody = tableContainer.querySelector('tbody'); } const headers = Object.keys(currentSchema.headerDisplayNames); const newRow = buildTableRow({}, headers); tbody.appendChild(newRow); updateRowAppearance(newRow, headers); checkTableAndToggleSaveButton(); });
+    saveButton.addEventListener('click', async () => { if (!currentSchema || !tableSelector.value) return; const tableRows = document.querySelectorAll('#table-container tbody tr'); const headers = Object.keys(currentSchema.headerDisplayNames); const dataToSave = []; tableRows.forEach(row => { const rowData = {}; const cells = row.querySelectorAll('td'); headers.forEach((headerKey, index) => { rowData[headerKey] = getCellValue(cells[index], headerKey); }); dataToSave.push(rowData); }); try { const response = await fetch(`/api/save-data/${tableSelector.value}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(dataToSave), }); const result = await response.json(); if (!response.ok) throw new Error(result.message); const friendlyTableName = currentSchema.displayName; feedbackDiv.textContent = `Dados de "${friendlyTableName}" salvos com sucesso!`; feedbackDiv.style.color = 'green'; saveButton.style.display = 'none'; } catch (error) { feedbackDiv.textContent = `Erro ao salvar: ${error.message}`; feedbackDiv.style.color = 'red'; } });
+    exportBtn.addEventListener('click', async () => { if (!currentSchema) return; const tableRows = document.querySelectorAll('#table-container tbody tr'); const headersText = Array.from(document.querySelectorAll('#table-container thead th')).map(th => th.textContent).filter(text => text !== 'Ações'); const dataToExport = []; tableRows.forEach(row => { const rowData = {}; headersText.forEach((headerText, index) => { const cell = row.querySelectorAll('td')[index]; const schemaKey = Object.keys(currentSchema.headerDisplayNames).find(key => currentSchema.headerDisplayNames[key] === headerText); rowData[headerText] = getCellValue(cell, schemaKey); }); dataToExport.push(rowData); }); if (dataToExport.length === 0) { alert("Não há dados para exportar."); return; } try { const payload = { data: dataToExport, tableName: tableSelector.value }; const response = await fetch('/api/export', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), }); if (!response.ok) { throw new Error('Falha ao gerar o arquivo Excel no servidor.'); } const blob = await response.blob(); const url = window.URL.createObjectURL(blob); const a = document.createElement('a'); a.style.display = 'none'; a.href = url; const disposition = response.headers.get('Content-Disposition'); let filename = `${tableSelector.value}_export.xlsx`; if (disposition && disposition.indexOf('attachment') !== -1) { const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/; const matches = filenameRegex.exec(disposition); if (matches != null && matches[1]) { filename = matches[1].replace(/['"]/g, ''); } } a.download = filename; document.body.appendChild(a); a.click(); window.URL.revokeObjectURL(url); a.remove(); } catch (error) { feedbackDiv.textContent = `Erro ao exportar: ${error.message}`; feedbackDiv.style.color = 'red'; } });
 
     function populateSelector() {
         tableSelector.innerHTML = '<option value="">-- Selecione uma tabela --</option>';
