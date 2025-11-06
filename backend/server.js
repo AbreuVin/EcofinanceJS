@@ -514,7 +514,6 @@ app.get('/api/intelligent-template/:sourceType', (req, res) => {
     
     const getFrequency = new Promise((resolve, reject) => { db.get("SELECT reporting_frequency FROM source_configurations WHERE source_type = ?", [sourceType], (err, row) => { if (err) return reject(err); resolve(row ? row.reporting_frequency : 'anual'); }); });
     
-    // A função getTypologies não precisa mudar, ela entrega os dados "crus"
     const getTypologies = new Promise((resolve, reject) => {
         let sql = "SELECT T.*, U.name as unit_name FROM asset_typologies T JOIN units U ON T.unit_id = U.id WHERE T.source_type = ?";
         const params = [sourceType];
@@ -531,9 +530,6 @@ app.get('/api/intelligent-template/:sourceType', (req, res) => {
         const periods = frequency === 'mensal' ? ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"] : ["Anual"];
 
         typologies.forEach(typo => {
-            
-            // --- ATENÇÃO: CORREÇÃO DEFINITIVA APLICADA AQUI ---
-            // Fazemos o parse robusto da string JSON que vem do banco
             const assetFields = JSON.parse(typo.asset_fields || '{}');
             
             periods.forEach(period => {
@@ -569,6 +565,14 @@ app.get('/api/intelligent-template/:sourceType', (req, res) => {
                         row[headers['tipo_entrada']] = 'distancia';
                     }
                 }
+                // --- ATENÇÃO: NOVA LÓGICA ESPECÍFICA PARA EMISSÕES FUGITIVAS ---
+                else if (sourceType === 'emissoes_fugitivas') {
+                    // Preenche a unidade com 'kg' se não foi definida uma unidade padrão no cadastro
+                    if (!row[headers['unidade']]) {
+                        row[headers['unidade']] = 'kg';
+                    }
+                }
+                // --- FIM DA LÓGICA ESPECÍFICA ---
                 else if (schema.autoFillMap) {
                     for (const triggerKey in schema.autoFillMap) {
                         const rule = schema.autoFillMap[triggerKey];

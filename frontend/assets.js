@@ -4,44 +4,64 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // --- 1. SCHEMAS DE CONFIGURAÇÃO DOS ATIVOS ---
     const assetSchemas = {
-        combustao_estacionaria: {
-            displayName: "Combustão Estacionária",
-            fields: {
-                combustivel: { label: "Combustível", type: "select" },
-                controlado_empresa: { label: "Controlado pela Empresa?", type: "select", options: ["Sim", "Não"] }
-            }
-        },
-        combustao_movel: {
-            displayName: "Combustão Móvel",
-            fields: {
-                tipo_entrada: { 
-                    label: "Como os dados serão reportados?", 
-                    type: "select", 
-                    options: ["Por Consumo", "Por Distância"] 
+        // ... (combustao_estacionaria e combustao_movel sem alterações)
+        combustao_estacionaria: { displayName: "Combustão Estacionária", fields: { combustivel: { label: "Combustível", type: "select" }, controlado_empresa: { label: "Controlado pela Empresa?", type: "select", options: ["Sim", "Não"] } } },
+        combustao_movel: { displayName: "Combustão Móvel", fields: { tipo_entrada: { label: "Como os dados serão reportados?", type: "select", options: ["Por Consumo", "Por Distância"] }, combustivel: { label: "Combustível Padrão", type: "select", showIf: { field: "tipo_entrada", value: "Por Consumo" } }, tipo_veiculo: { label: "Tipo de Veículo Padrão", type: "select" }, controlado_empresa: { label: "Controlado pela Empresa?", type: "select", options: ["Sim", "Não"] } } },
+        dados_producao_venda: { displayName: "Dados de Produção e Venda", fields: { unidade_medida: { label: "Unidade de Medida", type: "text" }, uso_final_produtos: { label: "Uso Final (Padrão)", type: "text" } } },
+        ippu_lubrificantes: { displayName: "IPPU - Lubrificantes", fields: { tipo_lubrificante: { label: "Tipo de Lubrificante", type: "select" }, unidade: { label: "Unidade de Consumo", type: "select" }, utilizacao: { label: "Utilização Padrão", type: "text" }, controlado_empresa: { label: "Controlado pela Empresa?", type: "select", options: ["Sim", "Não"] } } },
+        
+        // --- ATENÇÃO: MUDANÇA SIGNIFICATIVA AQUI ---
+        emissoes_fugitivas: { 
+            displayName: "Emissões Fugitivas", 
+            fields: { 
+                tipo_reporte_gas: {
+                    label: "Tipo de Reporte do Gás",
+                    type: "select",
+                    options: ["Gás Puro", "Gás Composto"]
                 },
-                combustivel: { 
-                    label: "Combustível Padrão", 
-                    type: "select", 
-                    showIf: { field: "tipo_entrada", value: "Por Consumo" }
+                tipo_gas: { 
+                    label: "Gás (Puro)", 
+                    type: "select",
+                    showIf: { field: "tipo_reporte_gas", value: "Gás Puro" }
                 },
-                tipo_veiculo: { 
-                    label: "Tipo de Veículo Padrão", 
+                nome_comercial_gas: {
+                    label: "Nome Comercial (Gás Composto)",
+                    type: "text",
+                    showIf: { field: "tipo_reporte_gas", value: "Gás Composto" }
+                },
+                gas_emissor_composicao: {
+                    label: "Gás Emissor (na Composição)",
+                    type: "select",
+                    showIf: { field: "tipo_reporte_gas", value: "Gás Composto" }
+                },
+                percentual_emissao: {
+                    label: "Percentual (%) na Composição",
+                    type: "number",
+                    min: 0, max: 100, step: 0.01,
+                    showIf: { field: "tipo_reporte_gas", value: "Gás Composto" }
+                },
+                unidade: { // Campo de unidade adicionado
+                    label: "Unidade Padrão",
                     type: "select"
+                },
+                rastreabilidade: { // Campo de rastreabilidade adicionado
+                    label: "Rastreabilidade Padrão",
+                    type: "text"
                 },
                 controlado_empresa: { 
                     label: "Controlado pela Empresa?", 
                     type: "select", 
                     options: ["Sim", "Não"] 
-                }
-            }
+                } 
+            } 
         },
-        dados_producao_venda: { displayName: "Dados de Produção e Venda", fields: { unidade_medida: { label: "Unidade de Medida", type: "text" }, uso_final_produtos: { label: "Uso Final (Padrão)", type: "text" } } },
-        ippu_lubrificantes: { displayName: "IPPU - Lubrificantes", fields: { tipo_lubrificante: { label: "Tipo de Lubrificante", type: "select" }, unidade: { label: "Unidade de Consumo", type: "select", options: ["Litros", "kg"]}, utilizacao: { label: "Utilização Padrão", type: "text" }, controlado_empresa: { label: "Controlado pela Empresa?", type: "select", options: ["Sim", "Não"] } } },
-        emissoes_fugitivas: { displayName: "Emissões Fugitivas", fields: { tipo_gas: { label: "Tipo de Gás Padrão", type: "select" }, controlado_empresa: { label: "Controlado pela Empresa?", type: "select", options: ["Sim", "Não"] } } },
+        // --- FIM DA MUDANÇA ---
+
         fertilizantes: { displayName: "Fertilizantes", fields: { percentual_nitrogenio: { label: "Percentual de Nitrogênio (%)", type: "number", min: 0, max: 100, step: 0.01 }, percentual_carbonato: { label: "Percentual de Carbonato (%)", type: "number", min: 0, max: 100, step: 0.01 }, controlado_empresa: { label: "Controlado pela Empresa?", type: "select", options: ["Sim", "Não"] } } }
     };
-    
+
     // --- 2. REFERÊNCIAS DO DOM e VARIÁVEIS DE ESTADO ---
+    // ... (sem alterações)
     const navPlaceholder = document.getElementById('nav-placeholder');
     const sourceSelector = document.getElementById('source-selector');
     const assetManagementSection = document.getElementById('asset-management-section');
@@ -61,57 +81,89 @@ document.addEventListener('DOMContentLoaded', () => {
     let allConfigs = [];
 
     // --- 3. FUNÇÕES PRINCIPAIS ---
+    // ... (initializePage, handleSourceSelection, etc. sem alterações)
     async function initializePage() { if (navPlaceholder) { fetch('nav.html').then(response => response.text()).then(data => { navPlaceholder.innerHTML = data; }); } for (const sourceType in assetSchemas) { const option = document.createElement('option'); option.value = sourceType; option.textContent = assetSchemas[sourceType].displayName; sourceSelector.appendChild(option); } try { const [unitsResponse, configsResponse] = await Promise.all([ fetch('/api/units'), fetch('/api/source-configurations') ]); const unitsList = await unitsResponse.json(); allConfigs = await configsResponse.json(); unitSelect.innerHTML = '<option value="">-- Selecione --</option>'; if (unitsList.length > 1) { const allUnitsOption = document.createElement('option'); allUnitsOption.value = 'all'; allUnitsOption.textContent = '*** TODAS AS UNIDADES ***'; unitSelect.appendChild(allUnitsOption); } unitsList.forEach(unit => { const option = document.createElement('option'); option.value = unit.id; option.textContent = unit.name; unitSelect.appendChild(option); }); } catch (error) { console.error("Erro na inicialização da página:", error); } }
     async function handleSourceSelection() { currentSourceType = sourceSelector.value; resetForm(); frequencyFeedback.textContent = ''; if (!currentSourceType) { assetManagementSection.style.display = 'none'; return; } const schema = assetSchemas[currentSourceType]; formTitle.textContent = `Adicionar Nova Fonte`; tableTitle.textContent = `Fontes de ${schema.displayName} Cadastradas`; const currentConfig = allConfigs.find(c => c.source_type === currentSourceType); reportingFrequencySelect.value = currentConfig ? currentConfig.reporting_frequency : 'anual'; await buildDynamicForm(schema); buildDynamicTableHeaders(schema); loadAssetTypologies(); assetManagementSection.style.display = 'block'; }
     function buildDynamicTableHeaders(schema) { assetsThead.innerHTML = ''; const headerRow = document.createElement('tr'); let headers = '<th>Descrição</th><th>Unidade</th>'; for (const key in schema.fields) { headers += `<th>${schema.fields[key].label}</th>`; } headerRow.innerHTML = headers; assetsThead.appendChild(headerRow); }
     async function loadAssetTypologies() { if (!currentSourceType) return; try { const response = await fetch(`/api/asset-typologies?source_type=${currentSourceType}`); const typologies = await response.json(); assetsTbody.innerHTML = ''; typologies.forEach(typo => { const tr = document.createElement('tr'); let rowHtml = `<td>${typo.description}</td><td>${typo.unit_name}</td>`; const schema = assetSchemas[currentSourceType]; for (const key in schema.fields) { rowHtml += `<td>${typo.asset_fields[key] || ''}</td>`; } rowHtml += `<td> <button class="action-btn edit-btn" data-id="${typo.id}">Editar</button> <button class="action-btn delete-btn" data-id="${typo.id}">Deletar</button> </td>`; tr.innerHTML = rowHtml; assetsTbody.appendChild(tr); }); } catch (error) { console.error("Erro ao carregar tipologias:", error); } }
+    async function handleFormSubmit(e) { e.preventDefault(); const id = assetIdInput.value; const asset_fields = {}; specificFieldsContainer.querySelectorAll('input, select').forEach(input => { const fieldWrapper = input.closest('.form-row'); if (fieldWrapper.style.display !== 'none') { asset_fields[input.dataset.key] = input.value; } }); const unitValue = document.getElementById('asset-unit').value; const data = { description: document.getElementById('asset-description').value, unit_id: unitValue, source_type: currentSourceType, asset_fields: asset_fields }; const method = id ? 'PUT' : 'POST'; const url = id ? `/api/asset-typologies/${id}` : '/api/asset-typologies'; try { const response = await fetch(url, { method: method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) }); if (!response.ok) { const errorData = await response.json(); throw new Error(errorData.error || 'Falha ao salvar a fonte.'); } resetForm(); loadAssetTypologies(); } catch (error) { console.error("Erro ao salvar:", error); alert(`Ocorreu um erro ao salvar: ${error.message}`); } }
     
-    // --- ATENÇÃO: FUNÇÃO CORRIGIDA ---
-    async function handleFormSubmit(e) { 
-        e.preventDefault(); 
-        const id = assetIdInput.value; 
-        const asset_fields = {}; 
-        specificFieldsContainer.querySelectorAll('input, select').forEach(input => { 
-            const fieldWrapper = input.closest('.form-row'); 
-            if (fieldWrapper.style.display !== 'none') { 
-                asset_fields[input.dataset.key] = input.value; 
-            } 
-        }); 
-        
-        const unitValue = document.getElementById('asset-unit').value; 
-        const data = { 
-            description: document.getElementById('asset-description').value, 
-            unit_id: unitValue, 
-            source_type: currentSourceType, 
-            asset_fields: asset_fields 
-        }; 
-        
-        const method = id ? 'PUT' : 'POST'; 
-        const url = id ? `/api/asset-typologies/${id}` : '/api/asset-typologies'; 
-        
-        try { 
-            const response = await fetch(url, { 
-                method: method, // CORRIGIDO: de 'method' para method
-                headers: { 'Content-Type': 'application/json' }, 
-                body: JSON.stringify(data) 
-            }); 
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || 'Falha ao salvar a fonte.');
+    // --- ATENÇÃO: handleTableClick ATUALIZADO PARA LIDAR COM MÚLTIPLOS GATILHOS ---
+    async function handleTableClick(e) {
+        const target = e.target;
+        const id = target.dataset.id;
+        if (!id) return;
+
+        if (target.classList.contains('edit-btn')) {
+            const response = await fetch(`/api/asset-typologies?source_type=${currentSourceType}`);
+            const typologies = await response.json();
+            const typoToEdit = typologies.find(t => t.id == id);
+            
+            if (typoToEdit) {
+                assetIdInput.value = typoToEdit.id;
+                document.getElementById('asset-description').value = typoToEdit.description;
+                document.getElementById('asset-unit').value = typoToEdit.unit_id;
+                
+                await buildDynamicForm(assetSchemas[currentSourceType]); 
+                
+                specificFieldsContainer.querySelectorAll('input, select').forEach(input => {
+                    const key = input.dataset.key;
+                    if (typoToEdit.asset_fields[key]) {
+                        input.value = typoToEdit.asset_fields[key];
+                        // Dispara eventos 'change' para todos os campos que são gatilhos
+                        if (input.id === 'field-tipo_entrada' || input.id === 'field-tipo_reporte_gas') {
+                            input.dispatchEvent(new Event('change'));
+                        }
+                    }
+                });
+
+                formTitle.textContent = `Editando Fonte: ${typoToEdit.description}`;
+                cancelBtn.style.display = 'inline-block';
+                window.scrollTo(0,0);
             }
-            resetForm(); 
-            loadAssetTypologies(); 
-        } catch (error) { 
-            console.error("Erro ao salvar:", error); 
-            alert(`Ocorreu um erro ao salvar: ${error.message}`); 
-        } 
+        } else if (target.classList.contains('delete-btn')) {
+            if (confirm('Tem certeza que deseja deletar esta fonte?')) {
+                try {
+                    await fetch(`/api/asset-typologies/${id}`, { method: 'DELETE' });
+                    loadAssetTypologies();
+                } catch (error) {
+                    console.error("Erro ao deletar:", error);
+                    alert('Ocorreu um erro ao deletar. Verifique o console.');
+                }
+            }
+        }
     }
     
-    async function handleTableClick(e) { const target = e.target; const id = target.dataset.id; if (!id) return; if (target.classList.contains('edit-btn')) { const response = await fetch(`/api/asset-typologies?source_type=${currentSourceType}`); const typologies = await response.json(); const typoToEdit = typologies.find(t => t.id == id); if (typoToEdit) { assetIdInput.value = typoToEdit.id; document.getElementById('asset-description').value = typoToEdit.description; document.getElementById('asset-unit').value = typoToEdit.unit_id; await buildDynamicForm(assetSchemas[currentSourceType]); specificFieldsContainer.querySelectorAll('input, select').forEach(input => { const key = input.dataset.key; if (typoToEdit.asset_fields[key]) { input.value = typoToEdit.asset_fields[key]; if (input.id === 'field-tipo_entrada') { input.dispatchEvent(new Event('change')); } } }); formTitle.textContent = `Editando Fonte: ${typoToEdit.description}`; cancelBtn.style.display = 'inline-block'; window.scrollTo(0,0); } } else if (target.classList.contains('delete-btn')) { if (confirm('Tem certeza que deseja deletar esta fonte?')) { try { await fetch(`/api/asset-typologies/${id}`, { method: 'DELETE' }); loadAssetTypologies(); } catch (error) { console.error("Erro ao deletar:", error); alert('Ocorreu um erro ao deletar. Verifique o console.'); } } } }
-    function resetForm() { form.reset(); assetIdInput.value = ''; if (currentSourceType) { formTitle.textContent = `Adicionar Nova Fonte`; } cancelBtn.style.display = 'none'; if (currentSourceType === 'combustao_movel') { const tipoEntradaSelect = document.getElementById('field-tipo_entrada'); if (tipoEntradaSelect) { tipoEntradaSelect.dispatchEvent(new Event('change')); } } }
+    // --- ATENÇÃO: resetForm ATUALIZADO PARA LIDAR COM MÚLTIPLOS GATILHOS ---
+    function resetForm() {
+        form.reset();
+        assetIdInput.value = '';
+        if (currentSourceType) {
+            formTitle.textContent = `Adicionar Nova Fonte`;
+        }
+        cancelBtn.style.display = 'none';
+
+        // Dispara o evento change para os gatilhos, garantindo que a UI resete ao estado inicial
+        const trigger1 = document.getElementById('field-tipo_entrada');
+        if (trigger1) trigger1.dispatchEvent(new Event('change'));
+        
+        const trigger2 = document.getElementById('field-tipo_reporte_gas');
+        if (trigger2) trigger2.dispatchEvent(new Event('change'));
+    }
+
+    // --- ATENÇÃO: buildDynamicForm ATUALIZADO PARA SER MAIS GENÉRICO ---
     async function buildDynamicForm(schema) { 
         specificFieldsContainer.innerHTML = ''; 
         const fieldElements = {};
+        const triggerFields = new Set(); // Armazena os nomes dos campos gatilho
+
+        // Identifica todos os campos que são gatilhos
+        for (const key in schema.fields) {
+            const field = schema.fields[key];
+            if (field.showIf) {
+                triggerFields.add(field.showIf.field);
+            }
+        }
 
         for (const key in schema.fields) { 
             const field = schema.fields[key]; 
@@ -135,7 +187,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (field.options) {
                         options = field.options;
                     } else {
-                        const response = await fetch(`/api/options?field_key=${key}`);
+                        // O 'key' para gases especiais é diferente
+                        const fieldKeyForApi = (key === 'gas_emissor_composicao') ? 'tipo_gas' : key;
+                        const response = await fetch(`/api/options?field_key=${fieldKeyForApi}`);
                         const optionsFromApi = await response.json();
                         options = optionsFromApi.map(opt => opt.value);
                     }
@@ -170,7 +224,8 @@ document.addEventListener('DOMContentLoaded', () => {
             formRow.appendChild(formGroup); 
             specificFieldsContainer.appendChild(formRow); 
 
-            if (key === 'tipo_entrada') {
+            // Se este campo for um gatilho, adiciona o event listener
+            if (triggerFields.has(key)) {
                 input.addEventListener('change', () => {
                     const selectedValue = input.value;
                     for (const fieldKey in fieldElements) {
@@ -190,14 +245,19 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
         
-        const triggerField = fieldElements['tipo_entrada'];
-        if (triggerField) {
-            triggerField.input.dispatchEvent(new Event('change'));
-        }
+        // Dispara o evento change para TODOS os gatilhos para definir o estado inicial
+        triggerFields.forEach(triggerKey => {
+            const triggerElement = fieldElements[triggerKey];
+            if (triggerElement) {
+                triggerElement.input.dispatchEvent(new Event('change'));
+            }
+        });
     }
     
+    // ... (handleSaveFrequency sem alterações)
     async function handleSaveFrequency() { if (!currentSourceType) return; frequencyFeedback.textContent = 'Salvando...'; frequencyFeedback.style.color = 'blue'; try { const response = await fetch('/api/source-configurations', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ source_type: currentSourceType, reporting_frequency: reportingFrequencySelect.value }) }); if (!response.ok) throw new Error('Falha ao salvar configuração.'); const existingConfig = allConfigs.find(c => c.source_type === currentSourceType); if (existingConfig) { existingConfig.reporting_frequency = reportingFrequencySelect.value; } else { allConfigs.push({ source_type: currentSourceType, reporting_frequency: reportingFrequencySelect.value }); } frequencyFeedback.textContent = 'Frequência salva com sucesso!'; frequencyFeedback.style.color = 'green'; } catch (error) { console.error('Erro ao salvar frequência:', error); frequencyFeedback.textContent = 'Erro ao salvar.'; frequencyFeedback.style.color = 'red'; } }
     
+    // ... (event listeners)
     sourceSelector.addEventListener('change', handleSourceSelection);
     saveFrequencyBtn.addEventListener('click', handleSaveFrequency);
     form.addEventListener('submit', handleFormSubmit);
