@@ -23,6 +23,31 @@ const db = new sqlite3.Database(dbPath, (err) => {
         db.run(`CREATE TABLE IF NOT EXISTS lubricants_ippu_data (id INTEGER PRIMARY KEY AUTOINCREMENT, ano INTEGER, periodo TEXT, unidade_empresarial TEXT, fonte_emissao TEXT, tipo_lubrificante TEXT, consumo REAL, unidade TEXT, utilizacao TEXT, controlado_empresa BOOLEAN)`, (err) => { if (err) console.error('Erro tabela lubricants_ippu_data:', err); else console.log('Tabela "lubricants_ippu_data" pronta.'); });
         db.run(`CREATE TABLE IF NOT EXISTS fugitive_emissions_data (id INTEGER PRIMARY KEY AUTOINCREMENT, ano INTEGER, periodo TEXT, unidade_empresarial TEXT, fonte_emissao TEXT, tipo_gas TEXT, quantidade_reposta REAL, unidade TEXT, controlado_empresa BOOLEAN, nome_comercial_gas TEXT, gas_emissor_composicao TEXT, percentual_emissao REAL, rastreabilidade TEXT, comentarios TEXT)`, (err) => { if (err) console.error('Erro tabela fugitive_emissions_data:', err); else console.log('Tabela "fugitive_emissions_data" pronta.'); });
         db.run(`CREATE TABLE IF NOT EXISTS fertilizers_data (id INTEGER PRIMARY KEY AUTOINCREMENT, ano INTEGER, periodo TEXT, unidade_empresarial TEXT, especificacoes_insumo TEXT, tipo_fertilizante TEXT, quantidade_kg REAL, unidade TEXT, percentual_nitrogenio REAL, percentual_carbonato REAL, controlado_empresa BOOLEAN, rastreabilidade TEXT, comentarios TEXT)`, (err) => { if (err) console.error('Erro tabela fertilizers_data:', err); else console.log('Tabela "fertilizers_data" pronta.'); });
+        
+        // --- ATENÇÃO: NOVA TABELA ADICIONADA AQUI ---
+        db.run(`
+            CREATE TABLE IF NOT EXISTS effluents_controlled_data (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                ano INTEGER NOT NULL,
+                periodo TEXT NOT NULL,
+                unidade_empresarial TEXT NOT NULL,
+                tratamento_ou_destino TEXT NOT NULL,
+                tipo_tratamento TEXT,
+                tipo_destino_final TEXT,
+                qtd_efluente_liquido_m3 REAL NOT NULL,
+                unidade_efluente_liquido TEXT NOT NULL,
+                qtd_componente_organico REAL NOT NULL,
+                unidade_componente_organico TEXT NOT NULL,
+                qtd_nitrogenio_mg_l REAL NOT NULL,
+                unidade_nitrogenio TEXT NOT NULL,
+                componente_organico_removido_lodo REAL,
+                unidade_comp_organico_removido_lodo TEXT,
+                rastreabilidade TEXT NOT NULL,
+                comentarios TEXT
+            )
+        `, (err) => { if (err) console.error('Erro tabela effluents_controlled_data:', err); else console.log('Tabela "effluents_controlled_data" pronta.'); });
+        // --- FIM DA ADIÇÃO ---
+
         db.run(`CREATE TABLE IF NOT EXISTS asset_typologies (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, unit_id INTEGER NOT NULL, source_type TEXT NOT NULL, description TEXT NOT NULL, asset_fields TEXT, is_active BOOLEAN DEFAULT TRUE)`, (err) => { if (err) console.error('Erro tabela asset_typologies:', err); else console.log('Tabela "asset_typologies" pronta.'); });
         db.run(`CREATE TABLE IF NOT EXISTS managed_options (id INTEGER PRIMARY KEY AUTOINCREMENT, field_key TEXT NOT NULL, value TEXT NOT NULL, UNIQUE(field_key, value))`, (err) => { if (err) console.error('Erro tabela managed_options:', err); else console.log('Tabela "managed_options" pronta.'); });
         db.run(`DROP TABLE IF EXISTS custom_options`, (err) => { if (err) console.error('Erro ao remover tabela antiga custom_options:', err); });

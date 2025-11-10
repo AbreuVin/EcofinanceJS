@@ -14,7 +14,7 @@ const { validationSchemas } = require('../shared/validators.js');
 
 // --- 2. CONFIGURAÇÕES ---
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8080;
 const saltRounds = 10;
 const upload = multer({ dest: path.join(__dirname, 'uploads/') });
 
@@ -335,11 +335,23 @@ app.post('/api/export', (req, res) => {
     }
 });
 
-// Rota para Salvar Dados das Fontes - Sem alterações
+// Rota para Salvar Dados das Fontes
 app.post('/api/save-data/:tableName', (req, res) => {
     const { tableName } = req.params;
     const dataRows = req.body;
-    const allowedTables = { combustao_movel: 'mobile_combustion_data', combustao_estacionaria: 'stationary_combustion_data', dados_producao_venda: 'production_sales_data', ippu_lubrificantes: 'lubricants_ippu_data', emissoes_fugitivas: 'fugitive_emissions_data', fertilizantes: 'fertilizers_data' };
+    
+    // --- ATENÇÃO: MUDANÇA 1 AQUI ---
+    const allowedTables = { 
+        combustao_movel: 'mobile_combustion_data', 
+        combustao_estacionaria: 'stationary_combustion_data', 
+        dados_producao_venda: 'production_sales_data', 
+        ippu_lubrificantes: 'lubricants_ippu_data', 
+        emissoes_fugitivas: 'fugitive_emissions_data', 
+        fertilizantes: 'fertilizers_data',
+        efluentes_controlados: 'effluents_controlled_data' // Nova fonte adicionada
+    };
+    // --- FIM DA MUDANÇA 1 ---
+
     if (!allowedTables[tableName]) { return res.status(400).json({ message: "Tipo de tabela inválido." }); }
     if (!dataRows || dataRows.length === 0) { return res.status(400).json({ message: "Nenhum dado para salvar." }); }
     const dbTableName = allowedTables[tableName];
@@ -383,8 +395,6 @@ app.get('/api/asset-typologies', (req, res) => {
         }
         
         const results = rows.map(row => {
-            // Lógica de parse robusta: Garante que asset_fields seja sempre um objeto.
-            // Se row.asset_fields for null, undefined, ou uma string vazia, ele usa '{}' como padrão.
             const fields = JSON.parse(row.asset_fields || '{}');
             return { ...row, asset_fields: fields };
         });
@@ -463,7 +473,6 @@ app.post('/api/options', (req, res) => {
     
     db.run("INSERT INTO managed_options (field_key, value) VALUES (?, ?)", [field_key, value], function(err) {
         if (err) { 
-            // Retorna um erro mais genérico, mas no console logamos o erro específico
             console.error("Erro ao inserir em managed_options:", err.message);
             res.status(500).json({ "error": err.message }); 
             return;
@@ -510,7 +519,17 @@ app.get('/api/intelligent-template/:sourceType', (req, res) => {
     const schema = validationSchemas[sourceType];
     if (!schema) { return res.status(404).send('Tipo de fonte não encontrado.'); }
 
-    const descriptionKeyMap = { combustao_estacionaria: 'descricao_da_fonte', combustao_movel: 'descricao_fonte', dados_producao_venda: 'produto', ippu_lubrificantes: 'fonte_emissao', emissoes_fugitivas: 'fonte_emissao', fertilizantes: 'especificacoes_insumo' };
+    // --- ATENÇÃO: MUDANÇA 2 AQUI ---
+    const descriptionKeyMap = { 
+        combustao_estacionaria: 'descricao_da_fonte', 
+        combustao_movel: 'descricao_fonte', 
+        dados_producao_venda: 'produto', 
+        ippu_lubrificantes: 'fonte_emissao', 
+        emissoes_fugitivas: 'fonte_emissao', 
+        fertilizantes: 'especificacoes_insumo',
+        efluentes_controlados: 'tratamento_ou_destino' // Nova fonte adicionada
+    };
+    // --- FIM DA MUDANÇA 2 ---
     
     const getFrequency = new Promise((resolve, reject) => { db.get("SELECT reporting_frequency FROM source_configurations WHERE source_type = ?", [sourceType], (err, row) => { if (err) return reject(err); resolve(row ? row.reporting_frequency : 'anual'); }); });
     
@@ -565,14 +584,11 @@ app.get('/api/intelligent-template/:sourceType', (req, res) => {
                         row[headers['tipo_entrada']] = 'distancia';
                     }
                 }
-                // --- ATENÇÃO: NOVA LÓGICA ESPECÍFICA PARA EMISSÕES FUGITIVAS ---
                 else if (sourceType === 'emissoes_fugitivas') {
-                    // Preenche a unidade com 'kg' se não foi definida uma unidade padrão no cadastro
                     if (!row[headers['unidade']]) {
                         row[headers['unidade']] = 'kg';
                     }
                 }
-                // --- FIM DA LÓGICA ESPECÍFICA ---
                 else if (schema.autoFillMap) {
                     for (const triggerKey in schema.autoFillMap) {
                         const rule = schema.autoFillMap[triggerKey];
