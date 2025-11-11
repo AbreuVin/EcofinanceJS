@@ -53,8 +53,6 @@ document.addEventListener('DOMContentLoaded', () => {
             } 
         },
         fertilizantes: { displayName: "Fertilizantes", fields: { percentual_nitrogenio: { label: "Percentual de Nitrogênio (%)", type: "number", min: 0, max: 100, step: 0.01 }, percentual_carbonato: { label: "Percentual de Carbonato (%)", type: "number", min: 0, max: 100, step: 0.01 }, controlado_empresa: { label: "Controlado pela Empresa?", type: "select", options: ["Sim", "Não"] } } },
-        
-        // --- ATENÇÃO: NOVO SCHEMA ADICIONADO AQUI ---
         efluentes_controlados: {
             displayName: "Efluentes Controlados",
             fields: {
@@ -77,6 +75,48 @@ document.addEventListener('DOMContentLoaded', () => {
                     type: "select"
                 },
                 rastreabilidade: {
+                    label: "Rastreabilidade Padrão",
+                    type: "text"
+                }
+            }
+        },
+        efluentes_domesticos: {
+            displayName: "Efluentes Domésticos",
+            fields: {
+                fossa_septica_propriedade: {
+                    label: "Fossa Séptica na Propriedade (Padrão)?",
+                    type: "select"
+                },
+                rastreabilidade: {
+                    label: "Rastreabilidade Padrão",
+                    type: "text"
+                }
+            }
+        },
+        // --- ATENÇÃO: NOVO SCHEMA ADICIONADO AQUI ---
+        mudanca_uso_solo: {
+            displayName: "Mudança do Uso do Solo",
+            fields: {
+                uso_solo_anterior: {
+                    label: "Uso do Solo Anterior (Padrão)",
+                    type: "select"
+                },
+                bioma: {
+                    label: "Bioma",
+                    type: "select",
+                    showIf: { field: "uso_solo_anterior", value: "Vegetação natural" }
+                },
+                fitofisionomia: {
+                    label: "Fitofisionomia",
+                    type: "text",
+                    showIf: { field: "uso_solo_anterior", value: "Vegetação natural" }
+                },
+                tipo_area: {
+                    label: "Tipo de Área",
+                    type: "select",
+                    showIf: { field: "uso_solo_anterior", value: "Vegetação natural" }
+                },
+                 rastreabilidade: {
                     label: "Rastreabilidade Padrão",
                     type: "text"
                 }
@@ -133,7 +173,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (typoToEdit.asset_fields[key]) {
                         input.value = typoToEdit.asset_fields[key];
                         // Dispara eventos 'change' para todos os campos que são gatilhos
-                        if (input.id.includes('tipo_entrada') || input.id.includes('tipo_reporte_gas') || input.id.includes('tratamento_ou_destino')) {
+                        if (input.id.includes('tipo_entrada') || input.id.includes('tipo_reporte_gas') || input.id.includes('tratamento_ou_destino') || input.id.includes('uso_solo_anterior')) {
                             input.dispatchEvent(new Event('change'));
                         }
                     }
@@ -165,7 +205,7 @@ document.addEventListener('DOMContentLoaded', () => {
         cancelBtn.style.display = 'none';
 
         // Dispara o evento change para os gatilhos, garantindo que a UI resete ao estado inicial
-        const triggerFields = ['field-tipo_entrada', 'field-tipo_reporte_gas', 'field-tratamento_ou_destino'];
+        const triggerFields = ['field-tipo_entrada', 'field-tipo_reporte_gas', 'field-tratamento_ou_destino', 'field-uso_solo_anterior'];
         triggerFields.forEach(id => {
             const trigger = document.getElementById(id);
             if (trigger) trigger.dispatchEvent(new Event('change'));

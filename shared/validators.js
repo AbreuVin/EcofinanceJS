@@ -257,7 +257,6 @@ export const validationSchemas = {
             return { isValid: Object.keys(errors).length === 0, errors: errors };
         }
     },
-    // --- ATENÇÃO: NOVO SCHEMA ADICIONADO AQUI ---
     efluentes_controlados: {
         displayName: "Efluentes Controlados",
         hasUnits: true,
@@ -290,22 +289,15 @@ export const validationSchemas = {
         autoFillMap: {},
         validateRow: function(rowData) {
             const errors = {};
-            // Validações Gerais
             if (!rowData.ano || isNaN(parseInt(rowData.ano)) || String(rowData.ano).length !== 4) errors.ano = "Deve ser um ano com 4 dígitos.";
             if (!this.validOptions.periodo.includes(rowData.periodo)) errors.periodo = "Período inválido.";
             if (!rowData.unidade_empresarial) errors.unidade_empresarial = "Obrigatório.";
-            
-            // Validações de Quantidade e Unidade Fixa
             if (isNaN(parseFloat(rowData.qtd_efluente_liquido_m3)) || parseFloat(rowData.qtd_efluente_liquido_m3) <= 0) errors.qtd_efluente_liquido_m3 = "Deve ser um número positivo.";
             if (rowData.unidade_efluente_liquido !== 'm3/ano') errors.unidade_efluente_liquido = "Unidade deve ser 'm3/ano'.";
-            
             if (isNaN(parseFloat(rowData.qtd_componente_organico)) || parseFloat(rowData.qtd_componente_organico) <= 0) errors.qtd_componente_organico = "Deve ser um número positivo.";
             if (!this.validOptions.unidade_componente_organico.includes(rowData.unidade_componente_organico)) errors.unidade_componente_organico = "Unidade do componente inválida.";
-            
             if (isNaN(parseFloat(rowData.qtd_nitrogenio_mg_l)) || parseFloat(rowData.qtd_nitrogenio_mg_l) <= 0) errors.qtd_nitrogenio_mg_l = "Deve ser um número positivo.";
             if (rowData.unidade_nitrogenio !== 'mg/L') errors.unidade_nitrogenio = "Unidade deve ser 'mg/L'.";
-
-            // Validações de Campos Opcionais (só validam se preenchidos)
             if (rowData.componente_organico_removido_lodo) {
                 if (isNaN(parseFloat(rowData.componente_organico_removido_lodo)) || parseFloat(rowData.componente_organico_removido_lodo) < 0) errors.componente_organico_removido_lodo = "Deve ser um número positivo ou zero.";
                 if (!this.validOptions.unidade_comp_organico_removido_lodo.includes(rowData.unidade_comp_organico_removido_lodo)) errors.unidade_comp_organico_removido_lodo = "Unidade do componente removido inválida.";
@@ -313,8 +305,6 @@ export const validationSchemas = {
             if (rowData.unidade_comp_organico_removido_lodo && !rowData.componente_organico_removido_lodo) {
                  errors.componente_organico_removido_lodo = "Quantidade é obrigatória se a unidade for selecionada.";
             }
-
-            // Lógica Condicional para Tratamento vs Destino
             if (!this.validOptions.tratamento_ou_destino.includes(rowData.tratamento_ou_destino)) {
                 errors.tratamento_ou_destino = "Escolha entre 'Tratamento' e 'Destino Final'.";
             } else if (rowData.tratamento_ou_destino === 'Tratamento') {
@@ -326,11 +316,121 @@ export const validationSchemas = {
                     errors.tipo_destino_final = "Selecione um tipo de destino final válido.";
                 }
             }
+            if (!rowData.rastreabilidade) errors.rastreabilidade = "Obrigatório.";
+            return { isValid: Object.keys(errors).length === 0, errors: errors };
+        }
+    },
+    efluentes_domesticos: {
+        displayName: "Efluentes Domésticos",
+        hasUnits: true,
+        headerDisplayNames: {
+            ano: "Ano",
+            periodo: "Período",
+            unidade_empresarial: "Unidade Empresarial",
+            num_medio_colaboradores: "Nº Médio Mensal de Colaboradores",
+            carga_horaria_media_colaboradores: "Carga Horária Média de Trabalho dos Colaboradores",
+            num_medio_terceiros: "Nº Médio Mensal de Terceiros",
+            carga_horaria_media_terceiros: "Carga Horária Média de Trabalho dos Terceiros",
+            fossa_septica_propriedade: "Fossa séptica na propriedade da empresa?",
+            rastreabilidade: "Rastreabilidade Interna",
+            comentarios: "Comentários"
+        },
+        validOptions: {
+            periodo: ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro", "Anual"],
+            fossa_septica_propriedade: ["Sim", "Não"]
+        },
+        autoFillMap: {},
+        validateRow: function(rowData) {
+            const errors = {};
+            
+            if (!rowData.ano || isNaN(parseInt(rowData.ano)) || String(rowData.ano).length !== 4) errors.ano = "Deve ser um ano com 4 dígitos.";
+            if (!this.validOptions.periodo.includes(rowData.periodo)) errors.periodo = "Período inválido.";
+            if (!rowData.unidade_empresarial) errors.unidade_empresarial = "Obrigatório.";
+
+            const numColaboradores = parseInt(rowData.num_medio_colaboradores, 10);
+            if (isNaN(numColaboradores) || numColaboradores < 0 || String(rowData.num_medio_colaboradores).includes('.') || String(rowData.num_medio_colaboradores).includes(',')) {
+                errors.num_medio_colaboradores = "Deve ser um número inteiro e positivo.";
+            }
+            const numTerceiros = parseInt(rowData.num_medio_terceiros, 10);
+            if (isNaN(numTerceiros) || numTerceiros < 0 || String(rowData.num_medio_terceiros).includes('.') || String(rowData.num_medio_terceiros).includes(',')) {
+                errors.num_medio_terceiros = "Deve ser um número inteiro e positivo.";
+            }
+
+            const cargaColaboradores = parseFloat(rowData.carga_horaria_media_colaboradores);
+            if (isNaN(cargaColaboradores) || cargaColaboradores < 0) {
+                errors.carga_horaria_media_colaboradores = "Deve ser um número positivo.";
+            }
+             const cargaTerceiros = parseFloat(rowData.carga_horaria_media_terceiros);
+            if (isNaN(cargaTerceiros) || cargaTerceiros < 0) {
+                errors.carga_horaria_media_terceiros = "Deve ser um número positivo.";
+            }
+
+            if (!this.validOptions.fossa_septica_propriedade.includes(rowData.fossa_septica_propriedade)) {
+                errors.fossa_septica_propriedade = "Escolha 'Sim' ou 'Não'.";
+            }
+            
+            if (!rowData.rastreabilidade) errors.rastreabilidade = "Obrigatório.";
+
+            return { isValid: Object.keys(errors).length === 0, errors: errors };
+        }
+    },
+    // --- ATENÇÃO: NOVO SCHEMA ADICIONADO AQUI ---
+    mudanca_uso_solo: {
+        displayName: "Mudança do Uso do Solo",
+        hasUnits: true,
+        headerDisplayNames: {
+            ano: "Ano",
+            periodo: "Período",
+            unidade_empresarial: "Unidade Organizacional",
+            uso_solo_anterior: "Uso do Solo Anterior",
+            bioma: "Bioma",
+            fitofisionomia: "Fitofisionomia",
+            tipo_area: "Tipo de Área",
+            area_hectare: "Área (hectare)",
+            rastreabilidade: "Rastreabilidade Interna",
+            comentarios: "Comentários"
+        },
+        validOptions: {
+            periodo: ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro", "Anual"],
+            uso_solo_anterior: ["Cultura anual", "Cultura de cana", "Cultura perene", "Pastagem", "Silvicultura", "Vegetação natural", "Assentamentos", "Outros usos"],
+            bioma: ["Amazônia", "Cerrado", "Mata Atlântica", "Caatinga", "Pampa", "Pantanal"],
+            tipo_area: ["Área de vegetação primária manejada", "Área de vegetação primária não manejada", "Área de vegetação secundária"]
+        },
+        autoFillMap: {},
+        validateRow: function(rowData) {
+            const errors = {};
+            
+            // Validações Gerais
+            if (!rowData.ano || isNaN(parseInt(rowData.ano)) || String(rowData.ano).length !== 4) errors.ano = "Deve ser um ano com 4 dígitos.";
+            if (!this.validOptions.periodo.includes(rowData.periodo)) errors.periodo = "Período inválido.";
+            if (!rowData.unidade_empresarial) errors.unidade_empresarial = "Obrigatório.";
+
+            // Validações de Campos Principais
+            const area = parseFloat(rowData.area_hectare);
+            if (isNaN(area) || area <= 0) {
+                errors.area_hectare = "Deve ser um número positivo.";
+            }
+            if (!this.validOptions.uso_solo_anterior.includes(rowData.uso_solo_anterior)) {
+                errors.uso_solo_anterior = "Selecione uma opção válida.";
+            }
+            
+            // Lógica Condicional
+            if (rowData.uso_solo_anterior === 'Vegetação natural') {
+                if (!this.validOptions.bioma.includes(rowData.bioma)) {
+                    errors.bioma = "Bioma é obrigatório para Vegetação Natural.";
+                }
+                if (!rowData.fitofisionomia) { // texto livre, basta verificar se não está vazio
+                    errors.fitofisionomia = "Fitofisionomia é obrigatório para Vegetação Natural.";
+                }
+                if (!this.validOptions.tipo_area.includes(rowData.tipo_area)) {
+                    errors.tipo_area = "Tipo de Área é obrigatório para Vegetação Natural.";
+                }
+            }
             
             if (!rowData.rastreabilidade) errors.rastreabilidade = "Obrigatório.";
 
             return { isValid: Object.keys(errors).length === 0, errors: errors };
         }
     }
-    // --- FIM DA ADIÇÃO ---
+    
 };

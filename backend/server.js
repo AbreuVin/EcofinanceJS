@@ -348,7 +348,9 @@ app.post('/api/save-data/:tableName', (req, res) => {
         ippu_lubrificantes: 'lubricants_ippu_data', 
         emissoes_fugitivas: 'fugitive_emissions_data', 
         fertilizantes: 'fertilizers_data',
-        efluentes_controlados: 'effluents_controlled_data' // Nova fonte adicionada
+        efluentes_controlados: 'effluents_controlled_data',
+        efluentes_domesticos: 'domestic_effluents_data',
+        mudanca_uso_solo: 'land_use_change_data' // Nova fonte adicionada
     };
     // --- FIM DA MUDANÇA 1 ---
 
@@ -527,7 +529,9 @@ app.get('/api/intelligent-template/:sourceType', (req, res) => {
         ippu_lubrificantes: 'fonte_emissao', 
         emissoes_fugitivas: 'fonte_emissao', 
         fertilizantes: 'especificacoes_insumo',
-        efluentes_controlados: 'tratamento_ou_destino' // Nova fonte adicionada
+        efluentes_controlados: 'tratamento_ou_destino',
+        efluentes_domesticos: 'unidade_empresarial',
+        mudanca_uso_solo: 'uso_solo_anterior' // Nova fonte adicionada
     };
     // --- FIM DA MUDANÇA 2 ---
     

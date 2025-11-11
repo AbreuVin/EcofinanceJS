@@ -23,8 +23,6 @@ const db = new sqlite3.Database(dbPath, (err) => {
         db.run(`CREATE TABLE IF NOT EXISTS lubricants_ippu_data (id INTEGER PRIMARY KEY AUTOINCREMENT, ano INTEGER, periodo TEXT, unidade_empresarial TEXT, fonte_emissao TEXT, tipo_lubrificante TEXT, consumo REAL, unidade TEXT, utilizacao TEXT, controlado_empresa BOOLEAN)`, (err) => { if (err) console.error('Erro tabela lubricants_ippu_data:', err); else console.log('Tabela "lubricants_ippu_data" pronta.'); });
         db.run(`CREATE TABLE IF NOT EXISTS fugitive_emissions_data (id INTEGER PRIMARY KEY AUTOINCREMENT, ano INTEGER, periodo TEXT, unidade_empresarial TEXT, fonte_emissao TEXT, tipo_gas TEXT, quantidade_reposta REAL, unidade TEXT, controlado_empresa BOOLEAN, nome_comercial_gas TEXT, gas_emissor_composicao TEXT, percentual_emissao REAL, rastreabilidade TEXT, comentarios TEXT)`, (err) => { if (err) console.error('Erro tabela fugitive_emissions_data:', err); else console.log('Tabela "fugitive_emissions_data" pronta.'); });
         db.run(`CREATE TABLE IF NOT EXISTS fertilizers_data (id INTEGER PRIMARY KEY AUTOINCREMENT, ano INTEGER, periodo TEXT, unidade_empresarial TEXT, especificacoes_insumo TEXT, tipo_fertilizante TEXT, quantidade_kg REAL, unidade TEXT, percentual_nitrogenio REAL, percentual_carbonato REAL, controlado_empresa BOOLEAN, rastreabilidade TEXT, comentarios TEXT)`, (err) => { if (err) console.error('Erro tabela fertilizers_data:', err); else console.log('Tabela "fertilizers_data" pronta.'); });
-        
-        // --- ATENÇÃO: NOVA TABELA ADICIONADA AQUI ---
         db.run(`
             CREATE TABLE IF NOT EXISTS effluents_controlled_data (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -46,6 +44,38 @@ const db = new sqlite3.Database(dbPath, (err) => {
                 comentarios TEXT
             )
         `, (err) => { if (err) console.error('Erro tabela effluents_controlled_data:', err); else console.log('Tabela "effluents_controlled_data" pronta.'); });
+        db.run(`
+            CREATE TABLE IF NOT EXISTS domestic_effluents_data (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                ano INTEGER NOT NULL,
+                periodo TEXT NOT NULL,
+                unidade_empresarial TEXT NOT NULL,
+                num_medio_colaboradores INTEGER NOT NULL,
+                carga_horaria_media_colaboradores REAL NOT NULL,
+                num_medio_terceiros INTEGER NOT NULL,
+                carga_horaria_media_terceiros REAL NOT NULL,
+                fossa_septica_propriedade TEXT NOT NULL,
+                rastreabilidade TEXT NOT NULL,
+                comentarios TEXT
+            )
+        `, (err) => { if (err) console.error('Erro tabela domestic_effluents_data:', err); else console.log('Tabela "domestic_effluents_data" pronta.'); });
+        
+        // --- ATENÇÃO: NOVA TABELA ADICIONADA AQUI ---
+        db.run(`
+            CREATE TABLE IF NOT EXISTS land_use_change_data (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                ano INTEGER NOT NULL,
+                periodo TEXT NOT NULL,
+                unidade_empresarial TEXT NOT NULL,
+                uso_solo_anterior TEXT NOT NULL,
+                bioma TEXT,
+                fitofisionomia TEXT,
+                tipo_area TEXT,
+                area_hectare REAL NOT NULL,
+                rastreabilidade TEXT NOT NULL,
+                comentarios TEXT
+            )
+        `, (err) => { if (err) console.error('Erro tabela land_use_change_data:', err); else console.log('Tabela "land_use_change_data" pronta.'); });
         // --- FIM DA ADIÇÃO ---
 
         db.run(`CREATE TABLE IF NOT EXISTS asset_typologies (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, unit_id INTEGER NOT NULL, source_type TEXT NOT NULL, description TEXT NOT NULL, asset_fields TEXT, is_active BOOLEAN DEFAULT TRUE)`, (err) => { if (err) console.error('Erro tabela asset_typologies:', err); else console.log('Tabela "asset_typologies" pronta.'); });
