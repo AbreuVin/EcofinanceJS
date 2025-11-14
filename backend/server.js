@@ -69,13 +69,13 @@ app.post('/api/login', (req, res) => {
     });
 });
 
-// --- ATENÇÃO: ROTAS DE RESPONSÁVEIS (CONTACTS) MODIFICADAS ---
+// --- ATENÇÃO: ROTAS DE RESPONSÁVEIS (CONTACTS) ATUALIZADAS ---
 
 app.get('/api/contacts', (req, res) => {
-    // A consulta agora usa LEFT JOIN para buscar o nome da unidade.
+    // A query SQL agora não seleciona mais o campo 'area'
     const sqlContacts = `
         SELECT 
-            c.id, c.name, c.unit_id, c.area, c.email, c.phone,
+            c.id, c.name, c.unit_id, c.email, c.phone,
             u.name as unit_name 
         FROM contacts c
         LEFT JOIN units u ON c.unit_id = u.id
@@ -101,16 +101,16 @@ app.get('/api/contacts', (req, res) => {
 });
 
 app.post('/api/contacts', (req, res) => {
-    // A rota agora espera 'unit_id' no corpo da requisição
-    const { name, unit_id, area, email, phone, sources = [] } = req.body;
+    // 'area' foi removida da desestruturação e do INSERT
+    const { name, unit_id, email, phone, sources = [] } = req.body;
     if (!name) return res.status(400).json({ "error": "O nome é obrigatório." });
 
-    // O SQL agora inclui a coluna 'unit_id'
-    db.run("INSERT INTO contacts (name, unit_id, area, email, phone) VALUES (?, ?, ?, ?, ?)", [name, unit_id, area, email, phone], function(err) {
+    db.run("INSERT INTO contacts (name, unit_id, email, phone) VALUES (?, ?, ?, ?)", [name, unit_id, email, phone], function(err) {
         if (err) return res.status(500).json({ "error": err.message });
         
         const contactId = this.lastID;
         if (sources.length === 0) {
+            // Mesmo sem fontes, a resposta de sucesso é enviada
             return res.status(201).json({ "id": contactId });
         }
 
@@ -131,13 +131,12 @@ app.post('/api/contacts', (req, res) => {
 
 app.put('/api/contacts/:id', (req, res) => {
     const contactId = req.params.id;
-    // A rota agora espera 'unit_id' no corpo da requisição
-    const { name, unit_id, area, email, phone, sources = [] } = req.body;
+    // 'area' foi removida da desestruturação e do UPDATE
+    const { name, unit_id, email, phone, sources = [] } = req.body;
 
     db.serialize(() => {
         db.run("BEGIN TRANSACTION");
-        // O SQL de UPDATE agora inclui a coluna 'unit_id'
-        db.run("UPDATE contacts SET name = ?, unit_id = ?, area = ?, email = ?, phone = ? WHERE id = ?", [name, unit_id, area, email, phone, contactId]);
+        db.run("UPDATE contacts SET name = ?, unit_id = ?, email = ?, phone = ? WHERE id = ?", [name, unit_id, email, phone, contactId]);
         db.run("DELETE FROM contact_source_associations WHERE contact_id = ?", [contactId]);
 
         if (sources.length > 0) {
@@ -157,13 +156,14 @@ app.put('/api/contacts/:id', (req, res) => {
         });
     });
 });
-
+// A rota DELETE não precisou de alteração
 app.delete('/api/contacts/:id', (req, res) => {
     db.run("DELETE FROM contacts WHERE id = ?", [req.params.id], function(err) {
         if (err) return res.status(500).json({ "error": err.message });
         res.status(200).json({ deleted: this.changes });
     });
 });
+// --- FIM DAS ATUALIZAÇÕES ---
 
 // Rotas de Unidades Empresariais - Sem alterações
 app.get('/api/units', (req, res) => {
@@ -335,12 +335,11 @@ app.post('/api/export', (req, res) => {
     }
 });
 
-// Rota para Salvar Dados das Fontes
+// Rota para Salvar Dados das Fontes - Sem alterações de lógica, mas a lista foi atualizada nos passos anteriores
 app.post('/api/save-data/:tableName', (req, res) => {
     const { tableName } = req.params;
     const dataRows = req.body;
     
-    // --- ATENÇÃO: MUDANÇA 1 AQUI ---
     const allowedTables = { 
         combustao_movel: 'mobile_combustion_data', 
         combustao_estacionaria: 'stationary_combustion_data', 
@@ -350,9 +349,8 @@ app.post('/api/save-data/:tableName', (req, res) => {
         fertilizantes: 'fertilizers_data',
         efluentes_controlados: 'effluents_controlled_data',
         efluentes_domesticos: 'domestic_effluents_data',
-        mudanca_uso_solo: 'land_use_change_data' // Nova fonte adicionada
+        mudanca_uso_solo: 'land_use_change_data'
     };
-    // --- FIM DA MUDANÇA 1 ---
 
     if (!allowedTables[tableName]) { return res.status(400).json({ message: "Tipo de tabela inválido." }); }
     if (!dataRows || dataRows.length === 0) { return res.status(400).json({ message: "Nenhum dado para salvar." }); }
@@ -457,8 +455,7 @@ app.delete('/api/asset-typologies/:id', (req, res) => {
     });
 });
 
-// --- ATENÇÃO: ROTAS DE OPÇÕES CUSTOMIZÁVEIS FORAM RENOMEADAS E REFATORADAS ---
-// Agora chamadas de "Opções Gerenciadas"
+// Rotas de Opções Gerenciadas - Sem alterações
 app.get('/api/options', (req, res) => {
     const { field_key } = req.query;
     if (!field_key) { return res.status(400).json({ "error": "O parâmetro 'field_key' é obrigatório." }); }
@@ -489,7 +486,7 @@ app.delete('/api/options/:id', (req, res) => {
         res.status(200).json({ deleted: this.changes });
     });
 });
-// --- FIM DA REFATORAÇÃO DAS ROTAS ---
+
 
 // Rota de Configuração de Fontes - Sem alterações
 app.get('/api/source-configurations', (req, res) => {
@@ -514,26 +511,24 @@ app.post('/api/source-configurations', (req, res) => {
     });
 });
 
-// Rota de Template Inteligente
+// --- ATENÇÃO: ROTA DE TEMPLATE INTELIGENTE ATUALIZADA ---
 app.get('/api/intelligent-template/:sourceType', (req, res) => {
     const { sourceType } = req.params;
-    const { unitId, year } = req.query;
+    const { unitId, year, format } = req.query; // format adicionado
     const schema = validationSchemas[sourceType];
     if (!schema) { return res.status(404).send('Tipo de fonte não encontrado.'); }
 
-    // --- ATENÇÃO: MUDANÇA 2 AQUI ---
     const descriptionKeyMap = { 
         combustao_estacionaria: 'descricao_da_fonte', 
         combustao_movel: 'descricao_fonte', 
         dados_producao_venda: 'produto', 
         ippu_lubrificantes: 'fonte_emissao', 
         emissoes_fugitivas: 'fonte_emissao', 
-        fertilizantes: 'especificacoes_insumo',
+        fertilizantes: 'tipo_fertilizante', // Corrigido para um campo mais descritivo
         efluentes_controlados: 'tratamento_ou_destino',
         efluentes_domesticos: 'unidade_empresarial',
-        mudanca_uso_solo: 'uso_solo_anterior' // Nova fonte adicionada
+        mudanca_uso_solo: 'uso_solo_anterior'
     };
-    // --- FIM DA MUDANÇA 2 ---
     
     const getFrequency = new Promise((resolve, reject) => { db.get("SELECT reporting_frequency FROM source_configurations WHERE source_type = ?", [sourceType], (err, row) => { if (err) return reject(err); resolve(row ? row.reporting_frequency : 'anual'); }); });
     
@@ -557,50 +552,29 @@ app.get('/api/intelligent-template/:sourceType', (req, res) => {
             
             periods.forEach(period => {
                 const row = {};
-                headerKeys.forEach(key => { row[headers[key]] = ''; });
+                // Cria uma linha vazia baseada nas chaves do schema, não nos nomes de exibição
+                headerKeys.forEach(key => { row[key] = ''; });
 
-                row[headers['ano']] = reportYear;
-                row[headers['periodo']] = period;
-                row[headers['unidade_empresarial']] = typo.unit_name;
-                if (mainDescriptionKey && headers[mainDescriptionKey]) { row[headers[mainDescriptionKey]] = typo.description; }
+                row['ano'] = reportYear;
+                row['periodo'] = period;
+                row['unidade_empresarial'] = typo.unit_name;
+                if (mainDescriptionKey) { row[mainDescriptionKey] = typo.description; }
                 
                 for (const assetKey in assetFields) { 
-                    if (headers.hasOwnProperty(assetKey)) { 
-                        row[headers[assetKey]] = assetFields[assetKey]; 
+                    if (row.hasOwnProperty(assetKey)) { 
+                        row[assetKey] = assetFields[assetKey]; 
                     } 
                 }
                 
-                if (sourceType === 'combustao_movel') {
-                    const tipoEntrada = assetFields.tipo_entrada;
-                    if (tipoEntrada === 'Por Consumo') {
-                        row[headers['tipo_entrada']] = 'consumo';
-                        if (schema.autoFillMap && schema.autoFillMap.combustivel) {
-                            const rule = schema.autoFillMap.combustivel;
-                            const triggerValue = assetFields.combustivel;
-                            if (triggerValue) {
-                                const targetValue = rule.map[triggerValue];
-                                if (targetValue !== undefined) {
-                                    row[headers[rule.targetColumn]] = targetValue;
-                                }
-                            }
-                        }
-                    } else if (tipoEntrada === 'Por Distância') {
-                        row[headers['tipo_entrada']] = 'distancia';
-                    }
-                }
-                else if (sourceType === 'emissoes_fugitivas') {
-                    if (!row[headers['unidade']]) {
-                        row[headers['unidade']] = 'kg';
-                    }
-                }
-                else if (schema.autoFillMap) {
+                // Lógicas de auto-preenchimento
+                if (schema.autoFillMap) {
                     for (const triggerKey in schema.autoFillMap) {
                         const rule = schema.autoFillMap[triggerKey];
-                        const triggerValue = row[headers[triggerKey]];
+                        const triggerValue = row[triggerKey];
                         if (triggerValue) {
                             const targetValue = rule.map[triggerValue];
                             if (targetValue !== undefined) {
-                                row[headers[rule.targetColumn]] = targetValue;
+                                row[rule.targetColumn] = targetValue;
                             }
                         }
                     }
@@ -609,9 +583,26 @@ app.get('/api/intelligent-template/:sourceType', (req, res) => {
                 dataForExcel.push(row);
             });
         });
+
+        // Se o formato for JSON, retorna os dados e para a execução
+        if (format === 'json') {
+            return res.json(dataForExcel);
+        }
         
+        // Se não, continua para gerar o arquivo Excel
         try {
-            const worksheet = xlsx.utils.json_to_sheet(dataForExcel, { header: Object.values(headers) });
+            // Converte os dados para o formato que o sheet_to_json espera (com header names)
+            const dataWithHeaderNames = dataForExcel.map(row => {
+                const newRow = {};
+                for (const key in row) {
+                    if (headers[key]) {
+                        newRow[headers[key]] = row[key];
+                    }
+                }
+                return newRow;
+            });
+
+            const worksheet = xlsx.utils.json_to_sheet(dataWithHeaderNames, { header: Object.values(headers) });
             worksheet['!cols'] = Object.values(headers).map(header => ({ wch: Math.max(header.length, 15) + 2 }));
             const workbook = xlsx.utils.book_new();
             const sheetName = schema.displayName.substring(0, 31);

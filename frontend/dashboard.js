@@ -12,8 +12,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const cancelBtn = document.getElementById('cancel-btn');
     const sourcesCheckboxContainer = document.getElementById('sources-checkbox-container');
     const phoneInput = document.getElementById('phone');
-    // --- ATENÇÃO: NOVA REFERÊNCIA ---
     const unitSelect = document.getElementById('unit');
+    // --- ATENÇÃO: NOVAS REFERÊNCIAS ---
+    const selectAllSourcesCheckbox = document.getElementById('select-all-sources');
+    const sourcesFeedback = document.getElementById('sources-feedback');
     
     // Configuração da máscara de telefone
     const phoneMask = IMask(phoneInput, {
@@ -25,7 +27,6 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // --- 2. FUNÇÕES PRINCIPAIS ---
 
-    // Função para buscar unidades e popular o select
     const fetchAndPopulateUnits = async () => {
         try {
             const response = await fetch('/api/units');
@@ -54,7 +55,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Popula os checkboxes de fontes
         sourcesCheckboxContainer.innerHTML = '';
-        for (const key in validationSchemas) {
+        const sourceKeys = Object.keys(validationSchemas);
+        sourceKeys.forEach(key => {
             const schema = validationSchemas[key];
             const itemDiv = document.createElement('div');
             itemDiv.className = 'checkbox-item';
@@ -62,15 +64,15 @@ document.addEventListener('DOMContentLoaded', () => {
             checkbox.type = 'checkbox';
             checkbox.id = `source-${key}`;
             checkbox.value = key;
+            checkbox.classList.add('source-checkbox'); // Classe para fácil seleção
             const label = document.createElement('label');
             label.htmlFor = `source-${key}`;
             label.textContent = schema.displayName;
             itemDiv.appendChild(checkbox);
             itemDiv.appendChild(label);
             sourcesCheckboxContainer.appendChild(itemDiv);
-        }
+        });
         
-        // --- ATENÇÃO: CHAMANDO AS NOVAS FUNÇÕES ---
         fetchAndPopulateUnits();
         fetchContacts();
     };
@@ -89,14 +91,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const formattedPhone = contact.phone ? IMask.pipe(contact.phone, phoneMask) : '';
 
-                // --- ATENÇÃO: RENDERIZANDO A NOVA COLUNA ---
+                // --- ATENÇÃO: RENDERIZAÇÃO DA TABELA ATUALIZADA (ORDEM E REMOÇÃO DE 'ÁREA') ---
                 tr.innerHTML = `
                     <td>${contact.name || ''}</td>
                     <td>${contact.unit_name || 'N/A'}</td>
-                    <td>${contact.area || ''}</td>
                     <td>${contact.email || ''}</td>
-                    <td>${formattedPhone}</td>
                     <td>${sourceNames}</td>
+                    <td>${formattedPhone}</td>
                     <td>
                         <button class="action-btn edit-btn">Editar</button>
                         <button class="action-btn delete-btn">Deletar</button>
@@ -113,53 +114,104 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    // --- ATENÇÃO: LÓGICA DE SUBMISSÃO DO FORMULÁRIO ATUALIZADA ---
     form.addEventListener('submit', async (e) => {
         e.preventDefault();
-        const id = contactIdInput.value;
-        
-        const selectedSources = Array.from(sourcesCheckboxContainer.querySelectorAll('input[type="checkbox"]:checked'))
-                                     .map(checkbox => checkbox.value);
 
-        // --- ATENÇÃO: COLETANDO O unit_id ---
+        // Validação de E-mail
+        const emailInput = document.getElementById('email');
+        if (!emailInput.value.includes('@')) {
+            alert('Por favor, insira um endereço de e-mail válido.');
+            emailInput.focus();
+            return;
+        }
+
+        const selectedSources = Array.from(sourcesCheckboxContainer.querySelectorAll('input.source-checkbox:checked'))
+                                     .map(checkbox => checkbox.value);
+        
+        // Validação de Fontes
+        if (selectedSources.length === 0) {
+            sourcesFeedback.style.display = 'block';
+            return;
+        } else {
+            sourcesFeedback.style.display = 'none';
+        }
+        
+        const id = contactIdInput.value;
         const contactData = {
             name: document.getElementById('name').value,
-            unit_id: unitSelect.value, // Novo campo
-            area: document.getElementById('area').value,
-            email: document.getElementById('email').value,
+            unit_id: unitSelect.value,
+            email: emailInput.value,
             phone: phoneMask.unmaskedValue,
             sources: selectedSources
+            // O campo 'area' foi removido daqui
         };
 
         const method = id ? 'PUT' : 'POST';
         const url = id ? `/api/contacts/${id}` : '/api/contacts';
 
-        await fetch(url, {
-            method: method,
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(contactData),
-        });
+        try {
+            const response = await fetch(url, {
+                method: method,
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(contactData),
+            });
 
-        resetForm();
-        fetchContacts();
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.error || 'Falha ao salvar o responsável.');
+            }
+            
+            // Correção do Bug: Feedback para o usuário
+            alert(`Responsável ${id ? 'atualizado' : 'salvo'} com sucesso!`);
+
+            resetForm();
+            fetchContacts();
+
+        } catch (error) {
+            console.error('Erro ao salvar:', error);
+            alert(`Ocorreu um erro: ${error.message}`);
+        }
     });
     
     cancelBtn.addEventListener('click', () => resetForm());
 
+    // --- ATENÇÃO: NOVA LÓGICA PARA "SELECIONAR TODAS" ---
+    function updateSelectAllCheckbox() {
+        const allSourceCheckboxes = document.querySelectorAll('.source-checkbox');
+        const checkedSourceCheckboxes = document.querySelectorAll('.source-checkbox:checked');
+        selectAllSourcesCheckbox.checked = allSourceCheckboxes.length > 0 && allSourceCheckboxes.length === checkedSourceCheckboxes.length;
+    }
+
+    selectAllSourcesCheckbox.addEventListener('change', () => {
+        const allSourceCheckboxes = document.querySelectorAll('.source-checkbox');
+        allSourceCheckboxes.forEach(checkbox => {
+            checkbox.checked = selectAllSourcesCheckbox.checked;
+        });
+    });
+
+    sourcesCheckboxContainer.addEventListener('change', (e) => {
+        if (e.target.classList.contains('source-checkbox')) {
+            updateSelectAllCheckbox();
+        }
+    });
+    // --- FIM DA NOVA LÓGICA ---
+
     // --- 3. FUNÇÕES GLOBAIS E AUXILIARES ---
 
-    // --- ATENÇÃO: FUNÇÃO EDITAR MODIFICADA ---
     window.editContact = (contact) => {
         contactIdInput.value = contact.id;
         document.getElementById('name').value = contact.name;
-        unitSelect.value = contact.unit_id || ''; // Novo campo
-        document.getElementById('area').value = contact.area;
+        unitSelect.value = contact.unit_id || '';
         document.getElementById('email').value = contact.email;
         phoneMask.value = contact.phone || '';
+        // O campo 'area' foi removido daqui
         
-        sourcesCheckboxContainer.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+        sourcesCheckboxContainer.querySelectorAll('.source-checkbox').forEach(checkbox => {
             checkbox.checked = contact.sources && contact.sources.includes(checkbox.value);
         });
 
+        updateSelectAllCheckbox(); // Atualiza o "selecionar todos"
         cancelBtn.style.display = 'inline-block';
         window.scrollTo(0, 0);
     };
@@ -173,15 +225,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // --- ATENÇÃO: FUNÇÃO RESET MODIFICADA ---
     window.resetForm = () => {
         form.reset();
         contactIdInput.value = '';
-        unitSelect.value = ''; // Limpa o select de unidade
+        unitSelect.value = '';
         phoneMask.value = '';
-        sourcesCheckboxContainer.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+        sourcesCheckboxContainer.querySelectorAll('.source-checkbox').forEach(checkbox => {
             checkbox.checked = false;
         });
+        selectAllSourcesCheckbox.checked = false; // Reseta o "selecionar todos"
+        sourcesFeedback.style.display = 'none'; // Esconde a mensagem de erro
         cancelBtn.style.display = 'none';
     };
 
