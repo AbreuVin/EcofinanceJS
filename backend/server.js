@@ -38,41 +38,57 @@ app.get('/', (req, res) => {
 
 // --- 5. ROTAS DA API ---
 
-// Rota de Registro - Sem alterações
+// Rotas de Autenticação
 app.post('/api/register', async (req, res) => {
+    const { email, password } = req.body;
+    if (!email || !password) {
+        return res.status(400).json({ message: "Email e senha são obrigatórios." });
+    }
     try {
-        const { email, password } = req.body;
-        if (!email || !password) return res.status(400).json({ message: 'E-mail e senha são obrigatórios.' });
         const hashedPassword = await bcrypt.hash(password, saltRounds);
-        db.run('INSERT INTO users (email, password) VALUES (?, ?)', [email, hashedPassword], function(err) {
-            if (err) return res.status(409).json({ message: 'Este e-mail já está em uso.' });
-            res.status(201).json({ message: 'Usuário criado com sucesso!', userId: this.lastID });
+        const sql = "INSERT INTO users (email, password) VALUES (?, ?)";
+        db.run(sql, [email, hashedPassword], function(err) {
+            if (err) {
+                if (err.message.includes('UNIQUE constraint failed')) {
+                    return res.status(409).json({ message: "E-mail já cadastrado." });
+                }
+                return res.status(500).json({ message: "Erro ao registrar usuário.", error: err.message });
+            }
+            res.status(201).json({ message: "Usuário registrado com sucesso!", userId: this.lastID });
         });
     } catch (error) {
-        res.status(500).json({ message: 'Erro interno no servidor.' });
+        res.status(500).json({ message: "Erro interno no servidor.", error: error.message });
     }
 });
 
-// Rota de Login - Sem alterações
 app.post('/api/login', (req, res) => {
     const { email, password } = req.body;
-    if (!email || !password) return res.status(400).json({ message: 'E-mail e senha são obrigatórios.' });
-    db.get('SELECT * FROM users WHERE email = ?', [email], async (err, user) => {
-        if (err) return res.status(500).json({ message: 'Erro interno no servidor.' });
-        if (!user) return res.status(401).json({ message: 'Credenciais inválidas.' });
-        const match = await bcrypt.compare(password, user.password);
-        if (match) {
-            res.status(200).json({ message: 'Login bem-sucedido!' });
-        } else {
-            res.status(401).json({ message: 'Credenciais inválidas.' });
+    if (!email || !password) {
+        return res.status(400).json({ message: "Email e senha são obrigatórios." });
+    }
+    const sql = "SELECT * FROM users WHERE email = ?";
+    db.get(sql, [email], (err, user) => {
+        if (err) {
+            return res.status(500).json({ message: "Erro no servidor.", error: err.message });
         }
+        if (!user) {
+            return res.status(404).json({ message: "Usuário não encontrado." });
+        }
+        bcrypt.compare(password, user.password, (err, result) => {
+            if (err) {
+                return res.status(500).json({ message: "Erro ao verificar senha.", error: err.message });
+            }
+            if (result) {
+                res.status(200).json({ message: "Login bem-sucedido!" });
+            } else {
+                res.status(401).json({ message: "Senha incorreta." });
+            }
+        });
     });
 });
 
-// --- ATENÇÃO: ROTAS DE RESPONSÁVEIS (CONTACTS) ATUALIZADAS ---
-
+// Rotas de Contatos (Responsáveis)
 app.get('/api/contacts', (req, res) => {
-    // A query SQL agora não seleciona mais o campo 'area'
     const sqlContacts = `
         SELECT 
             c.id, c.name, c.unit_id, c.email, c.phone,
@@ -99,9 +115,7 @@ app.get('/api/contacts', (req, res) => {
         });
     });
 });
-
 app.post('/api/contacts', (req, res) => {
-    // 'area' foi removida da desestruturação e do INSERT
     const { name, unit_id, email, phone, sources = [] } = req.body;
     if (!name) return res.status(400).json({ "error": "O nome é obrigatório." });
 
@@ -110,7 +124,6 @@ app.post('/api/contacts', (req, res) => {
         
         const contactId = this.lastID;
         if (sources.length === 0) {
-            // Mesmo sem fontes, a resposta de sucesso é enviada
             return res.status(201).json({ "id": contactId });
         }
 
@@ -128,10 +141,8 @@ app.post('/api/contacts', (req, res) => {
         });
     });
 });
-
 app.put('/api/contacts/:id', (req, res) => {
     const contactId = req.params.id;
-    // 'area' foi removida da desestruturação e do UPDATE
     const { name, unit_id, email, phone, sources = [] } = req.body;
 
     db.serialize(() => {
@@ -156,16 +167,14 @@ app.put('/api/contacts/:id', (req, res) => {
         });
     });
 });
-// A rota DELETE não precisou de alteração
 app.delete('/api/contacts/:id', (req, res) => {
     db.run("DELETE FROM contacts WHERE id = ?", [req.params.id], function(err) {
         if (err) return res.status(500).json({ "error": err.message });
         res.status(200).json({ deleted: this.changes });
     });
 });
-// --- FIM DAS ATUALIZAÇÕES ---
 
-// Rotas de Unidades Empresariais - Sem alterações
+// --- ATENÇÃO: ROTAS DE UNIDADES RESTAURADAS ---
 app.get('/api/units', (req, res) => {
     db.all("SELECT * FROM units ORDER BY name", [], (err, rows) => {
         if (err) { res.status(500).json({ "error": err.message }); return; }
@@ -197,9 +206,9 @@ app.delete('/api/units/:id', (req, res) => {
         res.status(200).json({ deleted: this.changes });
     });
 });
+// --- FIM DAS ROTAS DE UNIDADES ---
 
-
-// Rota de Upload de Arquivo - Sem alterações
+// Rotas de Upload e Template
 app.post('/api/upload', upload.single('file'), (req, res) => {
     try {
         if (!req.file) {
@@ -223,7 +232,22 @@ app.post('/api/upload', upload.single('file'), (req, res) => {
                 const newRow = {};
                 for (const key in row) {
                     let value = row[key];
+
+                    if (source_type === 'combustao_movel' && key === 'tipo_entrada' && typeof value === 'string') {
+                         const normalizedInput = value
+                            .toLowerCase()
+                            .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+                            .trim();
+                        
+                        if (normalizedInput === 'por consumo') {
+                            value = 'consumo';
+                        } else if (normalizedInput === 'por distancia') {
+                            value = 'distancia';
+                        }
+                    }
+
                     if (typeof value === 'string') {
+                        value = value.trim(); 
                         value = value.replace(/\.(?=.*\d{3},)/g, '').replace(',', '.');
                     }
                     newRow[key] = value;
@@ -283,9 +307,6 @@ app.post('/api/upload', upload.single('file'), (req, res) => {
         res.status(500).json({ message: 'Erro interno ao processar o arquivo.' });
     }
 });
-
-
-// Rota de Download de Template - Sem alterações
 app.get('/api/template/:tableName', (req, res) => {
     const { tableName } = req.params;
     const { format = 'csv' } = req.query;
@@ -307,8 +328,6 @@ app.get('/api/template/:tableName', (req, res) => {
         res.status(200).send(csvContent);
     }
 });
-
-// Rota de Exportação de Dados da Tela - Sem alterações
 app.post('/api/export', (req, res) => {
     const { data, tableName } = req.body;
     if (!Array.isArray(data) || data.length === 0) { return res.status(400).send('Nenhum dado fornecido para exportação.'); }
@@ -334,8 +353,6 @@ app.post('/api/export', (req, res) => {
         res.status(500).json({ message: "Erro interno ao gerar o arquivo Excel." });
     }
 });
-
-// Rota para Salvar Dados das Fontes - Sem alterações de lógica, mas a lista foi atualizada nos passos anteriores
 app.post('/api/save-data/:tableName', (req, res) => {
     const { tableName } = req.params;
     const dataRows = req.body;
@@ -354,20 +371,47 @@ app.post('/api/save-data/:tableName', (req, res) => {
 
     if (!allowedTables[tableName]) { return res.status(400).json({ message: "Tipo de tabela inválido." }); }
     if (!dataRows || dataRows.length === 0) { return res.status(400).json({ message: "Nenhum dado para salvar." }); }
+    
     const dbTableName = allowedTables[tableName];
-    const columns = Object.keys(dataRows[0]);
-    const placeholders = columns.map(() => '?').join(', ');
-    const sql = `INSERT INTO ${dbTableName} (${columns.join(', ')}) VALUES (${placeholders})`;
+    
+    // ATENÇÃO: A lógica de INSERT foi movida para dentro do loop para lidar com colunas dinâmicas.
+    
     db.serialize(() => {
         db.run("BEGIN TRANSACTION");
         let errorOccurred = false;
+        
         dataRows.forEach(row => {
             if (errorOccurred) return;
-            const values = columns.map(col => row[col]);
+
+            // Sanitiza os dados da linha ANTES de construir a query
+            if (row.hasOwnProperty('controlado_empresa')) {
+                row.controlado_empresa = (row.controlado_empresa === 'Sim' ? 1 : 0);
+            }
+            if (row.hasOwnProperty('fossa_septica_propriedade')) {
+                row.fossa_septica_propriedade = (row.fossa_septica_propriedade === 'Sim' ? 1 : 0);
+            }
+
+            // --- ATENÇÃO: INÍCIO DA ATUALIZAÇÃO (CORREÇÃO ERRO 500) ---
+            const sanitizedRow = {};
+            for (const key in row) {
+                if (row[key] !== '' && row[key] !== null && row[key] !== undefined) {
+                    sanitizedRow[key] = row[key];
+                }
+            }
+            
+            if (Object.keys(sanitizedRow).length === 0) return; // Pula linhas completamente vazias
+            
+            const columns = Object.keys(sanitizedRow);
+            const placeholders = columns.map(() => '?').join(', ');
+            const sql = `INSERT INTO ${dbTableName} (${columns.join(', ')}) VALUES (${placeholders})`;
+            const values = Object.values(sanitizedRow);
+            // --- FIM DA ATUALIZAÇÃO ---
+
             db.run(sql, values, (err) => {
-                if (err) { console.error("Erro ao inserir linha:", err); errorOccurred = true; }
+                if (err) { console.error("Erro ao inserir linha:", err, "SQL:", sql, "Valores:", values); errorOccurred = true; }
             });
         });
+
         const operation = errorOccurred ? "ROLLBACK" : "COMMIT";
         db.run(operation, (err) => {
             if (err) { return res.status(500).json({ message: `Erro crítico durante a transação (${operation}).` }); }
@@ -377,7 +421,7 @@ app.post('/api/save-data/:tableName', (req, res) => {
     });
 });
 
-// Rotas de Tipologias de Fontes (Assets) - Sem alterações
+// Rotas de Cadastro de Fontes (Asset Typologies)
 app.get('/api/asset-typologies', (req, res) => {
     const { source_type } = req.query;
     let sql = "SELECT T.*, U.name as unit_name FROM asset_typologies T JOIN units U ON T.unit_id = U.id";
@@ -455,7 +499,7 @@ app.delete('/api/asset-typologies/:id', (req, res) => {
     });
 });
 
-// Rotas de Opções Gerenciadas - Sem alterações
+// Outras rotas de API
 app.get('/api/options', (req, res) => {
     const { field_key } = req.query;
     if (!field_key) { return res.status(400).json({ "error": "O parâmetro 'field_key' é obrigatório." }); }
@@ -465,7 +509,6 @@ app.get('/api/options', (req, res) => {
         res.json(rows);
     });
 });
-
 app.post('/api/options', (req, res) => {
     const { field_key, value } = req.body;
     if (!field_key || !value) { return res.status(400).json({ "error": "Campos 'field_key' e 'value' são obrigatórios." }); }
@@ -479,16 +522,12 @@ app.post('/api/options', (req, res) => {
         res.status(201).json({ "id": this.lastID });
     });
 });
-
 app.delete('/api/options/:id', (req, res) => {
     db.run("DELETE FROM managed_options WHERE id = ?", [req.params.id], function(err) {
         if (err) { res.status(500).json({ "error": err.message }); return; }
         res.status(200).json({ deleted: this.changes });
     });
 });
-
-
-// Rota de Configuração de Fontes - Sem alterações
 app.get('/api/source-configurations', (req, res) => {
     db.all("SELECT * FROM source_configurations", [], (err, rows) => {
         if (err) { res.status(500).json({ "error": err.message }); return; }
@@ -511,10 +550,9 @@ app.post('/api/source-configurations', (req, res) => {
     });
 });
 
-// --- ATENÇÃO: ROTA DE TEMPLATE INTELIGENTE ATUALIZADA ---
 app.get('/api/intelligent-template/:sourceType', (req, res) => {
     const { sourceType } = req.params;
-    const { unitId, year, format } = req.query; // format adicionado
+    const { unitId, year, format } = req.query;
     const schema = validationSchemas[sourceType];
     if (!schema) { return res.status(404).send('Tipo de fonte não encontrado.'); }
 
@@ -524,35 +562,41 @@ app.get('/api/intelligent-template/:sourceType', (req, res) => {
         dados_producao_venda: 'produto', 
         ippu_lubrificantes: 'fonte_emissao', 
         emissoes_fugitivas: 'fonte_emissao', 
-        fertilizantes: 'tipo_fertilizante', // Corrigido para um campo mais descritivo
+        fertilizantes: 'tipo_fertilizante',
         efluentes_controlados: 'tratamento_ou_destino',
-        efluentes_domesticos: 'unidade_empresarial',
         mudanca_uso_solo: 'uso_solo_anterior'
     };
     
-    const getFrequency = new Promise((resolve, reject) => { db.get("SELECT reporting_frequency FROM source_configurations WHERE source_type = ?", [sourceType], (err, row) => { if (err) return reject(err); resolve(row ? row.reporting_frequency : 'anual'); }); });
-    
     const getTypologies = new Promise((resolve, reject) => {
-        let sql = "SELECT T.*, U.name as unit_name FROM asset_typologies T JOIN units U ON T.unit_id = U.id WHERE T.source_type = ?";
+        let sql = `
+            SELECT 
+                T.*, 
+                U.name as unit_name,
+                SC.reporting_frequency
+            FROM asset_typologies T 
+            JOIN units U ON T.unit_id = U.id
+            LEFT JOIN source_configurations SC ON T.source_type = SC.source_type
+            WHERE T.source_type = ?
+        `;
         const params = [sourceType];
         if (unitId && unitId !== 'all') { sql += " AND T.unit_id = ?"; params.push(unitId); }
         db.all(sql, params, (err, rows) => { if (err) return reject(err); resolve(rows); });
     });
 
-    Promise.all([getFrequency, getTypologies]).then(([frequency, typologies]) => {
+    getTypologies.then((typologies) => {
         const dataForExcel = [];
         const headers = schema.headerDisplayNames;
         const headerKeys = Object.keys(headers);
         const reportYear = year || new Date().getFullYear();
         const mainDescriptionKey = descriptionKeyMap[sourceType];
-        const periods = frequency === 'mensal' ? ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"] : ["Anual"];
 
         typologies.forEach(typo => {
+            const frequency = typo.reporting_frequency || 'anual';
+            const periods = frequency === 'mensal' ? ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"] : ["Anual"];
             const assetFields = JSON.parse(typo.asset_fields || '{}');
             
             periods.forEach(period => {
                 const row = {};
-                // Cria uma linha vazia baseada nas chaves do schema, não nos nomes de exibição
                 headerKeys.forEach(key => { row[key] = ''; });
 
                 row['ano'] = reportYear;
@@ -566,7 +610,13 @@ app.get('/api/intelligent-template/:sourceType', (req, res) => {
                     } 
                 }
                 
-                // Lógicas de auto-preenchimento
+                if (sourceType === 'efluentes_controlados') {
+                    row['unidade_efluente_liquido'] = frequency === 'mensal' ? 'm3/mês' : 'm3/ano';
+                    row['unidade_nitrogenio'] = 'kgN/m3';
+                } else if (sourceType === 'emissoes_fugitivas' || sourceType === 'fertilizantes') {
+                    row['unidade'] = 'kg';
+                }
+                
                 if (schema.autoFillMap) {
                     for (const triggerKey in schema.autoFillMap) {
                         const rule = schema.autoFillMap[triggerKey];
@@ -584,14 +634,11 @@ app.get('/api/intelligent-template/:sourceType', (req, res) => {
             });
         });
 
-        // Se o formato for JSON, retorna os dados e para a execução
         if (format === 'json') {
             return res.json(dataForExcel);
         }
         
-        // Se não, continua para gerar o arquivo Excel
         try {
-            // Converte os dados para o formato que o sheet_to_json espera (com header names)
             const dataWithHeaderNames = dataForExcel.map(row => {
                 const newRow = {};
                 for (const key in row) {
@@ -608,7 +655,7 @@ app.get('/api/intelligent-template/:sourceType', (req, res) => {
             const sheetName = schema.displayName.substring(0, 31);
             xlsx.utils.book_append_sheet(workbook, worksheet, sheetName);
             const buffer = xlsx.write(workbook, { bookType: 'xlsx', type: 'buffer' });
-            const fileName = `${sourceType}_template_preenchido_${reportYear}.xlsx`;
+            const fileName = `${sourceType}_template_preenchido_${year}.xlsx`;
             res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
             res.setHeader('Content-Disposition', `attachment; filename=${fileName}`);
             res.status(200).send(buffer);

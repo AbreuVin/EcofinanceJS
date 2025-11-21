@@ -11,20 +11,20 @@ button { padding: 12px 20px; color: white; border: none; border-radius: 4px; cur
 #upload-form button { background-color: #007bff; }
 #save-data-btn { background-color: #007bff; }
 
-/* --- NOVO (SPRINT 12) --- */
+
 .add-btn {
-    background-color: #28a745; /* Cor verde para "adicionar" */
+    background-color: #28a745; 
 }
 .add-btn:hover {
     background-color: #218838;
 }
-/* --- BOTÃO EXPORTAR CORRIGIDO --- */
+
 .export-btn {
-    background-color: #ff8c00; /* Laranja escuro, alto contraste */
-    color: white; /* Garante que o texto seja branco */
+    background-color: #ff8c00; 
+    color: white; 
 }
 .export-btn:hover {
-    background-color: #cc7000; /* Laranja um pouco mais escuro no hover */
+    background-color: #cc7000; 
 }
 
 
@@ -38,16 +38,16 @@ tr:nth-child(even) { background-color: #f2f2f2; }
 .invalid-cell { background-color: #f8d7da !important; color: #721c24; outline: 1px solid #f5c6cb; }
 td select { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; background-color: white; font-family: inherit; font-size: inherit; }
 .invalid-cell select { border-color: #f5c6cb; background-color: #f8d7da; }
-/* --- NOVO: Estilos para o botão de deletar --- */
+
 .delete-row-btn {
-    background-color: #dc3545; /* Vermelho "danger" */
+    background-color: #dc3545; 
     color: white;
     border: none;
     border-radius: 4px;
     padding: 5px 10px;
     cursor: pointer;
     font-weight: bold;
-    line-height: 1; /* Para alinhar melhor o "X" */
+    line-height: 1; 
 }
 
 .delete-row-btn:hover {

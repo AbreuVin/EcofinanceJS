@@ -4,7 +4,7 @@ import { validationSchemas } from './validators.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     
-    // --- 1. REFERÊNCIAS ---
+   
     const tableSelector = document.getElementById('table-selector');
     const uploadSection = document.getElementById('upload-section');
     const uploadInstructions = document.getElementById('upload-instructions');
@@ -13,13 +13,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const feedbackDiv = document.getElementById('feedback');
     const tableContainer = document.getElementById('table-container');
     const tableActions = document.getElementById('table-actions');
-    const addRowBtn = document.getElementById('add-row-btn'); // <-- NOVO (SPRINT 12)
+    const addRowBtn = document.getElementById('add-row-btn'); 
     const saveButton = document.getElementById('save-data-btn');
     
     let currentSchema = null;
     let contactsList = [];
 
-    // --- 2. FUNÇÕES PRINCIPAIS (com refatorações) ---
+    
 
     function loadNavbar() {
         const navPlaceholder = document.getElementById('nav-placeholder');
@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     function generateTable(data) {
         if (!currentSchema) return;
-        createEmptyTableAndHeaders(); // Cria a estrutura da tabela
+        createEmptyTableAndHeaders(); 
         const tbody = tableContainer.querySelector('tbody');
         const headers = Object.keys(currentSchema.headerDisplayNames);
         data.forEach(rowData => {
@@ -52,9 +52,9 @@ document.addEventListener('DOMContentLoaded', () => {
         checkTableAndToggleSaveButton();
     }
 
-    // --- NOVO (SPRINT 12): Cria a estrutura da tabela (cabeçalho e corpo) ---
+    
     function createEmptyTableAndHeaders() {
-        tableContainer.innerHTML = ''; // Limpa antes de criar
+        tableContainer.innerHTML = ''; 
         const table = document.createElement('table');
         const thead = document.createElement('thead');
         const tbody = document.createElement('tbody');
@@ -71,12 +71,12 @@ document.addEventListener('DOMContentLoaded', () => {
         table.appendChild(tbody);
         tableContainer.appendChild(table);
 
-        // Adiciona os listeners ao novo tbody
+        
         tbody.addEventListener('blur', (e) => handleTableChange(e, headers), true);
         tbody.addEventListener('change', (e) => handleTableChange(e, headers));
     }
 
-    // --- REATORADO (SPRINT 12): Lógica de criação de linha isolada ---
+    
     function buildTableRow(rowData, headers) {
         const row = document.createElement('tr');
         headers.forEach(header => {
@@ -116,14 +116,14 @@ document.addEventListener('DOMContentLoaded', () => {
             row.appendChild(cell);
         });
 
-        if (rowData.responsavel) { // Preenchimento inicial do responsável
+        if (rowData.responsavel) { 
             const responsavelCell = Array.from(row.cells)[headers.indexOf('responsavel')];
             if (responsavelCell) handleResponsibleChange(responsavelCell, headers);
         }
         return row;
     }
     
-    // --- 3. EVENT HANDLERS ---
+    
     
     tableSelector.addEventListener('change', async () => {
         const selectedKey = tableSelector.value;
@@ -134,11 +134,11 @@ document.addEventListener('DOMContentLoaded', () => {
             if (currentSchema.hasResponsibles) await fetchContacts();
             uploadInstructions.textContent = `Selecione um arquivo (CSV ou XLSX) para os dados de "${currentSchema.displayName}", ou adicione linhas manualmente.`;
             uploadSection.style.display = 'block';
-            tableActions.style.display = 'flex'; // <-- MUDANÇA (SPRINT 12)
+            tableActions.style.display = 'flex'; 
             saveButton.style.display = 'none';
         } else {
             uploadSection.style.display = 'none';
-            tableActions.style.display = 'none'; // <-- MUDANÇA (SPRINT 12)
+            tableActions.style.display = 'none'; 
         }
     });
 
@@ -160,27 +160,26 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // --- NOVO (SPRINT 12): Evento de clique para adicionar linha ---
+    
     addRowBtn.addEventListener('click', () => {
         if (!currentSchema) return;
 
         let tbody = tableContainer.querySelector('tbody');
-        // Se a tabela não existir, cria a estrutura primeiro
+        
         if (!tbody) {
             createEmptyTableAndHeaders();
             tbody = tableContainer.querySelector('tbody');
         }
         
         const headers = Object.keys(currentSchema.headerDisplayNames);
-        const newRow = buildTableRow({}, headers); // Cria linha com dados vazios
+        const newRow = buildTableRow({}, headers); 
         tbody.appendChild(newRow);
 
         updateRowAppearance(newRow, headers);
         checkTableAndToggleSaveButton();
     });
 
-    // (O resto do código, como a função `saveButton.addEventListener`, `handleTableChange`, etc, permanece o mesmo)
-    // As funções auxiliares de validação também não mudam
+    
     function getCellValue(cell) { const input = cell.querySelector('select, input'); return input ? input.value : cell.textContent; }
     function checkTableAndToggleSaveButton() {
         const hasAnyErrors = tableContainer.querySelector('.invalid-cell');
@@ -211,11 +210,11 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
-    function handleTableChange(event, headers) { /* ...código inalterado... */ }
-    function handleResponsibleChange(responsibleCell, headers) { /* ...código inalterado... */ }
-    saveButton.addEventListener('click', async () => { /* ...código inalterado... */ });
+    function handleTableChange(event, headers) { }
+    function handleResponsibleChange(responsibleCell, headers) { }
+    saveButton.addEventListener('click', async () => { });
 
-    // --- 4. INICIALIZAÇÃO ---
+    
     populateSelector();
     loadNavbar();
     function populateSelector() {

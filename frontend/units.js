@@ -1,7 +1,7 @@
 // arquivo: frontend/units.js
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Carrega o Navbar
+    
     const navPlaceholder = document.getElementById('nav-placeholder');
     if (navPlaceholder) {
         fetch('nav.html').then(response => response.text()).then(data => {
@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 units.forEach(unit => {
                     const tr = document.createElement('tr');
                     
-                    // --- ATENÇÃO: MUDANÇA AQUI ---
+                    
                     tr.innerHTML = `
                         <td>${unit.name ?? ''}</td>
                         <td>${unit.cidade ?? ''}</td>
@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             <button class="action-btn delete-btn" onclick="deleteUnit(${unit.id})">Deletar</button>
                         </td>
                     `;
-                    // --- FIM DA MUDANÇA ---
+                    
 
                     unitsTbody.appendChild(tr);
                 });
@@ -58,7 +58,7 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         const id = unitIdInput.value;
         
-        // --- ATENÇÃO: MUDANÇA AQUI ---
+        
         const unitData = {
             name: document.getElementById('name').value,
             cidade: document.getElementById('cidade').value,
@@ -66,7 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
             pais: document.getElementById('pais').value,
             numero_colaboradores: document.getElementById('numero-colaboradores').value,
         };
-        // --- FIM DA MUDANÇA ---
+        
 
         const method = id ? 'PUT' : 'POST';
         const url = id ? `${API_URL}/${id}` : API_URL;
@@ -83,7 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     cancelBtn.addEventListener('click', () => resetForm());
     
-    // --- ATENÇÃO: MUDANÇA AQUI ---
+    
     window.editUnit = (id, name, cidade, estado, pais, numero_colaboradores) => {
         unitIdInput.value = id;
         document.getElementById('name').value = name;
@@ -93,7 +93,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('numero-colaboradores').value = numero_colaboradores;
         cancelBtn.style.display = 'inline-block';
     };
-    // --- FIM DA MUDANÇA ---
+    
 
     window.deleteUnit = async (id) => {
         if (confirm('Tem certeza que deseja deletar esta unidade?')) {

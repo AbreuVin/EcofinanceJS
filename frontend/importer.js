@@ -4,10 +4,9 @@ import { validationSchemas } from '../shared/validators.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     
-    // --- 1. REFERÊNCIAS E CONSTANTES ---
+    // --- ELEMENTOS DO DOM ---
     const tableSelector = document.getElementById('table-selector');
     const uploadSection = document.getElementById('upload-section');
-    const uploadInstructions = document.getElementById('upload-instructions');
     const uploadForm = document.getElementById('upload-form');
     const fileInput = document.getElementById('file-input');
     const feedbackDiv = document.getElementById('feedback');
@@ -16,26 +15,35 @@ document.addEventListener('DOMContentLoaded', () => {
     const saveButton = document.getElementById('save-data-btn');
     const downloadIntelligentBtn = document.getElementById('download-intelligent-btn');
     
-    // --- ATENÇÃO: BOTÕES DE TEMPLATE VAZIO REMOVIDOS DO HTML E DO JS ---
-    const downloadCsvBtn = document.getElementById('download-csv-btn');
-    const downloadXlsxBtn = document.getElementById('download-xlsx-btn');
-    if(downloadCsvBtn) downloadCsvBtn.parentElement.remove();
-    if(downloadXlsxBtn) downloadXlsxBtn.parentElement.remove();
-    if(downloadIntelligentBtn) downloadIntelligentBtn.textContent = 'Baixar Template'; // Renomeia o botão
+    if(downloadIntelligentBtn) downloadIntelligentBtn.textContent = 'Baixar Template';
 
-    const NUMERIC_FIELDS = [
-        'consumo', 'distancia_percorrida', 'quantidade_vendida', 
-        'quantidade_reposta', 'percentual_emissao', 'quantidade_kg', 
-        'percentual_nitrogenio', 'percentual_carbonato', 'area_hectare',
-        'qtd_efluente_liquido_m3', 'qtd_componente_organico', 'qtd_nitrogenio_mg_l',
-        'componente_organico_removido_lodo', 'num_medio_colaboradores', 
-        'carga_horaria_media_colaboradores', 'num_medio_terceiros', 
-        'carga_horaria_media_terceiros'
+    const INTEGER_FIELDS = [
+        'quantidade_vendida', 
+        'num_trabalhadores'
     ];
+
+    const DECIMAL_FIELDS = [
+        'consumo', 'distancia_percorrida', 'quantidade_reposta', 
+        'quantidade_kg', 'percentual_nitrogenio', 'percentual_carbonato', 
+        'area_hectare', 'qtd_efluente_liquido_m3', 'qtd_componente_organico', 
+        'qtd_nitrogenio_mg_l', 'componente_organico_removido_lodo', 
+        'carga_horaria_media'
+    ];
+    
+    const FIXED_FIELDS = {
+        emissoes_fugitivas: {
+            unidade: 'kg'
+        },
+        fertilizantes: {
+            unidade: 'kg'
+        }
+    };
 
     let currentSchema = null;
     let unitsList = [];
     let managedOptionsCache = {}; 
+    let maskInstances = {};
+    let maskIdCounter = 0;
 
     function loadNavbar() {
         const navPlaceholder = document.getElementById('nav-placeholder');
@@ -59,21 +67,38 @@ document.addEventListener('DOMContentLoaded', () => {
             unitsList = await response.json();
         } catch (error) { console.error('Erro ao buscar unidades:', error); unitsList = []; }
     }
-
+    
     async function fetchManagedOptions(schema) {
-        managedOptionsCache = {}; 
-        const optionKeysToFetch = Object.keys(schema.validOptions || {});
+        managedOptionsCache = {};
+        const optionKeysToFetch = new Set(); 
+
+        if (schema && schema.validOptions) {
+            for (const key in schema.validOptions) {
+                managedOptionsCache[key] = schema.validOptions[key];
+                // Condição ajustada para não buscar opções para campos com apenas 1 ou 2 valores (Sim/Não)
+                if (schema.validOptions[key].length > 2) {
+                     optionKeysToFetch.add(key);
+                }
+            }
+        }
         
+        if (optionKeysToFetch.size === 0) { return; }
+
         try {
-            const fetchPromises = optionKeysToFetch.map(key =>
+            const fetchPromises = Array.from(optionKeysToFetch).map(key =>
                 fetch(`/api/options?field_key=${key}`)
                     .then(res => res.ok ? res.json() : Promise.reject(`Falha ao buscar opções para ${key}`))
                     .then(options => ({ key, options: options.map(opt => opt.value) }))
             );
             const results = await Promise.all(fetchPromises);
-            results.forEach(({ key, options }) => { managedOptionsCache[key] = options; });
+            
+            results.forEach(({ key, options }) => {
+                 if(options.length > 0) {
+                    managedOptionsCache[key] = [...new Set([...(managedOptionsCache[key] || []), ...options])];
+                 }
+            });
         } catch (error) {
-            console.error("Erro fatal ao carregar opções gerenciadas:", error);
+            console.error("Erro ao carregar opções gerenciadas:", error);
             feedbackDiv.textContent = 'Erro ao carregar opções de seleção. A página pode não funcionar corretamente.';
             feedbackDiv.style.color = 'red';
         }
@@ -82,7 +107,6 @@ document.addEventListener('DOMContentLoaded', () => {
     function generateTable(data, fromUpload = false) {
         if (!currentSchema) return;
         
-        // Se a tabela for gerada a partir do pré-carregamento e não tiver fontes, exibe uma mensagem
         if (!fromUpload && data.length === 0) {
             tableContainer.innerHTML = `<p style="text-align: center; margin: 2rem 0;">Nenhuma fonte cadastrada para este tipo. Cadastre uma fonte na aba "Cadastro de Fontes" para preencher os dados aqui.</p>`;
             checkTableAndToggleSaveButton();
@@ -92,15 +116,40 @@ document.addEventListener('DOMContentLoaded', () => {
         createEmptyTableAndHeaders();
         const tbody = tableContainer.querySelector('tbody');
         const headers = Object.keys(currentSchema.headerDisplayNames);
-        data.forEach(rowData => {
-            const row = buildTableRow(rowData, headers);
-            tbody.appendChild(row);
-            updateRowAppearance(row, headers);
+        const sourceType = tableSelector.value;
+
+        data.forEach((rowData) => {
+            
+            if (sourceType === 'combustao_movel') {
+                if (rowData.tipo_entrada === 'consumo') {
+                    rowData.distancia_percorrida = ''; rowData.unidade_distancia = ''; rowData.tipo_veiculo = '';
+                } else if (rowData.tipo_entrada === 'distancia') {
+                    rowData.combustivel = ''; rowData.consumo = ''; rowData.unidade_consumo = '';
+                }
+            } 
+            else if (sourceType === 'efluentes_controlados') {
+                if (rowData.tratamento_ou_destino === 'Tratamento') {
+                    rowData.tipo_destino_final = '';
+                } else if (rowData.tratamento_ou_destino === 'Destino Final') {
+                    rowData.tipo_tratamento = '';
+                }
+            }
+            else if (sourceType === 'mudanca_uso_solo') {
+                if (rowData.uso_solo_anterior !== 'Vegetação natural') {
+                    rowData.bioma = ''; rowData.fitofisionomia = ''; rowData.tipo_area = '';
+                }
+            }
+
+            const rowElement = buildTableRow(rowData, headers);
+            tbody.appendChild(rowElement);
+            updateRowAppearance(rowElement, rowData);
         });
         checkTableAndToggleSaveButton();
     }
 
     function createEmptyTableAndHeaders() {
+        Object.values(maskInstances).forEach(mask => mask.destroy());
+        maskInstances = {};
         tableContainer.innerHTML = '';
         const table = document.createElement('table');
         const thead = document.createElement('thead');
@@ -126,39 +175,64 @@ document.addEventListener('DOMContentLoaded', () => {
         headers.forEach(header => {
             const cell = document.createElement('td');
             cell.dataset.header = header;
-            const currentValue = rowData[header] || "";
+            let currentValue = rowData[header] || "";
             
-            if (header === 'unidade_empresarial' && currentSchema.hasUnits) {
+            const fixedFieldRules = FIXED_FIELDS[tableSelector.value];
+            const isFixed = fixedFieldRules && fixedFieldRules[header];
+            
+            if (isFixed) {
+                currentValue = fixedFieldRules[header];
+            }
+
+            const isAutoFilledUnit = currentSchema.autoFillMap && 
+                                     Object.values(currentSchema.autoFillMap)
+                                           .some(rule => rule.targetColumn === header);
+            
+            // --- ATENÇÃO: INÍCIO DA CORREÇÃO FINAL (ORDEM DA LÓGICA) ---
+            // A verificação de campos fixos e auto-preenchidos agora tem prioridade máxima.
+            if (isFixed || isAutoFilledUnit) {
+                cell.textContent = currentValue;
+                cell.setAttribute('contenteditable', 'false');
+                cell.style.backgroundColor = '#e9ecef';
+                cell.style.color = '#495057';
+
+            } else if (INTEGER_FIELDS.includes(header) || DECIMAL_FIELDS.includes(header)) {
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.value = typeof currentValue === 'number' ? String(currentValue).replace('.', ',') : currentValue;
+                const maskId = `mask-${maskIdCounter++}`;
+                input.id = maskId;
+                cell.appendChild(input);
+                
+                let maskOptions;
+                if (INTEGER_FIELDS.includes(header)) {
+                    maskOptions = { mask: Number, scale: 0, thousandsSeparator: '.', lazy: false };
+                } else { 
+                    maskOptions = { mask: Number, scale: 10, thousandsSeparator: '.', radix: ',', mapToRadix: ['.'], lazy: false };
+                }
+                maskInstances[maskId] = IMask(input, maskOptions);
+
+            } else if (header === 'unidade_empresarial' && currentSchema.hasUnits) {
                 const select = document.createElement('select');
                 select.innerHTML = '<option value="">-- Selecione --</option>';
-                unitsList.forEach(unit => {
-                    const option = document.createElement('option');
-                    option.value = unit.name;
-                    option.textContent = unit.name;
-                    if (unit.name === currentValue) option.selected = true;
-                    select.appendChild(option);
-                });
+                unitsList.forEach(unit => { const option = document.createElement('option'); option.value = unit.name; option.textContent = unit.name; select.appendChild(option); });
                 cell.appendChild(select);
+                select.value = currentValue;
+
             } else if (managedOptionsCache[header]) {
                 const select = document.createElement('select');
                 select.innerHTML = '<option value="">-- Selecione --</option>';
                 const options = managedOptionsCache[header] || [];
-                options.forEach(optionText => {
-                    const option = document.createElement('option');
-                    option.value = optionText;
-                    option.textContent = optionText;
-                    if (optionText === currentValue) option.selected = true;
-                    select.appendChild(option);
-                });
+                const displayMap = currentSchema.displayValueMap?.[header];
+                if (displayMap) { options.forEach(value => { const option = document.createElement('option'); option.value = value; option.textContent = displayMap[value] || value; select.appendChild(option); }); } else { options.forEach(optionText => { const option = document.createElement('option'); option.value = optionText; option.textContent = optionText; select.appendChild(option); }); }
                 cell.appendChild(select);
+                select.value = currentValue;
+                
             } else {
                 cell.setAttribute('contenteditable', 'true');
-                let displayValue = currentValue;
-                if (NUMERIC_FIELDS.includes(header) && currentValue !== '' && !isNaN(parseFloat(currentValue))) {
-                    displayValue = parseFloat(currentValue).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 20 });
-                }
-                cell.textContent = displayValue;
+                cell.textContent = currentValue;
             }
+            // --- FIM DA CORREÇÃO FINAL ---
             row.appendChild(cell);
         });
         const actionsCell = document.createElement('td');
@@ -168,44 +242,88 @@ document.addEventListener('DOMContentLoaded', () => {
         deleteBtn.title = 'Deletar esta linha';
         actionsCell.appendChild(deleteBtn);
         row.appendChild(actionsCell);
-
-        const sourceType = tableSelector.value;
-        if (sourceType === 'combustao_movel') {
-            applyCombustaoMovelLogic(row);
-        } else if (sourceType === 'efluentes_controlados') {
-            applyEfluentesControladosLogic(row);
-        }
         
         return row;
     }
     
     function getCellValue(cell) {
-        const input = cell.querySelector('select, input');
-        let value = input ? input.value : cell.textContent;
-        if (NUMERIC_FIELDS.includes(cell.dataset.header) && typeof value === 'string') {
-            return value.replace(/\./g, '').replace(',', '.');
+        const maskedInput = cell.querySelector('input[id^="mask-"]');
+        if (maskedInput && maskInstances[maskedInput.id]) {
+            return maskInstances[maskedInput.id].unmaskedValue;
         }
-        return value;
+        const input = cell.querySelector('select, input');
+        return input ? input.value : cell.textContent;
     }
     
-    function updateRowAppearance(rowElement, headers) {
-        if (!currentSchema) return;
-        const cells = Array.from(rowElement.querySelectorAll('td')).slice(0, headers.length);
+    function getRowDataFromDOM(rowElement, headers) {
         const rowData = {};
-        headers.forEach((header, index) => { rowData[header] = getCellValue(cells[index]); });
-        
-        const validation = currentSchema.validateRow(rowData, managedOptionsCache);
-
-        cells.forEach((cell, index) => {
-            const header = headers[index];
-            if (validation.errors[header]) {
-                cell.classList.add('invalid-cell');
-                cell.setAttribute('title', validation.errors[header]);
-            } else {
-                cell.classList.remove('invalid-cell');
-                cell.removeAttribute('title');
+        headers.forEach((header) => {
+            const cell = rowElement.querySelector(`td[data-header="${header}"]`);
+            if(cell) {
+                 rowData[header] = getCellValue(cell);
             }
         });
+        return rowData;
+    }
+    
+    function updateRowAppearance(rowElement, rowData) {
+        if (!currentSchema) return;
+
+        const headers = Object.keys(currentSchema.headerDisplayNames);
+        const validation = currentSchema.validateRow(rowData, managedOptionsCache);
+        const sanitizedData = validation.sanitizedData;
+
+        headers.forEach(header => {
+            const cell = rowElement.querySelector(`td[data-header="${header}"]`);
+            if (!cell) return;
+
+            const elementToStyle = cell.querySelector('input, select') || cell;
+
+            if (elementToStyle.tagName === 'SELECT' || elementToStyle.tagName === 'INPUT') {
+                if(elementToStyle.value !== sanitizedData[header]) {
+                    elementToStyle.value = sanitizedData[header];
+                }
+            }
+            
+            if (validation.errors[header]) {
+                if (elementToStyle.style.backgroundColor !== 'rgb(233, 236, 239)') {
+                    elementToStyle.classList.add('invalid-cell');
+                }
+                elementToStyle.setAttribute('title', validation.errors[header]);
+            } else {
+                elementToStyle.classList.remove('invalid-cell');
+                elementToStyle.removeAttribute('title');
+            }
+        });
+
+        const sourceType = tableSelector.value;
+        if (sourceType === 'combustao_movel') {
+            const consumoFields = ['combustivel', 'consumo', 'unidade_consumo'];
+            const distanciaFields = ['distancia_percorrida', 'unidade_distancia', 'tipo_veiculo'];
+            if (sanitizedData.tipo_entrada === 'consumo') {
+                setFieldsState(rowElement, distanciaFields, true, false);
+                setFieldsState(rowElement, consumoFields, false, false);
+            } else if (sanitizedData.tipo_entrada === 'distancia') {
+                setFieldsState(rowElement, consumoFields, true, false);
+                setFieldsState(rowElement, distanciaFields, false, false);
+            } else {
+                setFieldsState(rowElement, distanciaFields, true, false);
+                setFieldsState(rowElement, consumoFields, true, false);
+            }
+        } else if (sourceType === 'efluentes_controlados') {
+            const tratamentoField = ['tipo_tratamento'];
+            const destinoFinalField = ['tipo_destino_final'];
+            if (sanitizedData.tratamento_ou_destino === 'Tratamento') {
+                setFieldsState(rowElement, destinoFinalField, true, false);
+                setFieldsState(rowElement, tratamentoField, false, false);
+            } else if (sanitizedData.tratamento_ou_destino === 'Destino Final') {
+                setFieldsState(rowElement, tratamentoField, true, false);
+                setFieldsState(rowElement, destinoFinalField, false, false);
+            } else {
+                setFieldsState(rowElement, destinoFinalField, true, false);
+                setFieldsState(rowElement, tratamentoField, true, false);
+            }
+        }
     }
 
     function checkTableAndToggleSaveButton() {
@@ -218,7 +336,7 @@ document.addEventListener('DOMContentLoaded', () => {
             feedbackDiv.textContent = "Dados inválidos. Corrija as células em vermelho.";
             feedbackDiv.style.color = 'red';
         } else if (areDataValid) {
-            feedbackDiv.textContent = 'Todos os dados são válidos! Você pode preencher na tela ou salvar.';
+            feedbackDiv.textContent = 'Todos os dados são válidos! Você pode salvar.';
             feedbackDiv.style.color = 'green';
         } else if (!hasRows) {
             feedbackDiv.textContent = "";
@@ -229,6 +347,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (event.target.classList.contains('delete-row-btn')) {
             const rowToDelete = event.target.closest('tr');
             if (confirm('Tem certeza que deseja deletar esta linha?')) {
+                rowToDelete.querySelectorAll('input[id^="mask-"]').forEach(input => {
+                    if (maskInstances[input.id]) {
+                        maskInstances[input.id].destroy();
+                        delete maskInstances[input.id];
+                    }
+                });
                 rowToDelete.remove();
                 checkTableAndToggleSaveButton();
             }
@@ -239,59 +363,31 @@ document.addEventListener('DOMContentLoaded', () => {
         fields.forEach(fieldName => {
             const cell = row.querySelector(`td[data-header="${fieldName}"]`);
             if (cell) {
-                const input = cell.querySelector('select');
+                const input = cell.querySelector('select, input');
                 if (disable) {
-                    if(clear) {
-                        if (input) input.value = '';
-                        else cell.textContent = '';
+                    if (clear) {
+                        if (input) {
+                            if (input.id && maskInstances[input.id]) {
+                                maskInstances[input.id].value = '';
+                            } else {
+                                input.value = '';
+                            }
+                        } else {
+                            cell.textContent = '';
+                        }
                     }
-                    cell.setAttribute('contenteditable', 'false');
                     cell.style.backgroundColor = '#e9ecef';
                     if (input) input.disabled = true;
                 } else {
-                    cell.setAttribute('contenteditable', 'true');
-                    cell.style.backgroundColor = '';
-                    if (input) input.disabled = false;
+                    const isAutoFilledUnit = currentSchema.autoFillMap && Object.values(currentSchema.autoFillMap).some(rule => rule.targetColumn === fieldName);
+                    if(!isAutoFilledUnit) {
+                        cell.style.backgroundColor = '';
+                        if (input) input.disabled = false;
+                    }
                 }
             }
         });
     };
-
-    function applyCombustaoMovelLogic(row) {
-        const tipoEntradaCell = row.querySelector(`td[data-header="tipo_entrada"]`);
-        if (!tipoEntradaCell) return;
-        const tipoEntrada = getCellValue(tipoEntradaCell);
-        const consumoFields = ['combustivel_movel', 'consumo', 'unidade_consumo'];
-        const distanciaFields = ['distancia_percorrida', 'unidade_distancia', 'tipo_veiculo'];
-        if (tipoEntrada === 'consumo') {
-            setFieldsState(row, distanciaFields, true, true);
-            setFieldsState(row, consumoFields, false, false);
-        } else if (tipoEntrada === 'distancia') {
-            setFieldsState(row, consumoFields, true, true);
-            setFieldsState(row, distanciaFields, false, false);
-        } else {
-            setFieldsState(row, distanciaFields, true, false);
-            setFieldsState(row, consumoFields, true, false);
-        }
-    }
-
-    function applyEfluentesControladosLogic(row) {
-        const tipoDestinoCell = row.querySelector(`td[data-header="tratamento_ou_destino"]`);
-        if(!tipoDestinoCell) return;
-        const tipoDestino = getCellValue(tipoDestinoCell);
-        const tratamentoField = ['tipo_tratamento'];
-        const destinoFinalField = ['tipo_destino_final'];
-        if (tipoDestino === 'Tratamento') {
-            setFieldsState(row, destinoFinalField, true, true);
-            setFieldsState(row, tratamentoField, false, false);
-        } else if (tipoDestino === 'Destino Final') {
-            setFieldsState(row, tratamentoField, true, true);
-            setFieldsState(row, destinoFinalField, false, false);
-        } else {
-            setFieldsState(row, destinoFinalField, true, false);
-            setFieldsState(row, tratamentoField, true, false);
-        }
-    }
 
     function handleTableChange(event, headers) {
         const element = event.target;
@@ -300,7 +396,8 @@ document.addEventListener('DOMContentLoaded', () => {
         
         const editedRow = cell.parentElement;
         const headerOfEditedCell = cell.dataset.header;
-        const sourceType = tableSelector.value;
+
+        let rowData = getRowDataFromDOM(editedRow, headers);
 
         if (currentSchema.autoFillMap && currentSchema.autoFillMap[headerOfEditedCell]) {
             const rule = currentSchema.autoFillMap[headerOfEditedCell];
@@ -308,41 +405,27 @@ document.addEventListener('DOMContentLoaded', () => {
             const targetHeader = rule.targetColumn;
             const targetCell = editedRow.querySelector(`td[data-header="${targetHeader}"]`);
             if (targetCell) {
-                const targetValue = rule.map[triggerValue];
-                const targetInput = targetCell.querySelector('select');
-                if (targetValue !== undefined) {
-                    if (targetInput) targetInput.value = targetValue;
-                    else targetCell.textContent = targetValue;
-                    targetCell.setAttribute('contenteditable', 'false');
-                    targetCell.style.backgroundColor = '#e9ecef';
-                    if (targetInput) targetInput.disabled = true;
-                } else {
-                    if (targetInput) targetInput.value = '';
-                    else targetCell.textContent = '';
-                    targetCell.setAttribute('contenteditable', 'true');
-                    targetCell.style.backgroundColor = '';
-                    if (targetInput) targetInput.disabled = false;
-                }
+                const targetValue = rule.map[triggerValue] || '';
+                targetCell.textContent = targetValue;
+                rowData[targetHeader] = targetValue;
             }
         }
-
-        if (sourceType === 'combustao_movel' && headerOfEditedCell === 'tipo_entrada') {
-            applyCombustaoMovelLogic(editedRow);
-        } else if (sourceType === 'efluentes_controlados' && headerOfEditedCell === 'tratamento_ou_destino') {
-            applyEfluentesControladosLogic(editedRow);
-        }
         
-        updateRowAppearance(editedRow, headers);
+        const validation = currentSchema.validateRow(rowData, managedOptionsCache);
+        const sanitizedData = validation.sanitizedData;
+       
+        updateRowAppearance(editedRow, sanitizedData);
         checkTableAndToggleSaveButton();
     }
 
-    // --- ATENÇÃO: LISTENER DO tableSelector COMPLETAMENTE REFEITO ---
     tableSelector.addEventListener('change', async () => {
         const selectedKey = tableSelector.value;
         currentSchema = validationSchemas[selectedKey];
         
-        // Limpa a tela e mostra feedback de carregamento
+        uploadForm.reset(); 
+
         tableContainer.innerHTML = '';
+        tableActions.style.display = 'none'; 
         feedbackDiv.textContent = 'Carregando...';
         feedbackDiv.style.color = 'blue';
         saveButton.style.display = 'none';
@@ -353,13 +436,10 @@ document.addEventListener('DOMContentLoaded', () => {
             downloadIntelligentBtn.style.display = 'inline-block';
             
             try {
-                // Busca as dependências (unidades, opções de dropdown)
                 await Promise.all([
                     currentSchema.hasUnits ? fetchUnits() : Promise.resolve(),
                     fetchManagedOptions(currentSchema) 
                 ]);
-
-                // Busca os dados do template pré-preenchido
                 feedbackDiv.textContent = 'Carregando fontes cadastradas...';
                 const response = await fetch(`/api/intelligent-template/${selectedKey}?format=json`);
                 if (!response.ok) throw new Error('Falha ao carregar template de dados.');
@@ -367,7 +447,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const data = await response.json();
                 
                 feedbackDiv.textContent = '';
-                generateTable(data, false); // O 'false' indica que não é de um upload de arquivo
+                generateTable(data, false);
 
             } catch (error) {
                 console.error("Erro ao carregar dados da fonte:", error);
@@ -376,116 +456,17 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
         } else {
-            // Esconde tudo se nenhuma fonte for selecionada
             uploadSection.style.display = 'none';
             tableActions.style.display = 'none';
             downloadIntelligentBtn.style.display = 'none';
             feedbackDiv.textContent = '';
         }
     });
-
-    uploadForm.addEventListener('submit', async (e) => { 
-        e.preventDefault(); 
-        feedbackDiv.textContent = 'Enviando e validando arquivo...'; 
-        const file = fileInput.files[0]; 
-        if (!file) { 
-            feedbackDiv.textContent = 'Por favor, selecione um arquivo.'; 
-            return; 
-        } 
-        const formData = new FormData(); 
-        formData.append('file', file); 
-        formData.append('source_type', tableSelector.value); 
-        try { 
-            const response = await fetch('/api/upload', { method: 'POST', body: formData }); 
-            if (!response.ok) throw new Error(`Erro: ${response.statusText}`); 
-            const data = await response.json(); 
-            generateTable(data, true); // O 'true' indica que os dados vêm de um upload
-        } catch (error) { 
-            feedbackDiv.textContent = `Falha no upload: ${error.message}`; 
-            feedbackDiv.style.color = 'red'; 
-        } 
-    });
     
-    downloadIntelligentBtn.addEventListener('click', async () => { 
-        const sourceType = tableSelector.value; 
-        if (!sourceType) return; 
-        const year = prompt("Por favor, digite o ano de reporte (ex: 2024):", new Date().getFullYear()); 
-        if (!year || isNaN(parseInt(year)) || year.length !== 4) { 
-            alert("Ano inválido. Por favor, digite um ano com 4 dígitos."); 
-            return; 
-        } 
-        feedbackDiv.textContent = 'Gerando template...'; 
-        feedbackDiv.style.color = 'blue'; 
-        try { 
-            // A chamada para a rota de download não muda
-            const response = await fetch(`/api/intelligent-template/${sourceType}?year=${year}`); 
-            if (!response.ok) { 
-                const error = await response.json(); 
-                throw new Error(error.message || 'Falha ao gerar o arquivo no servidor.'); 
-            } 
-            const blob = await response.blob(); 
-            const url = window.URL.createObjectURL(blob); 
-            const a = document.createElement('a'); 
-            a.style.display = 'none'; a.href = url; 
-            const disposition = response.headers.get('Content-Disposition'); 
-            let filename = `${sourceType}_template.xlsx`; 
-            if (disposition && disposition.indexOf('attachment') !== -1) { 
-                const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/; 
-                const matches = filenameRegex.exec(disposition); 
-                if (matches != null && matches[1]) { 
-                    filename = matches[1].replace(/['"]/g, ''); 
-                } 
-            } 
-            a.download = filename; 
-            document.body.appendChild(a); 
-            a.click(); 
-            window.URL.revokeObjectURL(url); 
-            a.remove(); 
-            feedbackDiv.textContent = 'Template gerado com sucesso!'; 
-            feedbackDiv.style.color = 'green'; 
-        } catch (error) { 
-            feedbackDiv.textContent = `Erro ao gerar template: ${error.message}`; 
-            feedbackDiv.style.color = 'red'; 
-        } 
-    });
-    
-    saveButton.addEventListener('click', async () => { 
-        if (!currentSchema || !tableSelector.value) return; 
-        const tableRows = document.querySelectorAll('#table-container tbody tr'); 
-        const headers = Object.keys(currentSchema.headerDisplayNames); 
-        const dataToSave = []; 
-        tableRows.forEach(row => { 
-            const rowData = {}; 
-            const cells = row.querySelectorAll('td'); 
-            headers.forEach((headerKey, index) => { 
-                rowData[headerKey] = getCellValue(cells[index]); 
-            }); 
-            dataToSave.push(rowData); 
-        }); 
-        try { 
-            const response = await fetch(`/api/save-data/${tableSelector.value}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(dataToSave), }); 
-            const result = await response.json(); 
-            if (!response.ok) throw new Error(result.message); 
-            const friendlyTableName = currentSchema.displayName; 
-            feedbackDiv.textContent = `Dados de "${friendlyTableName}" salvos com sucesso!`; 
-            feedbackDiv.style.color = 'green'; 
-            saveButton.style.display = 'none'; 
-            tableContainer.innerHTML = ''; 
-        } catch (error) { 
-            feedbackDiv.textContent = `Erro ao salvar: ${error.message}`; 
-            feedbackDiv.style.color = 'red'; 
-        } 
-    });
-
-    function populateSelector() {
-        tableSelector.innerHTML = '<option value="">-- Selecione uma tabela --</option>';
-        const sortedKeys = Object.keys(validationSchemas).sort((a, b) => 
-            validationSchemas[a].displayName.localeCompare(validationSchemas[b].displayName)
-        );
-        sortedKeys.forEach(key => {
-            tableSelector.innerHTML += `<option value="${key}">${validationSchemas[key].displayName}</option>`;
-        });
-    }
+    uploadForm.addEventListener('submit', async (e) => { e.preventDefault(); feedbackDiv.textContent = 'Enviando e validando arquivo...'; const file = fileInput.files[0]; if (!file) { feedbackDiv.textContent = 'Por favor, selecione um arquivo.'; return; } const formData = new FormData(); formData.append('file', file); formData.append('source_type', tableSelector.value); try { const response = await fetch('/api/upload', { method: 'POST', body: formData }); if (!response.ok) throw new Error(`Erro: ${response.statusText}`); const data = await response.json(); generateTable(data, true); } catch (error) { feedbackDiv.textContent = `Falha no upload: ${error.message}`; feedbackDiv.style.color = 'red'; } });
+    downloadIntelligentBtn.addEventListener('click', async () => { const sourceType = tableSelector.value; if (!sourceType) return; const year = prompt("Por favor, digite o ano de reporte (ex: 2024):", new Date().getFullYear()); if (!year || isNaN(parseInt(year)) || year.length !== 4) { alert("Ano inválido. Por favor, digite um ano com 4 dígitos."); return; } feedbackDiv.textContent = 'Gerando template...'; feedbackDiv.style.color = 'blue'; try { const response = await fetch(`/api/intelligent-template/${sourceType}?year=${year}`); if (!response.ok) { const error = await response.json(); throw new Error(error.message || 'Falha ao gerar o arquivo no servidor.'); } const blob = await response.blob(); const url = window.URL.createObjectURL(blob); const a = document.createElement('a'); a.style.display = 'none'; a.href = url; const disposition = response.headers.get('Content-Disposition'); let filename = `${sourceType}_template.xlsx`; if (disposition && disposition.indexOf('attachment') !== -1) { const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/; const matches = filenameRegex.exec(disposition); if (matches != null && matches[1]) { filename = matches[1].replace(/['"]/g, ''); } } a.download = filename; document.body.appendChild(a); a.click(); window.URL.revokeObjectURL(url); a.remove(); feedbackDiv.textContent = 'Template gerado com sucesso!'; feedbackDiv.style.color = 'green'; } catch (error) { feedbackDiv.textContent = `Erro ao gerar template: ${error.message}`; feedbackDiv.style.color = 'red'; } });
+    saveButton.addEventListener('click', async () => { if (!currentSchema || !tableSelector.value) return; const headers = Object.keys(currentSchema.headerDisplayNames); const dataToSave = []; document.querySelectorAll('#table-container tbody tr').forEach(row => { dataToSave.push(getRowDataFromDOM(row, headers)); }); try { const response = await fetch(`/api/save-data/${tableSelector.value}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(dataToSave), }); const result = await response.json(); if (!response.ok) throw new Error(result.message); const friendlyTableName = currentSchema.displayName; feedbackDiv.textContent = `Dados de "${friendlyTableName}" salvos com sucesso!`; feedbackDiv.style.color = 'green'; saveButton.style.display = 'none'; tableContainer.innerHTML = ''; } catch (error) { feedbackDiv.textContent = `Erro ao salvar: ${error.message}`; feedbackDiv.style.color = 'red'; } });
+    function populateSelector() { tableSelector.innerHTML = '<option value="">-- Selecione uma tabela --</option>'; const sortedKeys = Object.keys(validationSchemas).sort((a, b) => validationSchemas[a].displayName.localeCompare(validationSchemas[b].displayName)); sortedKeys.forEach(key => { tableSelector.innerHTML += `<option value="${key}">${validationSchemas[key].displayName}</option>`; }); }
 
     loadNavbar();
     populateSelector();

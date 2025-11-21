@@ -1,25 +1,26 @@
 // arquivo: frontend/assets.js
 
-// --- ATENÇÃO: IMPORTANDO OS SCHEMAS DE VALIDAÇÃO PARA ACESSAR O AUTOFILLMAP ---
+
 import { validationSchemas } from '../shared/validators.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     
-    // --- 1. SCHEMAS DE CONFIGURAÇÃO DOS ATIVOS (ATUALIZADO) ---
+    
     const assetSchemas = {
         combustao_estacionaria: { 
             displayName: "Combustão Estacionária", 
             fields: { 
                 combustivel_estacionario: { label: "Combustível Padrão", type: "select" },
-                unidade: { label: "Unidade de Consumo", type: "text", disabled: true } // Campo adicionado como desabilitado
+                unidade: { label: "Unidade de Consumo", type: "text", disabled: true } 
             } 
         },
         combustao_movel: { 
             displayName: "Combustão Móvel", 
             fields: { 
+                
                 tipo_entrada: { label: "Como os dados serão reportados?", type: "select", options: ["Por Consumo", "Por Distância"] }, 
                 combustivel_movel: { label: "Combustível Padrão", type: "select", showIf: { field: "tipo_entrada", value: "Por Consumo" } }, 
-                unidade_consumo: { label: "Unidade de Consumo", type: "text", showIf: { field: "tipo_entrada", value: "Por Consumo" }, disabled: true }, // Campo adicionado
+                unidade_consumo: { label: "Unidade de Consumo", type: "text", showIf: { field: "tipo_entrada", value: "Por Consumo" }, disabled: true }, 
                 tipo_veiculo: { label: "Tipo de Veículo Padrão", type: "select" }
             } 
         },
@@ -40,7 +41,6 @@ document.addEventListener('DOMContentLoaded', () => {
             displayName: "Emissões Fugitivas", 
             fields: { 
                 tipo_gas: { label: "Gás Padrão", type: "select" }
-                // Unidade removida pois é sempre 'kg' e não precisa ser configurada na tipologia
             } 
         },
         fertilizantes: { 
@@ -76,7 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // --- 2. REFERÊNCIAS DO DOM e VARIÁVEIS DE ESTADO ---
+    
     const navPlaceholder = document.getElementById('nav-placeholder');
     const sourceSelector = document.getElementById('source-selector');
     const assetManagementSection = document.getElementById('asset-management-section');
@@ -95,7 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let currentSourceType = null;
     let allConfigs = [];
 
-    // --- 3. FUNÇÕES PRINCIPAIS ---
+    
     async function initializePage() { if (navPlaceholder) { fetch('nav.html').then(response => response.text()).then(data => { navPlaceholder.innerHTML = data; }); } for (const sourceType in assetSchemas) { const option = document.createElement('option'); option.value = sourceType; option.textContent = assetSchemas[sourceType].displayName; sourceSelector.appendChild(option); } try { const [unitsResponse, configsResponse] = await Promise.all([ fetch('/api/units'), fetch('/api/source-configurations') ]); const unitsList = await unitsResponse.json(); allConfigs = await configsResponse.json(); unitSelect.innerHTML = '<option value="">-- Selecione --</option>'; if (unitsList.length > 1) { const allUnitsOption = document.createElement('option'); allUnitsOption.value = 'all'; allUnitsOption.textContent = '*** TODAS AS UNIDADES ***'; unitSelect.appendChild(allUnitsOption); } unitsList.forEach(unit => { const option = document.createElement('option'); option.value = unit.id; option.textContent = unit.name; unitSelect.appendChild(option); }); } catch (error) { console.error("Erro na inicialização da página:", error); } }
     async function handleSourceSelection() { currentSourceType = sourceSelector.value; resetForm(); frequencyFeedback.textContent = ''; if (!currentSourceType) { assetManagementSection.style.display = 'none'; return; } const schema = assetSchemas[currentSourceType]; formTitle.textContent = `Adicionar Nova Fonte`; tableTitle.textContent = `Fontes de ${schema.displayName} Cadastradas`; const currentConfig = allConfigs.find(c => c.source_type === currentSourceType); reportingFrequencySelect.value = currentConfig ? currentConfig.reporting_frequency : 'anual'; await buildDynamicForm(schema); buildDynamicTableHeaders(schema); loadAssetTypologies(); assetManagementSection.style.display = 'block'; }
     function buildDynamicTableHeaders(schema) { assetsThead.innerHTML = ''; const headerRow = document.createElement('tr'); let headers = '<th>Descrição</th><th>Unidade</th>'; for (const key in schema.fields) { headers += `<th>${schema.fields[key].label}</th>`; } headers += '<th>Ações</th>'; headerRow.innerHTML = headers; assetsThead.appendChild(headerRow); }
@@ -123,8 +123,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     const key = input.dataset.key;
                     if (typoToEdit.asset_fields[key]) {
                         input.value = typoToEdit.asset_fields[key];
-                        if (input.id.includes('tipo_entrada') || input.id.includes('tratamento_ou_destino') || input.id.includes('uso_solo_anterior') || input.id.includes('combustivel')) {
-                            input.dispatchEvent(new Event('change'));
+                        
+                        
+                        if (input.id.includes('tipo_entrada') || input.id.includes('tratamento_ou_destino') || input.id.includes('uso_solo_anterior')) {
+                            input.dispatchEvent(new Event('change', { bubbles: true }));
                         }
                     }
                 });
@@ -161,7 +163,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // --- ATENÇÃO: buildDynamicForm ATUALIZADA COM LÓGICA DE AUTOFILL ---
+    
     async function buildDynamicForm(schema) { 
         specificFieldsContainer.innerHTML = ''; 
         const fieldElements = {};
@@ -200,21 +202,33 @@ document.addEventListener('DOMContentLoaded', () => {
                 input.type = field.type || 'text'; 
             }
             
-            // Atributos comuns
             input.id = `field-${key}`; 
             input.dataset.key = key; 
             input.required = !field.showIf;
             if (field.disabled) input.disabled = true;
 
             if (field.type === 'select') {
-                input.innerHTML = '<option value="">-- Carregando... --</option>'; 
-                try {
-                    let options = field.options || validationSchemas[currentSourceType]?.validOptions?.[key] || [];
-                    input.innerHTML = '<option value="">-- Selecione --</option>';
-                    options.forEach(opt => { input.innerHTML += `<option value="${opt}">${opt}</option>`; });
-                } catch (error) {
-                    console.error(`Erro ao buscar opções para ${key}:`, error);
-                    input.innerHTML = '<option value="">-- Erro --</option>';
+                input.innerHTML = '<option value="">-- Selecione --</option>';
+                const displayMap = validationSchema.displayValueMap?.[key];
+                const options = validationSchema.validOptions?.[key] || field.options || [];
+
+                
+                if (displayMap) {
+                    
+                    options.forEach(value => {
+                        const option = document.createElement('option');
+                        option.value = value;
+                        option.textContent = displayMap[value] || value; 
+                        input.appendChild(option);
+                    });
+                } else {
+                    
+                    options.forEach(opt => {
+                        const option = document.createElement('option');
+                        option.value = opt;
+                        option.textContent = opt;
+                        input.appendChild(option);
+                    });
                 }
             }
             
@@ -225,23 +239,25 @@ document.addEventListener('DOMContentLoaded', () => {
             formRow.appendChild(formGroup); 
             specificFieldsContainer.appendChild(formRow); 
 
-            // Listener para lógica condicional (showIf e autoFill)
             if (triggerFields.has(key) || autoFillTriggers.has(key)) {
                 input.addEventListener('change', () => {
                     const selectedValue = input.value;
                     
-                    // Lógica showIf
                     for (const fieldKey in fieldElements) {
                         const element = fieldElements[fieldKey];
                         const showIfConfig = element.config.showIf;
+                        
                         if (showIfConfig && showIfConfig.field === key) {
-                            const isVisible = selectedValue === showIfConfig.value;
+                            
+                            const assetValueMap = { "Por Consumo": "consumo", "Por Distância": "distancia" };
+                            const expectedValue = assetValueMap[showIfConfig.value] || showIfConfig.value;
+
+                            const isVisible = selectedValue === expectedValue;
                             element.row.style.display = isVisible ? '' : 'none';
                             element.input.required = isVisible;
                         }
                     }
 
-                    // Lógica autoFill
                     if (autoFillTriggers.has(key)) {
                         const rule = validationSchema.autoFillMap[key];
                         const targetValue = rule.map[selectedValue];
@@ -249,14 +265,13 @@ document.addEventListener('DOMContentLoaded', () => {
                         if (targetField && targetValue !== undefined) {
                             targetField.input.value = targetValue;
                         } else if (targetField) {
-                            targetField.input.value = ''; // Limpa se não houver correspondência
+                            targetField.input.value = '';
                         }
                     }
                 });
             }
         }
         
-        // Dispara eventos para setar estado inicial
         new Set([...triggerFields, ...autoFillTriggers]).forEach(triggerKey => {
             const triggerElement = fieldElements[triggerKey];
             if (triggerElement) {
@@ -267,7 +282,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     async function handleSaveFrequency() { if (!currentSourceType) return; frequencyFeedback.textContent = 'Salvando...'; frequencyFeedback.style.color = 'blue'; try { const response = await fetch('/api/source-configurations', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ source_type: currentSourceType, reporting_frequency: reportingFrequencySelect.value }) }); if (!response.ok) throw new Error('Falha ao salvar configuração.'); const existingConfig = allConfigs.find(c => c.source_type === currentSourceType); if (existingConfig) { existingConfig.reporting_frequency = reportingFrequencySelect.value; } else { allConfigs.push({ source_type: currentSourceType, reporting_frequency: reportingFrequencySelect.value }); } frequencyFeedback.textContent = 'Frequência salva com sucesso!'; frequencyFeedback.style.color = 'green'; } catch (error) { console.error('Erro ao salvar frequência:', error); frequencyFeedback.textContent = 'Erro ao salvar.'; frequencyFeedback.style.color = 'red'; } }
     
-    // --- EVENT LISTENERS ---
+    
     sourceSelector.addEventListener('change', handleSourceSelection);
     saveFrequencyBtn.addEventListener('click', handleSaveFrequency);
     form.addEventListener('submit', handleFormSubmit);

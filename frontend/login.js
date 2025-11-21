@@ -16,13 +16,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const password = document.getElementById('password').value;
 
     try {
-      // --- MUDANÇA AQUI ---
       const response = await fetch('/api/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
       });
-      // --- FIM DA MUDANÇA ---
 
       const data = await response.json();
 
@@ -30,7 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
         messageP.textContent = data.message;
         messageP.style.color = 'green';
         setTimeout(() => {
-          window.location.href = 'dashboard.html';
+          window.location.href = 'units.html'; 
         }, 1000);
       } else {
         messageP.textContent = data.message;

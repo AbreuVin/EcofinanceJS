@@ -16,26 +16,21 @@ const db = new sqlite3.Database(dbPath, (err) => {
     db.serialize(() => {
         db.run(`CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT UNIQUE, password TEXT)`, (err) => { if (err) console.error('Erro tabela users:', err); else console.log('Tabela "users" pronta.'); });
         
-        // --- ATENÇÃO: COLUNA "area" REMOVIDA ---
         db.run(`CREATE TABLE IF NOT EXISTS contacts (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, unit_id INTEGER, email TEXT, phone TEXT, FOREIGN KEY (unit_id) REFERENCES units(id) ON DELETE SET NULL)`, (err) => { if (err) console.error('Erro tabela contacts:', err); else console.log('Tabela "contacts" pronta.'); });
         
         db.run(`CREATE TABLE IF NOT EXISTS units (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, cidade TEXT, estado TEXT, pais TEXT, numero_colaboradores INTEGER)`, (err) => { if (err) console.error('Erro tabela units:', err); else console.log('Tabela "units" pronta.'); });
         db.run(`CREATE TABLE IF NOT EXISTS mobile_combustion_data (id INTEGER PRIMARY KEY AUTOINCREMENT, ano INTEGER, periodo TEXT, unidade_empresarial TEXT, descricao_fonte TEXT, controlado_empresa BOOLEAN, tipo_entrada TEXT, combustivel TEXT, consumo REAL, unidade_consumo TEXT, distancia_percorrida REAL, unidade_distancia TEXT, tipo_veiculo TEXT)`, (err) => { if (err) console.error('Erro tabela mobile_combustion_data:', err); else console.log('Tabela "mobile_combustion_data" pronta.'); });
-        db.run(`CREATE TABLE IF NOT EXISTS stationary_combustion_data (id INTEGER PRIMARY KEY AUTOINCREMENT, ano INTEGER, periodo TEXT, unidade_empresarial TEXT, descricao_da_fonte TEXT, combustivel TEXT, consumo REAL, unidade TEXT, controlado_empresa BOOLEAN)`, (err) => { if (err) console.error('Erro tabela stationary_combustion_data:', err); else console.log('Tabela "stationary_combustion_data" pronta.'); });
+        
+        db.run(`CREATE TABLE IF NOT EXISTS stationary_combustion_data (id INTEGER PRIMARY KEY AUTOINCREMENT, ano INTEGER, periodo TEXT, unidade_empresarial TEXT, descricao_da_fonte TEXT, combustivel_estacionario TEXT, consumo REAL, unidade TEXT, controlado_empresa BOOLEAN)`, (err) => { if (err) console.error('Erro tabela stationary_combustion_data:', err); else console.log('Tabela "stationary_combustion_data" pronta.'); });
 
-        // --- ATENÇÃO: COLUNAS "uso_final_produtos" E "rastreabilidade" REMOVIDAS ---
         db.run(`CREATE TABLE IF NOT EXISTS production_sales_data (id INTEGER PRIMARY KEY AUTOINCREMENT, ano INTEGER NOT NULL, periodo TEXT, unidade_empresarial TEXT NOT NULL, produto TEXT NOT NULL, quantidade_vendida INTEGER CHECK(quantidade_vendida > 0), unidade_medida TEXT NOT NULL, comentarios TEXT)`, (err) => { if (err) console.error('Erro tabela production_sales_data:', err); else console.log('Tabela "production_sales_data" pronta.'); });
         
-        // --- ATENÇÃO: COLUNA "utilizacao" REMOVIDA ---
         db.run(`CREATE TABLE IF NOT EXISTS lubricants_ippu_data (id INTEGER PRIMARY KEY AUTOINCREMENT, ano INTEGER, periodo TEXT, unidade_empresarial TEXT, fonte_emissao TEXT, tipo_lubrificante TEXT, consumo REAL, unidade TEXT, controlado_empresa BOOLEAN)`, (err) => { if (err) console.error('Erro tabela lubricants_ippu_data:', err); else console.log('Tabela "lubricants_ippu_data" pronta.'); });
         
-        // --- ATENÇÃO: COLUNAS DE GÁS COMPOSTO E "rastreabilidade" REMOVIDAS ---
         db.run(`CREATE TABLE IF NOT EXISTS fugitive_emissions_data (id INTEGER PRIMARY KEY AUTOINCREMENT, ano INTEGER, periodo TEXT, unidade_empresarial TEXT, fonte_emissao TEXT, tipo_gas TEXT, quantidade_reposta REAL, unidade TEXT, controlado_empresa BOOLEAN, comentarios TEXT)`, (err) => { if (err) console.error('Erro tabela fugitive_emissions_data:', err); else console.log('Tabela "fugitive_emissions_data" pronta.'); });
 
-        // --- ATENÇÃO: COLUNAS "especificacoes_insumo" E "rastreabilidade" REMOVIDAS ---
         db.run(`CREATE TABLE IF NOT EXISTS fertilizers_data (id INTEGER PRIMARY KEY AUTOINCREMENT, ano INTEGER, periodo TEXT, unidade_empresarial TEXT, tipo_fertilizante TEXT, quantidade_kg REAL, unidade TEXT, percentual_nitrogenio REAL, percentual_carbonato REAL, controlado_empresa BOOLEAN, comentarios TEXT)`, (err) => { if (err) console.error('Erro tabela fertilizers_data:', err); else console.log('Tabela "fertilizers_data" pronta.'); });
         
-        // --- ATENÇÃO: COLUNA "rastreabilidade" REMOVIDA ---
         db.run(`
             CREATE TABLE IF NOT EXISTS effluents_controlled_data (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -57,23 +52,26 @@ const db = new sqlite3.Database(dbPath, (err) => {
             )
         `, (err) => { if (err) console.error('Erro tabela effluents_controlled_data:', err); else console.log('Tabela "effluents_controlled_data" pronta.'); });
         
-        // --- ATENÇÃO: COLUNA "rastreabilidade" REMOVIDA ---
+        // --- ATENÇÃO: INÍCIO DA ALTERAÇÃO ---
+        // 1. Remove a tabela antiga para garantir que a nova estrutura seja aplicada.
+        db.run(`DROP TABLE IF EXISTS domestic_effluents_data`);
+        
+        // 2. Cria a tabela com a nova estrutura.
         db.run(`
             CREATE TABLE IF NOT EXISTS domestic_effluents_data (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 ano INTEGER NOT NULL,
                 periodo TEXT NOT NULL,
                 unidade_empresarial TEXT NOT NULL,
-                num_medio_colaboradores INTEGER NOT NULL,
-                carga_horaria_media_colaboradores REAL NOT NULL,
-                num_medio_terceiros INTEGER NOT NULL,
-                carga_horaria_media_terceiros REAL NOT NULL,
+                tipo_trabalhador TEXT NOT NULL,
+                num_trabalhadores INTEGER NOT NULL,
+                carga_horaria_media REAL NOT NULL,
                 fossa_septica_propriedade TEXT NOT NULL,
                 comentarios TEXT
             )
-        `, (err) => { if (err) console.error('Erro tabela domestic_effluents_data:', err); else console.log('Tabela "domestic_effluents_data" pronta.'); });
-        
-        // --- ATENÇÃO: COLUNA "rastreabilidade" REMOVIDA ---
+        `, (err) => { if (err) console.error('Erro tabela domestic_effluents_data:', err); else console.log('Tabela "domestic_effluents_data" recriada com a nova estrutura.'); });
+        // --- FIM DA ALTERAÇÃO ---
+
         db.run(`
             CREATE TABLE IF NOT EXISTS land_use_change_data (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
