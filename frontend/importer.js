@@ -80,12 +80,12 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- ATENÇÃO: NOVA FUNÇÃO CENTRAL DE LIMPEZA E PRÉ-PROCESSAMENTO ---
+    
     function sanitizeAndPreprocessRow(rowData) {
         const sourceType = tableSelector.value;
-        const cleanedRow = { ...rowData }; // Começa com uma cópia
+        const cleanedRow = { ...rowData }; 
 
-        // 1. Sanitização de Dropdowns (Ex: Gases)
+        
         if (sourceType === 'emissoes_fugitivas') {
             const gasValue = cleanedRow['tipo_gas'];
             if (gasValue) {
@@ -98,12 +98,12 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // 2. Forçar Valores de Campos Fixos
+        
         if (sourceType === 'emissoes_fugitivas' || sourceType === 'fertilizantes') {
             cleanedRow['unidade'] = 'kg';
         }
         
-        // 3. Limpeza de Campos Condicionais (Pré-processamento)
+        
         if (sourceType === 'combustao_movel' && cleanedRow.tipo_entrada) {
             if (cleanedRow.tipo_entrada === 'consumo') {
                 ['distancia_percorrida', 'unidade_distancia', 'tipo_veiculo'].forEach(k => cleanedRow[k] = '');
@@ -139,19 +139,19 @@ document.addEventListener('DOMContentLoaded', () => {
         data.forEach((originalRowData, index) => {
             console.log(`[JSMentor Debug] Linha ${index + 1} - DADO ORIGINAL:`, JSON.parse(JSON.stringify(originalRowData)));
 
-            // 1. Limpa e pré-processa os dados PRIMEIRO
+            
             const cleanedData = sanitizeAndPreprocessRow(originalRowData);
             console.log(`[JSMentor Debug] Linha ${index + 1} - DADO LIMPO:`, JSON.parse(JSON.stringify(cleanedData)));
 
-            // 2. Valida os dados JÁ LIMPOS
+            
             const validationResult = currentSchema.validateRow(cleanedData, managedOptionsCache);
             console.log(`[JSMentor Debug] Linha ${index + 1} - RESULTADO VALIDAÇÃO:`, validationResult.errors);
 
-            // 3. Renderiza a linha com os dados limpos
+            
             const rowElement = buildTableRow(cleanedData, headers, index);
             tbody.appendChild(rowElement);
 
-            // 4. Aplica os erros encontrados na validação
+            
             for (const header in validationResult.errors) {
                 const cell = rowElement.querySelector(`td[data-header="${header}"]`);
                 if (cell) {
@@ -161,7 +161,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
             
-            // 5. Atualiza o estado visual (campos desabilitados)
+            
             updateDisabledFields(rowElement, cleanedData);
         });
 
