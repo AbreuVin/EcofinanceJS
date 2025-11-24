@@ -39,23 +39,7 @@ export const validationSchemas = {
             controlado_empresa: ["Sim", "Não"],
             tipo_entrada: ["consumo", "distancia"],
             combustivel: [
-                "Gasolina Automotiva",
-                "Óleo Diesel",
-                "Gás Natural Veicular (GNV)",
-                "Gás Natural Liquefeito (GNL)",
-                "Gás Liquefeito de Petróleo (GLP)",
-                "Querosene de Aviação",
-                "Gasolina de Aviação",
-                "Lubrificantes",
-                "Metanol",
-                "Óleo Combustível",
-                "Etanol Hidratado",
-                "Biodiesel (B100)",
-                "Biometano",
-                "Bioquerosene (SAF)",
-                "HVO (diesel verde)",
-                "Biometanol",
-                "Etanol Anidro"
+                "Gasolina Automotiva", "Óleo Diesel", "Gás Natural Veicular (GNV)", "Gás Natural Liquefeito (GNL)", "Gás Liquefeito de Petróleo (GLP)", "Querosene de Aviação", "Gasolina de Aviação", "Lubrificantes", "Metanol", "Óleo Combustível", "Etanol Hidratado", "Biodiesel (B100)", "Biometano", "Bioquerosene (SAF)", "HVO (diesel verde)", "Biometanol", "Etanol Anidro"
             ],
             unidade_consumo: ["Litros", "m³", "kg"],
             unidade_distancia: ["Km", "Milhas"],
@@ -185,11 +169,10 @@ export const validationSchemas = {
         displayName: "Emissões Fugitivas",
         hasUnits: true,
         headerDisplayNames: { ano: "Ano", periodo: "Período", unidade_empresarial: "Unidade Empresarial", fonte_emissao: "Fonte de Emissão / Equipamento", tipo_gas: "Tipo de Gás", quantidade_reposta: "Quantidade Reposta", unidade: "Unidade", controlado_empresa: "Controlado pela Empresa?", comentarios: "Comentários" },
+        // --- ATENÇÃO: INÍCIO DA CORREÇÃO ---
         gasList: ["Dióxido de carbono (CO2)", "Metano (CH4)", "Óxido nitroso (N2O)", "HFC-23", "HFC-32", "HFC-41", "HFC-125", "HFC-134", "HFC-134a", "HFC-143", "HFC-143a", "HFC-152", "HFC-152a", "HFC-161", "HFC-227ea", "HFC-236cb", "HFC-236ea", "HFC-236fa", "HFC-245ca", "HFC-245fa", "HFC-365mfc", "HFC-43-10mee", "Hexafluoreto de enxofre (SF6)", "Trifluoreto de nitrogênio (NF3)", "PFC-14", "PFC-116", "PFC-218", "PFC-318", "PFC-3-1-10", "PFC-4-1-12", "PFC-5-1-14", "PFC-9-1-18", "Trifluorometil pentafluoreto de enxofre (SF5CF3)", "Perfluorociclopropano (c-C3F6)", "R-400", "R-401A", "R-401B", "R-401C", "R-402A", "R-402B", "R-403A", "R-403B", "R-404A", "R-405A", "R-406A", "R-407A", "R-407B", "R-407C", "R-407D", "R-407E", "R-407F", "R-407G", "R-407H", "R-407I", "R-408A", "R-409A", "R-409B", "R-410A", "R-410B", "R-411A", "R-411B", "R-412A", "R-413A", "R-414A", "R-414B", "R-415A", "R-415B", "R-416A", "R-417A", "R-417B", "R-417C", "R-418A", "R-419A", "R-419B", "R-420A", "R-421A", "R-421B", "R-422A", "R-422B", "R-422C", "R-422D", "R-422E", "R-423A", "R-424A", "R-425A", "R-426A", "R-427A", "R-428A", "R-429A", "R-430A", "R-431A", "R-432A", "R-433A", "R-433B", "R-433C", "R-434A", "R-435A", "R-436A", "R-436B", "R-436C", "R-437A", "R-438A", "R-439A", "R-440A", "R-441A", "R-442A", "R-443A", "R-444A", "R-444B", "R-445A", "R-446A", "R-447A", "R-447B", "R-448A", "R-449A", "R-449B", "R-449C", "R-450A", "R-451A", "R-451B", "R-452A", "R-452B", "R-452C", "R-453A", "R-454A", "R-454B", "R-454C", "R-455A", "R-456A", "R-457A", "R-458A", "R-459A", "R-459B", "R-460A", "R-460B", "R-460C", "R-461A", "R-462A", "R-463A", "R-464A", "R-465A", "R-500", "R-501", "R-502", "R-503", "R-504", "R-505", "R-506", "R-507 ou R-507A", "R-508A", "R-508B", "R-509 ou R-509A", "R-510A", "R-511A", "R-512A", "R-513A", "R-513B", "R-514A", "R-515A", "R-516A", "CFC-11", "CFC-12", "CFC-13", "CFC-113", "CFC-114", "CFC-115", "Halon-1301", "Halon-1211", "Halon-2402", "Tetracloreto de carbono (CCl4)", "Bromometano (CH3Br)", "Methyl chloroform (CH3CCl3)", "HCFC-21", "HCFC-22 (R22)", "HCFC-123", "HCFC-124", "HCFC-141b", "HCFC-142b", "HCFC-225ca", "HCFC-225cb"],
-        // --- ATENÇÃO: INÍCIO DA CORREÇÃO 1 ---
-        // Adicionando a declaração explícita de que a unidade é fixa.
+        // --- FIM DA CORREÇÃO ---
         get validOptions() { return { periodo: ["Anual", "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"], tipo_gas: this.gasList, unidade: ["kg"], controlado_empresa: ["Sim", "Não"] }; },
-        // --- FIM DA CORREÇÃO 1 ---
         autoFillMap: {},
         validateRow: function(rowData, optionsCache) {
             const errors = {};
@@ -215,10 +198,7 @@ export const validationSchemas = {
         displayName: "Fertilizantes",
         hasUnits: true,
         headerDisplayNames: { ano: "Ano", periodo: "Período", unidade_empresarial: "Unidade Empresarial", tipo_fertilizante: "Tipo de Fertilizante", quantidade_kg: "Quantidade de Fertilizante", unidade: "Unidade", percentual_nitrogenio: "Percentual de Nitrogênio (%)", percentual_carbonato: "Percentual de Carbonato (%)", controlado_empresa: "Controlado pela Empresa?", comentarios: "Comentários" },
-        // --- ATENÇÃO: INÍCIO DA CORREÇÃO 2 ---
-        // Adicionando a declaração explícita de que a unidade é fixa.
         validOptions: { periodo: ["Anual", "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"], unidade: ["kg"], controlado_empresa: ["Sim", "Não"] },
-        // --- FIM DA CORREÇÃO 2 ---
         autoFillMap: {},
         validateRow: function(rowData) {
             const errors = {};
@@ -306,8 +286,10 @@ export const validationSchemas = {
             if (!rowData.unidade_empresarial) errors.unidade_empresarial = "Obrigatório.";
             if (!this.validOptions.tipo_trabalhador.includes(rowData.tipo_trabalhador)) { errors.tipo_trabalhador = "Selecione 'Interno' ou 'Terceiro'."; }
             const numTrabalhadoresVal = rowData.num_trabalhadores;
-            const numTrabalhadores = parseFloat(numTrabalhadoresVal);
-            if (isNaN(numTrabalhadores) || numTrabalhadores <= 0) { errors.num_trabalhadores = `Entrada inválida ('${numTrabalhadoresVal}'). Insira um número maior que zero.`; }
+            const numTrabalhadores = parseInt(numTrabalhadoresVal, 10);
+            if (isNaN(numTrabalhadores) || numTrabalhadores <= 0 || String(numTrabalhadoresVal).includes('.') || String(numTrabalhadoresVal).includes(',')) { 
+                errors.num_trabalhadores = `Entrada inválida ('${numTrabalhadoresVal}'). Insira um número inteiro e positivo.`;
+            }
             const cargaHorariaVal = rowData.carga_horaria_media;
             const cargaHoraria = parseFloat(cargaHorariaVal);
             if (isNaN(cargaHoraria) || cargaHoraria <= 0) { errors.carga_horaria_media = `Entrada inválida ('${cargaHorariaVal}'). Insira um número maior que zero.`; }
@@ -326,7 +308,6 @@ export const validationSchemas = {
         validateRow: function(rowData) {
             const errors = {};
             const isFilled = (value) => value !== null && value !== undefined && value !== '';
-
             if (!rowData.ano || isNaN(parseInt(rowData.ano)) || String(rowData.ano).length !== 4) errors.ano = "Deve ser um ano com 4 dígitos.";
             if (!this.validOptions.periodo.includes(rowData.periodo)) errors.periodo = "Período inválido.";
             if (!rowData.unidade_empresarial) errors.unidade_empresarial = "Obrigatório.";
@@ -337,20 +318,15 @@ export const validationSchemas = {
 
             if (!this.validOptions.uso_solo_anterior.includes(rowData.uso_solo_anterior)) { errors.uso_solo_anterior = "Selecione uma opção válida."; }
             
-            // --- ATENÇÃO: INÍCIO DA CORREÇÃO 3 ---
-            // Completando a lógica condicional.
             if (rowData.uso_solo_anterior === 'Vegetação natural') {
                 if (!this.validOptions.bioma.includes(rowData.bioma)) { errors.bioma = "Bioma é obrigatório para Vegetação Natural."; }
                 if (!rowData.fitofisionomia) { errors.fitofisionomia = "Fitofisionomia é obrigatório para Vegetação Natural."; }
                 if (!this.validOptions.tipo_area.includes(rowData.tipo_area)) { errors.tipo_area = "Tipo de Área é obrigatório para Vegetação Natural."; }
             } else {
-                // Se NÃO for 'Vegetação natural', os campos dependentes DEVEM estar vazios.
                 if (isFilled(rowData.bioma)) { errors.bioma = "Deve estar vazio se o uso do solo não for 'Vegetação natural'."; }
                 if (isFilled(rowData.fitofisionomia)) { errors.fitofisionomia = "Deve estar vazio se o uso do solo não for 'Vegetação natural'."; }
                 if (isFilled(rowData.tipo_area)) { errors.tipo_area = "Deve estar vazio se o uso do solo não for 'Vegetação natural'."; }
             }
-            // --- FIM DA CORREÇÃO 3 ---
-
             return { isValid: Object.keys(errors).length === 0, errors: errors, sanitizedData: rowData };
         }
     }

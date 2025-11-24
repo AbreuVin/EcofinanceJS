@@ -247,8 +247,8 @@ app.post('/api/upload', upload.single('file'), (req, res) => {
                     }
 
                     if (typeof value === 'string') {
-                        value = value.trim(); 
-                        value = value.replace(/\.(?=.*\d{3},)/g, '').replace(',', '.');
+                        value = value.trim();
+                        // A conversão de vírgula para ponto agora é mais segura no front-end
                     }
                     newRow[key] = value;
                 }
@@ -273,7 +273,9 @@ app.post('/api/upload', upload.single('file'), (req, res) => {
             const sheetName = workbook.SheetNames[0];
             const worksheet = workbook.Sheets[sheetName];
             
-            const jsonData = xlsx.utils.sheet_to_json(worksheet, { defval: "", raw: false });
+            // --- ATENÇÃO: A CORREÇÃO ESTÁ AQUI ---
+            // Mudamos 'raw: false' para 'raw: true' para obter os valores brutos da planilha
+            const jsonData = xlsx.utils.sheet_to_json(worksheet, { defval: "", raw: true });
 
             const results = jsonData.map(row => {
                 const newRow = {};
@@ -281,14 +283,15 @@ app.post('/api/upload', upload.single('file'), (req, res) => {
                     const normalized = normalizeHeader(excelHeader);
                     const schemaKey = headerMap[normalized];
                     if (schemaKey) {
-                        newRow[schemaKey] = row[excelHeader];
+                        // Garante que o valor seja tratado como string para consistência
+                        newRow[schemaKey] = row[excelHeader] !== null && row[excelHeader] !== undefined ? String(row[excelHeader]) : "";
                     }
                 }
                 return newRow;
             });
             
             processAndSendData(results);
-        } else {
+        } else { // Lógica para CSV permanece a mesma
             let results = [];
             fs.createReadStream(filePath)
                 .pipe(csv({
@@ -374,8 +377,6 @@ app.post('/api/save-data/:tableName', (req, res) => {
     
     const dbTableName = allowedTables[tableName];
     
-    // ATENÇÃO: A lógica de INSERT foi movida para dentro do loop para lidar com colunas dinâmicas.
-    
     db.serialize(() => {
         db.run("BEGIN TRANSACTION");
         let errorOccurred = false;
@@ -383,7 +384,6 @@ app.post('/api/save-data/:tableName', (req, res) => {
         dataRows.forEach(row => {
             if (errorOccurred) return;
 
-            // Sanitiza os dados da linha ANTES de construir a query
             if (row.hasOwnProperty('controlado_empresa')) {
                 row.controlado_empresa = (row.controlado_empresa === 'Sim' ? 1 : 0);
             }
@@ -391,7 +391,6 @@ app.post('/api/save-data/:tableName', (req, res) => {
                 row.fossa_septica_propriedade = (row.fossa_septica_propriedade === 'Sim' ? 1 : 0);
             }
 
-            // --- ATENÇÃO: INÍCIO DA ATUALIZAÇÃO (CORREÇÃO ERRO 500) ---
             const sanitizedRow = {};
             for (const key in row) {
                 if (row[key] !== '' && row[key] !== null && row[key] !== undefined) {
@@ -399,13 +398,12 @@ app.post('/api/save-data/:tableName', (req, res) => {
                 }
             }
             
-            if (Object.keys(sanitizedRow).length === 0) return; // Pula linhas completamente vazias
+            if (Object.keys(sanitizedRow).length === 0) return;
             
             const columns = Object.keys(sanitizedRow);
             const placeholders = columns.map(() => '?').join(', ');
             const sql = `INSERT INTO ${dbTableName} (${columns.join(', ')}) VALUES (${placeholders})`;
             const values = Object.values(sanitizedRow);
-            // --- FIM DA ATUALIZAÇÃO ---
 
             db.run(sql, values, (err) => {
                 if (err) { console.error("Erro ao inserir linha:", err, "SQL:", sql, "Valores:", values); errorOccurred = true; }
