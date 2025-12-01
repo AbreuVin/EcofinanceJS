@@ -7,6 +7,17 @@ document.addEventListener('DOMContentLoaded', () => {
     
     
     const assetSchemas = {
+        solid_waste: {
+            displayName: "Resíduos Sólidos",
+            fields: {
+                destinacao_final: { label: "Destinação Final (Descrição)", type: "select" },
+                tipo_residuo: { label: "Tipo de Resíduo Padrão", type: "select" },
+                unidade: { label: "Unidade Padrão", type: "select" },
+                cidade_uf_destino: { label: "Cidade/UF de Destino", type: "text", placeholder: "Ex: Porto Alegre/RS", showIf: { field: "destinacao_final", value: "Aterro" } },
+                local_controlado_empresa: { label: "Local Controlado pela Empresa?", type: "select" },
+                responsible_contact_id: { label: "Responsável pela Informação", type: "select", isContact: true }
+            }
+        },
         combustao_estacionaria: { 
             displayName: "Combustão Estacionária", 
             fields: { 
@@ -94,13 +105,171 @@ document.addEventListener('DOMContentLoaded', () => {
     const frequencyFeedback = document.getElementById('frequency-feedback');
     let currentSourceType = null;
     let allConfigs = [];
+    let contactsList = [];
 
     
-    async function initializePage() { if (navPlaceholder) { fetch('nav.html').then(response => response.text()).then(data => { navPlaceholder.innerHTML = data; }); } for (const sourceType in assetSchemas) { const option = document.createElement('option'); option.value = sourceType; option.textContent = assetSchemas[sourceType].displayName; sourceSelector.appendChild(option); } try { const [unitsResponse, configsResponse] = await Promise.all([ fetch('/api/units'), fetch('/api/source-configurations') ]); const unitsList = await unitsResponse.json(); allConfigs = await configsResponse.json(); unitSelect.innerHTML = '<option value="">-- Selecione --</option>'; if (unitsList.length > 1) { const allUnitsOption = document.createElement('option'); allUnitsOption.value = 'all'; allUnitsOption.textContent = '*** TODAS AS UNIDADES ***'; unitSelect.appendChild(allUnitsOption); } unitsList.forEach(unit => { const option = document.createElement('option'); option.value = unit.id; option.textContent = unit.name; unitSelect.appendChild(option); }); } catch (error) { console.error("Erro na inicialização da página:", error); } }
-    async function handleSourceSelection() { currentSourceType = sourceSelector.value; resetForm(); frequencyFeedback.textContent = ''; if (!currentSourceType) { assetManagementSection.style.display = 'none'; return; } const schema = assetSchemas[currentSourceType]; formTitle.textContent = `Adicionar Nova Fonte`; tableTitle.textContent = `Fontes de ${schema.displayName} Cadastradas`; const currentConfig = allConfigs.find(c => c.source_type === currentSourceType); reportingFrequencySelect.value = currentConfig ? currentConfig.reporting_frequency : 'anual'; await buildDynamicForm(schema); buildDynamicTableHeaders(schema); loadAssetTypologies(); assetManagementSection.style.display = 'block'; }
-    function buildDynamicTableHeaders(schema) { assetsThead.innerHTML = ''; const headerRow = document.createElement('tr'); let headers = '<th>Descrição</th><th>Unidade</th>'; for (const key in schema.fields) { headers += `<th>${schema.fields[key].label}</th>`; } headers += '<th>Ações</th>'; headerRow.innerHTML = headers; assetsThead.appendChild(headerRow); }
-    async function loadAssetTypologies() { if (!currentSourceType) return; try { const response = await fetch(`/api/asset-typologies?source_type=${currentSourceType}`); const typologies = await response.json(); assetsTbody.innerHTML = ''; typologies.forEach(typo => { const tr = document.createElement('tr'); let rowHtml = `<td>${typo.description}</td><td>${typo.unit_name}</td>`; const schema = assetSchemas[currentSourceType]; for (const key in schema.fields) { rowHtml += `<td>${typo.asset_fields[key] || ''}</td>`; } rowHtml += `<td> <button class="action-btn edit-btn" data-id="${typo.id}">Editar</button> <button class="action-btn delete-btn" data-id="${typo.id}">Deletar</button> </td>`; tr.innerHTML = rowHtml; assetsTbody.appendChild(tr); }); } catch (error) { console.error("Erro ao carregar tipologias:", error); } }
-    async function handleFormSubmit(e) { e.preventDefault(); const id = assetIdInput.value; const asset_fields = {}; specificFieldsContainer.querySelectorAll('input, select').forEach(input => { const fieldWrapper = input.closest('.form-row'); if (fieldWrapper.style.display !== 'none') { asset_fields[input.dataset.key] = input.value; } }); const unitValue = document.getElementById('asset-unit').value; const data = { description: document.getElementById('asset-description').value, unit_id: unitValue, source_type: currentSourceType, asset_fields: asset_fields }; const method = id ? 'PUT' : 'POST'; const url = id ? `/api/asset-typologies/${id}` : '/api/asset-typologies'; try { const response = await fetch(url, { method: method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) }); if (!response.ok) { const errorData = await response.json(); throw new Error(errorData.error || 'Falha ao salvar a fonte.'); } resetForm(); loadAssetTypologies(); } catch (error) { console.error("Erro ao salvar:", error); alert(`Ocorreu um erro ao salvar: ${error.message}`); } }
+    async function initializePage() { 
+        if (navPlaceholder) { 
+            fetch('nav.html').then(response => response.text()).then(data => { navPlaceholder.innerHTML = data; }); 
+        } 
+        const sortedSourceTypes = Object.keys(assetSchemas).sort((a, b) => 
+            assetSchemas[a].displayName.localeCompare(assetSchemas[b].displayName)
+        );
+        sortedSourceTypes.forEach(sourceType => {
+            const option = document.createElement('option');
+            option.value = sourceType;
+            option.textContent = assetSchemas[sourceType].displayName;
+            sourceSelector.appendChild(option);
+        });
+        
+        try { 
+            const [unitsResponse, configsResponse, contactsResponse] = await Promise.all([ 
+                fetch('/api/units'), 
+                fetch('/api/source-configurations'),
+                fetch('/api/contacts') 
+            ]); 
+            const unitsList = await unitsResponse.json(); 
+            allConfigs = await configsResponse.json(); 
+            contactsList = await contactsResponse.json();
+            
+            unitSelect.innerHTML = '<option value="">-- Selecione --</option>'; 
+            if (unitsList.length > 1) { 
+                const allUnitsOption = document.createElement('option'); 
+                allUnitsOption.value = 'all'; 
+                allUnitsOption.textContent = '*** TODAS AS UNIDADES ***'; 
+                unitSelect.appendChild(allUnitsOption); 
+            } 
+            unitsList.forEach(unit => { 
+                const option = document.createElement('option'); 
+                option.value = unit.id; 
+                option.textContent = unit.name; 
+                unitSelect.appendChild(option); 
+            }); 
+        } catch (error) { 
+            console.error("Erro na inicialização da página:", error); 
+        } 
+    }
+    
+    async function handleSourceSelection() { 
+        currentSourceType = sourceSelector.value; 
+        resetForm(); 
+        frequencyFeedback.textContent = ''; 
+        if (!currentSourceType) { 
+            assetManagementSection.style.display = 'none'; 
+            return; 
+        } 
+        const schema = assetSchemas[currentSourceType]; 
+        formTitle.textContent = `Adicionar Nova Fonte`; 
+        tableTitle.textContent = `Fontes de ${schema.displayName} Cadastradas`; 
+        const currentConfig = allConfigs.find(c => c.source_type === currentSourceType); 
+        reportingFrequencySelect.value = currentConfig ? currentConfig.reporting_frequency : 'anual'; 
+        await buildDynamicForm(schema); 
+        buildDynamicTableHeaders(schema); 
+        loadAssetTypologies(); 
+        assetManagementSection.style.display = 'block'; 
+    }
+    
+    function buildDynamicTableHeaders(schema) { 
+        assetsThead.innerHTML = ''; 
+        const headerRow = document.createElement('tr'); 
+        
+        const isWasteSource = currentSourceType === 'solid_waste';
+        const mainDescriptionKey = isWasteSource ? 'destinacao_final' : 'description';
+        const mainDescriptionLabel = isWasteSource ? schema.fields.destinacao_final.label : 'Descrição';
+
+        let headers = `<th>${mainDescriptionLabel}</th><th>Unidade</th>`; 
+        
+        for (const key in schema.fields) { 
+            if (isWasteSource && key === mainDescriptionKey) continue;
+            headers += `<th>${schema.fields[key].label}</th>`; 
+        } 
+        headers += '<th>Ações</th>'; 
+        headerRow.innerHTML = headers; 
+        assetsThead.appendChild(headerRow); 
+    }
+    
+    async function loadAssetTypologies() { 
+        if (!currentSourceType) return; 
+        try { 
+            const response = await fetch(`/api/asset-typologies?source_type=${currentSourceType}`); 
+            const typologies = await response.json(); 
+            assetsTbody.innerHTML = ''; 
+            typologies.forEach(typo => { 
+                const tr = document.createElement('tr'); 
+                
+                const isWasteSource = currentSourceType === 'solid_waste';
+                const mainDescription = isWasteSource 
+                    ? (typo.asset_fields.destinacao_final || typo.description) 
+                    : typo.description;
+                
+                let rowHtml = `<td>${mainDescription}</td><td>${typo.unit_name}</td>`; 
+                const schema = assetSchemas[currentSourceType]; 
+                
+                for (const key in schema.fields) { 
+                    if (isWasteSource && key === 'destinacao_final') continue;
+                    if (key === 'responsible_contact_id') {
+                        rowHtml += `<td>${typo.responsible_contact_name || ''}</td>`;
+                    } else {
+                        rowHtml += `<td>${typo.asset_fields[key] || ''}</td>`; 
+                    }
+                } 
+                rowHtml += `<td> <button class="action-btn edit-btn" data-id="${typo.id}">Editar</button> <button class="action-btn delete-btn" data-id="${typo.id}">Deletar</button> </td>`; 
+                tr.innerHTML = rowHtml; 
+                assetsTbody.appendChild(tr); 
+            }); 
+        } catch (error) { 
+            console.error("Erro ao carregar tipologias:", error); 
+        } 
+    }
+    
+    async function handleFormSubmit(e) { 
+        e.preventDefault(); 
+        const id = assetIdInput.value; 
+        const asset_fields = {}; 
+        
+        let responsibleContactId = null;
+        
+        form.querySelectorAll('[data-key]').forEach(input => {
+             const fieldWrapper = input.closest('.form-group');
+             if (fieldWrapper && fieldWrapper.style.display !== 'none') {
+                 const key = input.dataset.key;
+                 if (key === 'responsible_contact_id') {
+                     responsibleContactId = input.value;
+                 } else {
+                     asset_fields[key] = input.value;
+                 }
+             }
+        });
+
+        const isWasteSource = currentSourceType === 'solid_waste';
+        const descriptionValue = isWasteSource
+            ? asset_fields.destinacao_final
+            : document.getElementById('asset-description').value;
+        
+        const unitValue = document.getElementById('asset-unit').value; 
+        const data = { 
+            description: descriptionValue, 
+            unit_id: unitValue, 
+            source_type: currentSourceType, 
+            asset_fields: asset_fields,
+            responsible_contact_id: responsibleContactId
+        }; 
+        
+        const method = id ? 'PUT' : 'POST'; 
+        const url = id ? `/api/asset-typologies/${id}` : '/api/asset-typologies'; 
+        try { 
+            const response = await fetch(url, { method: method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) }); 
+            if (!response.ok) { 
+                const errorData = await response.json(); 
+                throw new Error(errorData.error || 'Falha ao salvar a fonte.'); 
+            } 
+            resetForm(); 
+            loadAssetTypologies(); 
+        } catch (error) { 
+            console.error("Erro ao salvar:", error); 
+            alert(`Ocorreu um erro ao salvar: ${error.message}`); 
+        } 
+    }
     
     async function handleTableClick(e) {
         const target = e.target;
@@ -114,20 +283,26 @@ document.addEventListener('DOMContentLoaded', () => {
             
             if (typoToEdit) {
                 assetIdInput.value = typoToEdit.id;
-                document.getElementById('asset-description').value = typoToEdit.description;
+                
+                if (currentSourceType !== 'solid_waste') {
+                    document.getElementById('asset-description').value = typoToEdit.description;
+                }
+                
                 document.getElementById('asset-unit').value = typoToEdit.unit_id;
                 
                 await buildDynamicForm(assetSchemas[currentSourceType]); 
                 
-                specificFieldsContainer.querySelectorAll('input, select').forEach(input => {
+                form.querySelectorAll('[data-key]').forEach(input => {
                     const key = input.dataset.key;
-                    if (typoToEdit.asset_fields[key]) {
+                    if (key === 'responsible_contact_id') {
+                        input.value = typoToEdit.responsible_contact_id || '';
+                    } else if (typoToEdit.asset_fields[key] !== undefined) {
                         input.value = typoToEdit.asset_fields[key];
+                    }
                         
-                        
-                        if (input.id.includes('tipo_entrada') || input.id.includes('tratamento_ou_destino') || input.id.includes('uso_solo_anterior')) {
-                            input.dispatchEvent(new Event('change', { bubbles: true }));
-                        }
+                    const conditionalTriggers = ['tipo_entrada', 'tratamento_ou_destino', 'uso_solo_anterior', 'destinacao_final'];
+                    if (conditionalTriggers.includes(key)) {
+                        input.dispatchEvent(new Event('change', { bubbles: true }));
                     }
                 });
 
@@ -156,7 +331,16 @@ document.addEventListener('DOMContentLoaded', () => {
         }
         cancelBtn.style.display = 'none';
 
-        const triggerFields = ['field-tipo_entrada', 'field-tratamento_ou_destino', 'field-uso_solo_anterior', 'field-combustivel_movel', 'field-combustivel_estacionario'];
+        const descriptionGroup = document.getElementById('asset-description').parentElement;
+        if (currentSourceType === 'solid_waste') {
+            descriptionGroup.style.display = 'none';
+            descriptionGroup.querySelector('input').required = false;
+        } else {
+            descriptionGroup.style.display = '';
+            descriptionGroup.querySelector('input').required = true;
+        }
+
+        const triggerFields = ['field-tipo_entrada', 'field-tratamento_ou_destino', 'uso_solo_anterior', 'field-combustivel_movel', 'field-combustivel_estacionario', 'field-destinacao_final'];
         triggerFields.forEach(id => {
             const trigger = document.getElementById(id);
             if (trigger) trigger.dispatchEvent(new Event('change'));
@@ -165,10 +349,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     
     async function buildDynamicForm(schema) { 
-        specificFieldsContainer.innerHTML = ''; 
+        specificFieldsContainer.innerHTML = '';
+        form.querySelectorAll('.dynamic-field').forEach(el => el.remove()); 
+        
         const fieldElements = {};
         const triggerFields = new Set();
         const autoFillTriggers = new Set();
+        const isWasteSource = currentSourceType === 'solid_waste';
+        
+        const firstRowContainer = document.querySelector('#asset-form .form-row');
+        const descriptionFieldGroup = document.getElementById('asset-description').parentElement;
 
         const validationSchema = validationSchemas[currentSourceType];
         if (validationSchema && validationSchema.autoFillMap) {
@@ -176,20 +366,17 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         for (const key in schema.fields) {
-            const field = schema.fields[key];
-            if (field.showIf) {
-                triggerFields.add(field.showIf.field);
+            if (schema.fields[key].showIf) {
+                triggerFields.add(schema.fields[key].showIf.field);
             }
         }
 
         for (const key in schema.fields) { 
             const field = schema.fields[key]; 
-            const formRow = document.createElement('div'); 
-            formRow.className = 'form-row';
-            formRow.id = `row-${key}`; 
+            const wrapper = document.createElement('div');
+            wrapper.className = 'form-group dynamic-field';
+            wrapper.id = `row-${key}`; 
             
-            const formGroup = document.createElement('div'); 
-            formGroup.className = 'form-group'; 
             const label = document.createElement('label'); 
             label.setAttribute('for', `field-${key}`); 
             label.textContent = field.label; 
@@ -199,7 +386,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 input = document.createElement('select');
             } else { 
                 input = document.createElement('input'); 
-                input.type = field.type || 'text'; 
+                input.type = field.type || 'text';
+                if(field.placeholder) input.placeholder = field.placeholder;
             }
             
             input.id = `field-${key}`; 
@@ -209,35 +397,53 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (field.type === 'select') {
                 input.innerHTML = '<option value="">-- Selecione --</option>';
-                const displayMap = validationSchema.displayValueMap?.[key];
-                const options = validationSchema.validOptions?.[key] || field.options || [];
 
-                
-                if (displayMap) {
-                    
-                    options.forEach(value => {
+                if (field.isContact) {
+                    contactsList.forEach(contact => {
                         const option = document.createElement('option');
-                        option.value = value;
-                        option.textContent = displayMap[value] || value; 
+                        option.value = contact.id;
+                        option.textContent = `${contact.name} (${contact.unit_name || 'N/A'})`;
                         input.appendChild(option);
                     });
                 } else {
-                    
+                    const displayMap = validationSchema.displayValueMap?.[key];
+                    const options = validationSchema.validOptions?.[key] || field.options || [];
+
                     options.forEach(opt => {
                         const option = document.createElement('option');
                         option.value = opt;
-                        option.textContent = opt;
+                        option.textContent = (displayMap && displayMap[opt]) ? displayMap[opt] : opt;
                         input.appendChild(option);
                     });
                 }
             }
             
-            fieldElements[key] = { row: formRow, input: input, config: field };
+            fieldElements[key] = { row: wrapper, input: input, config: field };
 
-            formGroup.appendChild(label); 
-            formGroup.appendChild(input); 
-            formRow.appendChild(formGroup); 
-            specificFieldsContainer.appendChild(formRow); 
+            wrapper.appendChild(label); 
+            wrapper.appendChild(input); 
+
+            if (isWasteSource && key === 'destinacao_final') {
+                firstRowContainer.insertBefore(wrapper, descriptionFieldGroup);
+            } else {
+                if(isWasteSource){
+                    let targetRow = Array.from(specificFieldsContainer.querySelectorAll('.form-row.dynamic-field')).pop();
+                    if (!targetRow || targetRow.children.length >= 2) {
+                        targetRow = document.createElement('div');
+                        targetRow.className = 'form-row dynamic-field';
+                        specificFieldsContainer.appendChild(targetRow);
+                    }
+                     wrapper.className = 'form-group dynamic-field';
+                     targetRow.appendChild(wrapper);
+
+                } else {
+                    const rowWrapper = document.createElement('div');
+                    rowWrapper.className = 'form-row dynamic-field';
+                    rowWrapper.appendChild(wrapper);
+                    specificFieldsContainer.appendChild(rowWrapper);
+                }
+            }
+
 
             if (triggerFields.has(key) || autoFillTriggers.has(key)) {
                 input.addEventListener('change', () => {
@@ -248,11 +454,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         const showIfConfig = element.config.showIf;
                         
                         if (showIfConfig && showIfConfig.field === key) {
-                            
-                            const assetValueMap = { "Por Consumo": "consumo", "Por Distância": "distancia" };
-                            const expectedValue = assetValueMap[showIfConfig.value] || showIfConfig.value;
-
-                            const isVisible = selectedValue === expectedValue;
+                            const isVisible = selectedValue === showIfConfig.value;
                             element.row.style.display = isVisible ? '' : 'none';
                             element.input.required = isVisible;
                         }
@@ -272,12 +474,16 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
         
+        // --- ATENÇÃO: CORREÇÃO APLICADA AQUI ---
         new Set([...triggerFields, ...autoFillTriggers]).forEach(triggerKey => {
             const triggerElement = fieldElements[triggerKey];
             if (triggerElement) {
-                triggerElement.input.dispatchEvent(new Event('change'));
+                // Acessa a propriedade .input antes de chamar o dispatchEvent
+                triggerElement.input.dispatchEvent(new Event('change', { bubbles: true }));
             }
         });
+        
+        resetForm();
     }
     
     async function handleSaveFrequency() { if (!currentSourceType) return; frequencyFeedback.textContent = 'Salvando...'; frequencyFeedback.style.color = 'blue'; try { const response = await fetch('/api/source-configurations', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ source_type: currentSourceType, reporting_frequency: reportingFrequencySelect.value }) }); if (!response.ok) throw new Error('Falha ao salvar configuração.'); const existingConfig = allConfigs.find(c => c.source_type === currentSourceType); if (existingConfig) { existingConfig.reporting_frequency = reportingFrequencySelect.value; } else { allConfigs.push({ source_type: currentSourceType, reporting_frequency: reportingFrequencySelect.value }); } frequencyFeedback.textContent = 'Frequência salva com sucesso!'; frequencyFeedback.style.color = 'green'; } catch (error) { console.error('Erro ao salvar frequência:', error); frequencyFeedback.textContent = 'Erro ao salvar.'; frequencyFeedback.style.color = 'red'; } }

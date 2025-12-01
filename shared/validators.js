@@ -10,6 +10,87 @@ const normalizeString = (value) => {
 };
 
 export const validationSchemas = {
+    solid_waste: {
+        displayName: "Resíduos Sólidos",
+        hasUnits: true,
+        headerDisplayNames: {
+            ano: "Ano",
+            periodo: "Período",
+            unidade_empresarial: "Unidade Empresarial",
+            destinacao_final: "Destinação Final",
+            tipo_residuo: "Tipo de Resíduo",
+            quantidade_gerado: "Quantidade Gerado",
+            unidade: "Unidade",
+            // --- ATENÇÃO: Renomeado e outros campos removidos ---
+            informar_cidade_uf: "Cidade/UF de Destino", // Renomeado
+            local_controlado_empresa: "O local de disposição é controlado pela empresa?",
+            comentarios: "Comentários"
+            // Campos removidos da visualização: responsavel, area_responsavel, email, telefone, rastreabilidade_interna
+        },
+        validOptions: {
+            periodo: ["Anual", "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"],
+            destinacao_final: ["Aterro", "Compostagem", "Incineração", "Cogeração", "Reciclagem"],
+            tipo_residuo: [
+                "A - Papéis/papelão",
+                "C - Resíduos alimentares",
+                "D - Madeira",
+                "E - Resíduos de jardim e parque",
+                "F - Fraldas",
+                "G - Borracha e couro",
+                "H - Lodo de esgoto",
+                "I - Outros materiais inertes",
+                "J - Outros Resíduos Orgânicos"
+            ],
+            unidade: ["Toneladas", "Quilogramas"],
+            informar_cidade_uf: ["Sim", "Não"],
+            local_controlado_empresa: ["Sim", "Não"]
+        },
+        autoFillMap: {},
+        validateRow: function(rowData) {
+            const errors = {};
+            const isFilled = (value) => value !== null && value !== undefined && value !== '';
+
+            if (!rowData.ano || isNaN(parseInt(rowData.ano)) || String(rowData.ano).length !== 4) errors.ano = "Deve ser um ano com 4 dígitos.";
+            if (!this.validOptions.periodo.includes(rowData.periodo)) errors.periodo = `Período inválido.`;
+            if (!rowData.unidade_empresarial) errors.unidade_empresarial = "Obrigatório.";
+
+            if (!this.validOptions.destinacao_final.includes(rowData.destinacao_final)) {
+                errors.destinacao_final = "Selecione uma destinação válida.";
+            }
+
+            if (!this.validOptions.tipo_residuo.includes(rowData.tipo_residuo)) {
+                errors.tipo_residuo = "Selecione um tipo de resíduo válido.";
+            }
+
+            const quantidadeVal = rowData.quantidade_gerado;
+            if (!isFilled(quantidadeVal) || isNaN(parseFloat(quantidadeVal)) || parseFloat(quantidadeVal) <= 0) {
+                errors.quantidade_gerado = `Entrada inválida ('${quantidadeVal}'). Insira um número decimal e positivo.`;
+            }
+
+            if (!this.validOptions.unidade.includes(rowData.unidade)) {
+                errors.unidade = "Selecione 'Toneladas' ou 'Quilogramas'.";
+            }
+
+            // A lógica de validação continua usando a chave 'informar_cidade_uf'
+            if (rowData.destinacao_final === 'Aterro') {
+                // A validação do valor em si não é mais um dropdown, então removemos a checagem
+                // A obrigatoriedade será tratada pelo preenchimento automático do cadastro
+            } else {
+                if (isFilled(rowData.informar_cidade_uf)) {
+                    errors.informar_cidade_uf = "Este campo só deve ser preenchido se a destinação for 'Aterro'.";
+                }
+            }
+            
+            const normalizedControlado = normalizeString(rowData.local_controlado_empresa);
+            if (['sim', 's'].includes(normalizedControlado)) { rowData.local_controlado_empresa = 'Sim'; } 
+            else if (['nao', 'n'].includes(normalizedControlado)) { rowData.local_controlado_empresa = 'Não'; }
+            if (!this.validOptions.local_controlado_empresa.includes(rowData.local_controlado_empresa)) {
+                errors.local_controlado_empresa = "Deve ser 'Sim' ou 'Não'.";
+            }
+
+            return { isValid: Object.keys(errors).length === 0, errors: errors, sanitizedData: rowData };
+        }
+    },
     combustao_movel: {
         displayName: "Combustão Móvel",
         hasUnits: true,

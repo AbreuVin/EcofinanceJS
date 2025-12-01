@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if(downloadIntelligentBtn) downloadIntelligentBtn.textContent = 'Baixar Template';
 
     const INTEGER_FIELDS = [ 'quantidade_vendida', 'num_trabalhadores' ];
-    const DECIMAL_FIELDS = [ 'consumo', 'distancia_percorrida', 'quantidade_reposta', 'quantidade_kg', 'percentual_nitrogenio', 'percentual_carbonato', 'area_hectare', 'qtd_efluente_liquido_m3', 'qtd_componente_organico', 'qtd_nitrogenio_mg_l', 'componente_organico_removido_lodo', 'carga_horaria_media' ];
+    const DECIMAL_FIELDS = [ 'consumo', 'distancia_percorrida', 'quantidade_reposta', 'quantidade_kg', 'percentual_nitrogenio', 'percentual_carbonato', 'area_hectare', 'qtd_efluente_liquido_m3', 'qtd_componente_organico', 'qtd_nitrogenio_mg_l', 'componente_organico_removido_lodo', 'carga_horaria_media', 'quantidade_gerado' ];
 
     let currentSchema = null;
     let unitsList = [];
@@ -137,21 +137,11 @@ document.addEventListener('DOMContentLoaded', () => {
         const headers = Object.keys(currentSchema.headerDisplayNames);
 
         data.forEach((originalRowData, index) => {
-            console.log(`[JSMentor Debug] Linha ${index + 1} - DADO ORIGINAL:`, JSON.parse(JSON.stringify(originalRowData)));
-
-            
-            const cleanedData = sanitizeAndPreprocessRow(originalRowData);
-            console.log(`[JSMentor Debug] Linha ${index + 1} - DADO LIMPO:`, JSON.parse(JSON.stringify(cleanedData)));
-
-            
+            const cleanedData = fromUpload ? sanitizeAndPreprocessRow(originalRowData) : originalRowData;
             const validationResult = currentSchema.validateRow(cleanedData, managedOptionsCache);
-            console.log(`[JSMentor Debug] Linha ${index + 1} - RESULTADO VALIDAÇÃO:`, validationResult.errors);
-
-            
             const rowElement = buildTableRow(cleanedData, headers, index);
             tbody.appendChild(rowElement);
 
-            
             for (const header in validationResult.errors) {
                 const cell = rowElement.querySelector(`td[data-header="${header}"]`);
                 if (cell) {
@@ -160,7 +150,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     el.setAttribute('title', validationResult.errors[header]);
                 }
             }
-            
             
             updateDisabledFields(rowElement, cleanedData);
         });
@@ -202,7 +191,14 @@ document.addEventListener('DOMContentLoaded', () => {
             const isAutoFilledUnit = currentSchema.autoFillMap && Object.values(currentSchema.autoFillMap).some(rule => rule.targetColumn === header);
             const options = managedOptionsCache[header];
 
-            if (isAutoFilledUnit || (options && options.length === 1)) {
+            // --- ATENÇÃO: Lógica de bloqueio adicionada ---
+            if (header === 'informar_cidade_uf') {
+                cell.textContent = currentValue;
+                cell.setAttribute('contenteditable', 'false');
+                cell.style.backgroundColor = '#e9ecef';
+                cell.style.color = '#495057';
+            }
+            else if (isAutoFilledUnit || (options && options.length === 1)) {
                 cell.textContent = (options && options.length === 1) ? options[0] : currentValue;
                 cell.setAttribute('contenteditable', 'false');
                 cell.style.backgroundColor = '#e9ecef';
@@ -219,7 +215,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
                 cell.appendChild(select);
                 select.value = currentValue;
-            } else if (INTEGER_FIELDS.includes(header) || DECIMAL_FIELDS.includes(header)) {
+            } else if (DECIMAL_FIELDS.includes(header) || INTEGER_FIELDS.includes(header)) {
                 const input = document.createElement('input');
                 input.type = 'text';
                 let safeValue = currentValue;

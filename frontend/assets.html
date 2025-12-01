@@ -52,6 +52,7 @@
                 <form id="asset-form">
                     <input type="hidden" id="asset-id">
                     
+                    <!-- --- ATENÇÃO: ESTRUTURA ALTERADA AQUI --- -->
                     <div class="form-row">
                         <div class="form-group">
                             <label for="asset-description">Descrição da Fonte</label>
@@ -63,7 +64,10 @@
                         </div>
                     </div>
                     
-                    <div id="specific-fields-container"></div>
+                    <div id="specific-fields-container">
+                        <!-- Os campos dinâmicos, incluindo a "Destinação Final", serão inseridos aqui pelo JS -->
+                    </div>
+                    <!-- --- FIM DA ALTERAÇÃO --- -->
 
                     <div class="form-actions">
                         <button type="submit">Salvar Fonte</button>

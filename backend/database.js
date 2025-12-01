@@ -52,11 +52,8 @@ const db = new sqlite3.Database(dbPath, (err) => {
             )
         `, (err) => { if (err) console.error('Erro tabela effluents_controlled_data:', err); else console.log('Tabela "effluents_controlled_data" pronta.'); });
         
-        // --- ATENÇÃO: INÍCIO DA ALTERAÇÃO ---
-        // 1. Remove a tabela antiga para garantir que a nova estrutura seja aplicada.
         db.run(`DROP TABLE IF EXISTS domestic_effluents_data`);
         
-        // 2. Cria a tabela com a nova estrutura.
         db.run(`
             CREATE TABLE IF NOT EXISTS domestic_effluents_data (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -70,8 +67,7 @@ const db = new sqlite3.Database(dbPath, (err) => {
                 comentarios TEXT
             )
         `, (err) => { if (err) console.error('Erro tabela domestic_effluents_data:', err); else console.log('Tabela "domestic_effluents_data" recriada com a nova estrutura.'); });
-        // --- FIM DA ALTERAÇÃO ---
-
+        
         db.run(`
             CREATE TABLE IF NOT EXISTS land_use_change_data (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -87,7 +83,52 @@ const db = new sqlite3.Database(dbPath, (err) => {
             )
         `, (err) => { if (err) console.error('Erro tabela land_use_change_data:', err); else console.log('Tabela "land_use_change_data" pronta.'); });
         
+        db.run(`
+            CREATE TABLE IF NOT EXISTS solid_waste_data (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                ano INTEGER,
+                periodo TEXT,
+                unidade_empresarial TEXT,
+                destinacao_final TEXT,
+                tipo_residuo TEXT,
+                quantidade_gerado REAL,
+                unidade TEXT,
+                informar_cidade_uf TEXT,
+                local_controlado_empresa TEXT,
+                responsavel TEXT,
+                area_responsavel TEXT,
+                email TEXT,
+                telefone TEXT,
+                rastreabilidade_interna TEXT,
+                comentarios TEXT
+            )
+        `, (err) => { if (err) console.error('Erro tabela solid_waste_data:', err); else console.log('Tabela "solid_waste_data" pronta.'); });
+
         db.run(`CREATE TABLE IF NOT EXISTS asset_typologies (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, unit_id INTEGER NOT NULL, source_type TEXT NOT NULL, description TEXT NOT NULL, asset_fields TEXT, is_active BOOLEAN DEFAULT TRUE)`, (err) => { if (err) console.error('Erro tabela asset_typologies:', err); else console.log('Tabela "asset_typologies" pronta.'); });
+        
+        // --- ATENÇÃO: LÓGICA PARA ADICIONAR NOVA COLUNA ---
+        db.get("PRAGMA table_info(asset_typologies)", (err, result) => {
+            if (err) {
+                console.error("Erro ao verificar estrutura da tabela asset_typologies:", err);
+                return;
+            }
+            // `result` aqui é a primeira linha, então precisamos checar todas as colunas
+            db.all("PRAGMA table_info(asset_typologies)", (err, columns) => {
+                 if (err) {
+                     console.error("Erro ao ler colunas de asset_typologies:", err);
+                     return;
+                 }
+                 const columnExists = columns.some(col => col.name === 'responsible_contact_id');
+                 if (!columnExists) {
+                     db.run("ALTER TABLE asset_typologies ADD COLUMN responsible_contact_id INTEGER REFERENCES contacts(id) ON DELETE SET NULL", (err) => {
+                         if (err) console.error("Erro ao adicionar coluna 'responsible_contact_id':", err);
+                         else console.log("Coluna 'responsible_contact_id' adicionada a 'asset_typologies'.");
+                     });
+                 }
+            });
+        });
+        // --- FIM DA LÓGICA ---
+        
         db.run(`CREATE TABLE IF NOT EXISTS managed_options (id INTEGER PRIMARY KEY AUTOINCREMENT, field_key TEXT NOT NULL, value TEXT NOT NULL, UNIQUE(field_key, value))`, (err) => { if (err) console.error('Erro tabela managed_options:', err); else console.log('Tabela "managed_options" pronta.'); });
         db.run(`DROP TABLE IF EXISTS custom_options`, (err) => { if (err) console.error('Erro ao remover tabela antiga custom_options:', err); });
         db.run(`CREATE TABLE IF NOT EXISTS source_configurations (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, source_type TEXT NOT NULL, reporting_frequency TEXT NOT NULL, UNIQUE(user_id, source_type))`, (err) => { if (err) console.error('Erro tabela source_configurations:', err); else console.log('Tabela "source_configurations" pronta.'); });

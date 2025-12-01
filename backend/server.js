@@ -174,7 +174,7 @@ app.delete('/api/contacts/:id', (req, res) => {
     });
 });
 
-// --- ATENÇÃO: ROTAS DE UNIDADES RESTAURADAS ---
+// --- ROTAS DE UNIDADES ---
 app.get('/api/units', (req, res) => {
     db.all("SELECT * FROM units ORDER BY name", [], (err, rows) => {
         if (err) { res.status(500).json({ "error": err.message }); return; }
@@ -206,7 +206,6 @@ app.delete('/api/units/:id', (req, res) => {
         res.status(200).json({ deleted: this.changes });
     });
 });
-// --- FIM DAS ROTAS DE UNIDADES ---
 
 // Rotas de Upload e Template
 app.post('/api/upload', upload.single('file'), (req, res) => {
@@ -248,7 +247,6 @@ app.post('/api/upload', upload.single('file'), (req, res) => {
 
                     if (typeof value === 'string') {
                         value = value.trim();
-                        // A conversão de vírgula para ponto agora é mais segura no front-end
                     }
                     newRow[key] = value;
                 }
@@ -273,8 +271,6 @@ app.post('/api/upload', upload.single('file'), (req, res) => {
             const sheetName = workbook.SheetNames[0];
             const worksheet = workbook.Sheets[sheetName];
             
-            // --- ATENÇÃO: A CORREÇÃO ESTÁ AQUI ---
-            // Mudamos 'raw: false' para 'raw: true' para obter os valores brutos da planilha
             const jsonData = xlsx.utils.sheet_to_json(worksheet, { defval: "", raw: true });
 
             const results = jsonData.map(row => {
@@ -283,7 +279,6 @@ app.post('/api/upload', upload.single('file'), (req, res) => {
                     const normalized = normalizeHeader(excelHeader);
                     const schemaKey = headerMap[normalized];
                     if (schemaKey) {
-                        // Garante que o valor seja tratado como string para consistência
                         newRow[schemaKey] = row[excelHeader] !== null && row[excelHeader] !== undefined ? String(row[excelHeader]) : "";
                     }
                 }
@@ -291,7 +286,7 @@ app.post('/api/upload', upload.single('file'), (req, res) => {
             });
             
             processAndSendData(results);
-        } else { // Lógica para CSV permanece a mesma
+        } else {
             let results = [];
             fs.createReadStream(filePath)
                 .pipe(csv({
@@ -369,7 +364,8 @@ app.post('/api/save-data/:tableName', (req, res) => {
         fertilizantes: 'fertilizers_data',
         efluentes_controlados: 'effluents_controlled_data',
         efluentes_domesticos: 'domestic_effluents_data',
-        mudanca_uso_solo: 'land_use_change_data'
+        mudanca_uso_solo: 'land_use_change_data',
+        solid_waste: 'solid_waste_data'
     };
 
     if (!allowedTables[tableName]) { return res.status(400).json({ message: "Tipo de tabela inválido." }); }
@@ -384,11 +380,17 @@ app.post('/api/save-data/:tableName', (req, res) => {
         dataRows.forEach(row => {
             if (errorOccurred) return;
 
-            if (row.hasOwnProperty('controlado_empresa')) {
-                row.controlado_empresa = (row.controlado_empresa === 'Sim' ? 1 : 0);
-            }
-            if (row.hasOwnProperty('fossa_septica_propriedade')) {
-                row.fossa_septica_propriedade = (row.fossa_septica_propriedade === 'Sim' ? 1 : 0);
+            const booleanFields = {
+                'controlado_empresa': 'controlado_empresa',
+                'fossa_septica_propriedade': 'fossa_septica_propriedade',
+                'local_controlado_empresa': 'local_controlado_empresa',
+                'informar_cidade_uf': 'informar_cidade_uf'
+            };
+            
+            for (const frontEndKey in booleanFields) {
+                if (row.hasOwnProperty(frontEndKey)) {
+                    row[booleanFields[frontEndKey]] = (row[frontEndKey] === 'Sim') ? 'Sim' : 'Não';
+                }
             }
 
             const sanitizedRow = {};
@@ -419,10 +421,18 @@ app.post('/api/save-data/:tableName', (req, res) => {
     });
 });
 
-// Rotas de Cadastro de Fontes (Asset Typologies)
+// --- ROTAS DE CADASTRO DE FONTES ---
 app.get('/api/asset-typologies', (req, res) => {
     const { source_type } = req.query;
-    let sql = "SELECT T.*, U.name as unit_name FROM asset_typologies T JOIN units U ON T.unit_id = U.id";
+    let sql = `
+        SELECT 
+            T.*, 
+            U.name as unit_name,
+            C.name as responsible_contact_name 
+        FROM asset_typologies T 
+        JOIN units U ON T.unit_id = U.id
+        LEFT JOIN contacts C ON T.responsible_contact_id = C.id
+    `;
     const params = [];
     if (source_type) {
         sql += " WHERE T.source_type = ?";
@@ -445,22 +455,23 @@ app.get('/api/asset-typologies', (req, res) => {
     });
 });
 app.post('/api/asset-typologies', (req, res) => {
-    const { unit_id, source_type, description, asset_fields } = req.body;
+    const { unit_id, source_type, description, asset_fields, responsible_contact_id } = req.body;
     if (!unit_id || !source_type || !description || !asset_fields) { return res.status(400).json({ "error": "Campos obrigatórios faltando." }); }
     const assetFieldsStr = JSON.stringify(asset_fields);
+    const contactId = responsible_contact_id || null;
 
     if (unit_id === 'all') {
         db.all("SELECT id FROM units", [], (err, units) => {
             if (err) return res.status(500).json({ "error": `Erro ao buscar unidades: ${err.message}` });
             if (!units || units.length === 0) return res.status(404).json({ "error": "Nenhuma unidade cadastrada para aplicar a regra." });
 
-            const sql = `INSERT INTO asset_typologies (unit_id, source_type, description, asset_fields) VALUES (?, ?, ?, ?)`;
+            const sql = `INSERT INTO asset_typologies (unit_id, source_type, description, asset_fields, responsible_contact_id) VALUES (?, ?, ?, ?, ?)`;
             db.serialize(() => {
                 db.run("BEGIN TRANSACTION");
                 let errorOccurred = false;
                 units.forEach(unit => {
                     if (errorOccurred) return;
-                    db.run(sql, [unit.id, source_type, description, assetFieldsStr], function(err) {
+                    db.run(sql, [unit.id, source_type, description, assetFieldsStr, contactId], function(err) {
                         if (err) { console.error("Erro ao inserir tipologia para unidade " + unit.id, err); errorOccurred = true; }
                     });
                 });
@@ -473,23 +484,24 @@ app.post('/api/asset-typologies', (req, res) => {
             });
         });
     } else {
-        const sql = `INSERT INTO asset_typologies (unit_id, source_type, description, asset_fields) VALUES (?, ?, ?, ?)`;
-        db.run(sql, [unit_id, source_type, description, assetFieldsStr], function(err) {
+        const sql = `INSERT INTO asset_typologies (unit_id, source_type, description, asset_fields, responsible_contact_id) VALUES (?, ?, ?, ?, ?)`;
+        db.run(sql, [unit_id, source_type, description, assetFieldsStr, contactId], function(err) {
             if (err) { return res.status(500).json({ "error": err.message }); }
             res.status(201).json({ "id": this.lastID });
         });
     }
 });
 app.put('/api/asset-typologies/:id', (req, res) => {
-    const { unit_id, source_type, description, asset_fields } = req.body;
+    const { unit_id, source_type, description, asset_fields, responsible_contact_id } = req.body;
     if (!unit_id || !source_type || !description || !asset_fields) { return res.status(400).json({ "error": "Campos obrigatórios faltando." }); }
-    const sql = `UPDATE asset_typologies SET unit_id = ?, source_type = ?, description = ?, asset_fields = ? WHERE id = ?`;
-    const params = [unit_id, source_type, description, JSON.stringify(asset_fields), req.params.id];
+    const sql = `UPDATE asset_typologies SET unit_id = ?, source_type = ?, description = ?, asset_fields = ?, responsible_contact_id = ? WHERE id = ?`;
+    const params = [unit_id, source_type, description, JSON.stringify(asset_fields), responsible_contact_id || null, req.params.id];
     db.run(sql, params, function(err) {
         if (err) { res.status(500).json({ "error": err.message }); return; }
         res.status(200).json({ changes: this.changes });
     });
 });
+
 app.delete('/api/asset-typologies/:id', (req, res) => {
     db.run("DELETE FROM asset_typologies WHERE id = ?", [req.params.id], function(err) {
         if (err) { res.status(500).json({ "error": err.message }); return; }
@@ -562,7 +574,8 @@ app.get('/api/intelligent-template/:sourceType', (req, res) => {
         emissoes_fugitivas: 'fonte_emissao', 
         fertilizantes: 'tipo_fertilizante',
         efluentes_controlados: 'tratamento_ou_destino',
-        mudanca_uso_solo: 'uso_solo_anterior'
+        mudanca_uso_solo: 'uso_solo_anterior',
+        solid_waste: 'destinacao_final'
     };
     
     const getTypologies = new Promise((resolve, reject) => {
@@ -600,13 +613,26 @@ app.get('/api/intelligent-template/:sourceType', (req, res) => {
                 row['ano'] = reportYear;
                 row['periodo'] = period;
                 row['unidade_empresarial'] = typo.unit_name;
-                if (mainDescriptionKey) { row[mainDescriptionKey] = typo.description; }
+                
+                if (mainDescriptionKey) {
+                    if (sourceType === 'solid_waste') {
+                        row[mainDescriptionKey] = assetFields[mainDescriptionKey] || '';
+                    } else {
+                        row[mainDescriptionKey] = typo.description;
+                    }
+                }
                 
                 for (const assetKey in assetFields) { 
                     if (row.hasOwnProperty(assetKey)) { 
                         row[assetKey] = assetFields[assetKey]; 
                     } 
                 }
+                
+                // --- ATENÇÃO: LÓGICA DE MAPEAMENTO CORRIGIDA AQUI ---
+                if (sourceType === 'solid_waste' && assetFields.destinacao_final === 'Aterro') {
+                    row['informar_cidade_uf'] = assetFields.cidade_uf_destino || '';
+                }
+                // --- FIM DA CORREÇÃO ---
                 
                 if (sourceType === 'efluentes_controlados') {
                     row['unidade_efluente_liquido'] = frequency === 'mensal' ? 'm3/mês' : 'm3/ano';
