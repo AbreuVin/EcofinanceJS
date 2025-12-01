@@ -104,15 +104,34 @@ const db = new sqlite3.Database(dbPath, (err) => {
             )
         `, (err) => { if (err) console.error('Erro tabela solid_waste_data:', err); else console.log('Tabela "solid_waste_data" pronta.'); });
 
+        // --- ATENÇÃO: NOVA TABELA ADICIONADA AQUI ---
+        db.run(`
+            CREATE TABLE IF NOT EXISTS electricity_purchase_data (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                ano INTEGER,
+                periodo TEXT,
+                unidade_empresarial TEXT,
+                fonte_energia TEXT,
+                especificar_fonte TEXT,
+                consumo REAL,
+                unidade_medida TEXT,
+                responsavel TEXT,
+                area_responsavel TEXT,
+                email TEXT,
+                telefone TEXT,
+                rastreabilidade TEXT,
+                comentarios TEXT
+            )
+        `, (err) => { if (err) console.error('Erro tabela electricity_purchase_data:', err); else console.log('Tabela "electricity_purchase_data" pronta.'); });
+        // --- FIM DA ADIÇÃO ---
+
         db.run(`CREATE TABLE IF NOT EXISTS asset_typologies (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, unit_id INTEGER NOT NULL, source_type TEXT NOT NULL, description TEXT NOT NULL, asset_fields TEXT, is_active BOOLEAN DEFAULT TRUE)`, (err) => { if (err) console.error('Erro tabela asset_typologies:', err); else console.log('Tabela "asset_typologies" pronta.'); });
         
-        // --- ATENÇÃO: LÓGICA PARA ADICIONAR NOVA COLUNA ---
         db.get("PRAGMA table_info(asset_typologies)", (err, result) => {
             if (err) {
                 console.error("Erro ao verificar estrutura da tabela asset_typologies:", err);
                 return;
             }
-            // `result` aqui é a primeira linha, então precisamos checar todas as colunas
             db.all("PRAGMA table_info(asset_typologies)", (err, columns) => {
                  if (err) {
                      console.error("Erro ao ler colunas de asset_typologies:", err);
@@ -127,7 +146,6 @@ const db = new sqlite3.Database(dbPath, (err) => {
                  }
             });
         });
-        // --- FIM DA LÓGICA ---
         
         db.run(`CREATE TABLE IF NOT EXISTS managed_options (id INTEGER PRIMARY KEY AUTOINCREMENT, field_key TEXT NOT NULL, value TEXT NOT NULL, UNIQUE(field_key, value))`, (err) => { if (err) console.error('Erro tabela managed_options:', err); else console.log('Tabela "managed_options" pronta.'); });
         db.run(`DROP TABLE IF EXISTS custom_options`, (err) => { if (err) console.error('Erro ao remover tabela antiga custom_options:', err); });

@@ -10,6 +10,62 @@ const normalizeString = (value) => {
 };
 
 export const validationSchemas = {
+    electricity_purchase: {
+        displayName: "Compra de Eletricidade",
+        hasUnits: true,
+        headerDisplayNames: {
+            ano: "Ano",
+            periodo: "Período",
+            unidade_empresarial: "Unidade Empresarial",
+            fonte_energia: "Fonte de Energia",
+            especificar_fonte: "Especificar Fonte",
+            consumo: "Consumo",
+            unidade_medida: "Unidade de Medida",
+            comentarios: "Comentários"
+        },
+        validOptions: {
+            periodo: ["Anual", "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"],
+            fonte_energia: ["Sistema Interligado Nacional", "Mercado Livre Convencional", "Mercado Livre Incentivado", "Fonte Energética Específica"],
+            especificar_fonte: ["Solar", "Eólica", "Biomassa"],
+            unidade_medida: ["kWh", "MWh"]
+        },
+        autoFillMap: {},
+        validateRow: function(rowData) {
+            const errors = {};
+            const isFilled = (value) => value !== null && value !== undefined && value !== '';
+
+            if (!rowData.ano || isNaN(parseInt(rowData.ano)) || String(rowData.ano).length !== 4) errors.ano = "Deve ser um ano com 4 dígitos.";
+            if (!this.validOptions.periodo.includes(rowData.periodo)) errors.periodo = `Período inválido.`;
+            if (!rowData.unidade_empresarial) errors.unidade_empresarial = "Obrigatório.";
+
+            if (!this.validOptions.fonte_energia.includes(rowData.fonte_energia)) {
+                errors.fonte_energia = "Selecione uma fonte de energia válida.";
+            }
+
+            const consumoVal = rowData.consumo;
+            if (!isFilled(consumoVal) || isNaN(parseFloat(consumoVal)) || parseFloat(consumoVal) <= 0) {
+                errors.consumo = `Entrada inválida ('${consumoVal}'). Insira um número decimal e positivo.`;
+            }
+
+            if (!this.validOptions.unidade_medida.includes(rowData.unidade_medida)) {
+                errors.unidade_medida = "Selecione 'kWh' ou 'MWh'.";
+            }
+
+            // Regra Condicional para 'especificar_fonte'
+            const isSIN = rowData.fonte_energia === 'Sistema Interligado Nacional';
+            if (!isSIN) {
+                if (!this.validOptions.especificar_fonte.includes(rowData.especificar_fonte)) {
+                    errors.especificar_fonte = "Obrigatório selecionar uma especificação para esta fonte de energia.";
+                }
+            } else {
+                if (isFilled(rowData.especificar_fonte)) {
+                    errors.especificar_fonte = "Este campo só deve ser preenchido se a fonte não for SIN.";
+                }
+            }
+
+            return { isValid: Object.keys(errors).length === 0, errors: errors, sanitizedData: rowData };
+        }
+    },
     solid_waste: {
         displayName: "Resíduos Sólidos",
         hasUnits: true,
@@ -21,11 +77,9 @@ export const validationSchemas = {
             tipo_residuo: "Tipo de Resíduo",
             quantidade_gerado: "Quantidade Gerado",
             unidade: "Unidade",
-            // --- ATENÇÃO: Renomeado e outros campos removidos ---
-            informar_cidade_uf: "Cidade/UF de Destino", // Renomeado
+            informar_cidade_uf: "Cidade/UF de Destino",
             local_controlado_empresa: "O local de disposição é controlado pela empresa?",
             comentarios: "Comentários"
-            // Campos removidos da visualização: responsavel, area_responsavel, email, telefone, rastreabilidade_interna
         },
         validOptions: {
             periodo: ["Anual", "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"],
@@ -70,11 +124,9 @@ export const validationSchemas = {
             if (!this.validOptions.unidade.includes(rowData.unidade)) {
                 errors.unidade = "Selecione 'Toneladas' ou 'Quilogramas'.";
             }
-
-            // A lógica de validação continua usando a chave 'informar_cidade_uf'
+            
             if (rowData.destinacao_final === 'Aterro') {
-                // A validação do valor em si não é mais um dropdown, então removemos a checagem
-                // A obrigatoriedade será tratada pelo preenchimento automático do cadastro
+                // Validação removida pois o campo agora é texto livre preenchido pelo cadastro
             } else {
                 if (isFilled(rowData.informar_cidade_uf)) {
                     errors.informar_cidade_uf = "Este campo só deve ser preenchido se a destinação for 'Aterro'.";

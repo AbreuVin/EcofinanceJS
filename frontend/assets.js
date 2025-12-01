@@ -7,6 +7,14 @@ document.addEventListener('DOMContentLoaded', () => {
     
     
     const assetSchemas = {
+        electricity_purchase: {
+            displayName: "Compra de Eletricidade",
+            fields: {
+                fonte_energia: { label: "Fonte de Energia (Descrição)", type: "select" },
+                especificar_fonte: { label: "Especificar Fonte Padrão", type: "select", showIf: { field: "fonte_energia", value: ["Mercado Livre Convencional", "Mercado Livre Incentivado", "Fonte Energética Específica"] } },
+                unidade_medida: { label: "Unidade de Medida Padrão", type: "select" }
+            }
+        },
         solid_waste: {
             displayName: "Resíduos Sólidos",
             fields: {
@@ -173,14 +181,14 @@ document.addEventListener('DOMContentLoaded', () => {
         assetsThead.innerHTML = ''; 
         const headerRow = document.createElement('tr'); 
         
-        const isWasteSource = currentSourceType === 'solid_waste';
-        const mainDescriptionKey = isWasteSource ? 'destinacao_final' : 'description';
-        const mainDescriptionLabel = isWasteSource ? schema.fields.destinacao_final.label : 'Descrição';
+        const usesCustomDescription = ['solid_waste', 'electricity_purchase'].includes(currentSourceType);
+        const mainDescriptionKey = usesCustomDescription ? Object.keys(schema.fields)[0] : 'description';
+        const mainDescriptionLabel = usesCustomDescription ? schema.fields[mainDescriptionKey].label : 'Descrição';
 
         let headers = `<th>${mainDescriptionLabel}</th><th>Unidade</th>`; 
         
         for (const key in schema.fields) { 
-            if (isWasteSource && key === mainDescriptionKey) continue;
+            if (usesCustomDescription && key === mainDescriptionKey) continue;
             headers += `<th>${schema.fields[key].label}</th>`; 
         } 
         headers += '<th>Ações</th>'; 
@@ -197,16 +205,18 @@ document.addEventListener('DOMContentLoaded', () => {
             typologies.forEach(typo => { 
                 const tr = document.createElement('tr'); 
                 
-                const isWasteSource = currentSourceType === 'solid_waste';
-                const mainDescription = isWasteSource 
-                    ? (typo.asset_fields.destinacao_final || typo.description) 
+                const usesCustomDescription = ['solid_waste', 'electricity_purchase'].includes(currentSourceType);
+                const mainDescriptionKey = usesCustomDescription ? Object.keys(assetSchemas[currentSourceType].fields)[0] : 'description';
+
+                const mainDescription = usesCustomDescription 
+                    ? (typo.asset_fields[mainDescriptionKey] || typo.description) 
                     : typo.description;
                 
                 let rowHtml = `<td>${mainDescription}</td><td>${typo.unit_name}</td>`; 
                 const schema = assetSchemas[currentSourceType]; 
                 
                 for (const key in schema.fields) { 
-                    if (isWasteSource && key === 'destinacao_final') continue;
+                    if (usesCustomDescription && key === mainDescriptionKey) continue;
                     if (key === 'responsible_contact_id') {
                         rowHtml += `<td>${typo.responsible_contact_name || ''}</td>`;
                     } else {
@@ -241,9 +251,11 @@ document.addEventListener('DOMContentLoaded', () => {
              }
         });
 
-        const isWasteSource = currentSourceType === 'solid_waste';
-        const descriptionValue = isWasteSource
-            ? asset_fields.destinacao_final
+        const usesCustomDescription = ['solid_waste', 'electricity_purchase'].includes(currentSourceType);
+        const mainDescriptionKey = usesCustomDescription ? Object.keys(assetSchemas[currentSourceType].fields)[0] : null;
+
+        const descriptionValue = usesCustomDescription
+            ? asset_fields[mainDescriptionKey]
             : document.getElementById('asset-description').value;
         
         const unitValue = document.getElementById('asset-unit').value; 
@@ -284,7 +296,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (typoToEdit) {
                 assetIdInput.value = typoToEdit.id;
                 
-                if (currentSourceType !== 'solid_waste') {
+                const usesCustomDescription = ['solid_waste', 'electricity_purchase'].includes(currentSourceType);
+                if (!usesCustomDescription) {
                     document.getElementById('asset-description').value = typoToEdit.description;
                 }
                 
@@ -300,7 +313,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         input.value = typoToEdit.asset_fields[key];
                     }
                         
-                    const conditionalTriggers = ['tipo_entrada', 'tratamento_ou_destino', 'uso_solo_anterior', 'destinacao_final'];
+                    const conditionalTriggers = ['tipo_entrada', 'tratamento_ou_destino', 'uso_solo_anterior', 'destinacao_final', 'fonte_energia'];
                     if (conditionalTriggers.includes(key)) {
                         input.dispatchEvent(new Event('change', { bubbles: true }));
                     }
@@ -332,7 +345,9 @@ document.addEventListener('DOMContentLoaded', () => {
         cancelBtn.style.display = 'none';
 
         const descriptionGroup = document.getElementById('asset-description').parentElement;
-        if (currentSourceType === 'solid_waste') {
+        const usesCustomDescription = ['solid_waste', 'electricity_purchase'].includes(currentSourceType);
+
+        if (usesCustomDescription) {
             descriptionGroup.style.display = 'none';
             descriptionGroup.querySelector('input').required = false;
         } else {
@@ -340,7 +355,7 @@ document.addEventListener('DOMContentLoaded', () => {
             descriptionGroup.querySelector('input').required = true;
         }
 
-        const triggerFields = ['field-tipo_entrada', 'field-tratamento_ou_destino', 'uso_solo_anterior', 'field-combustivel_movel', 'field-combustivel_estacionario', 'field-destinacao_final'];
+        const triggerFields = ['field-tipo_entrada', 'field-tratamento_ou_destino', 'uso_solo_anterior', 'field-combustivel_movel', 'field-combustivel_estacionario', 'field-destinacao_final', 'field-fonte_energia'];
         triggerFields.forEach(id => {
             const trigger = document.getElementById(id);
             if (trigger) trigger.dispatchEvent(new Event('change'));
@@ -355,7 +370,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const fieldElements = {};
         const triggerFields = new Set();
         const autoFillTriggers = new Set();
-        const isWasteSource = currentSourceType === 'solid_waste';
+        const usesCustomDescription = ['solid_waste', 'electricity_purchase'].includes(currentSourceType);
         
         const firstRowContainer = document.querySelector('#asset-form .form-row');
         const descriptionFieldGroup = document.getElementById('asset-description').parentElement;
@@ -423,25 +438,19 @@ document.addEventListener('DOMContentLoaded', () => {
             wrapper.appendChild(label); 
             wrapper.appendChild(input); 
 
-            if (isWasteSource && key === 'destinacao_final') {
+            const mainDescriptionKey = usesCustomDescription ? Object.keys(schema.fields)[0] : null;
+
+            if (usesCustomDescription && key === mainDescriptionKey) {
                 firstRowContainer.insertBefore(wrapper, descriptionFieldGroup);
             } else {
-                if(isWasteSource){
-                    let targetRow = Array.from(specificFieldsContainer.querySelectorAll('.form-row.dynamic-field')).pop();
-                    if (!targetRow || targetRow.children.length >= 2) {
-                        targetRow = document.createElement('div');
-                        targetRow.className = 'form-row dynamic-field';
-                        specificFieldsContainer.appendChild(targetRow);
-                    }
-                     wrapper.className = 'form-group dynamic-field';
-                     targetRow.appendChild(wrapper);
-
-                } else {
-                    const rowWrapper = document.createElement('div');
-                    rowWrapper.className = 'form-row dynamic-field';
-                    rowWrapper.appendChild(wrapper);
-                    specificFieldsContainer.appendChild(rowWrapper);
+                let targetRow = Array.from(specificFieldsContainer.querySelectorAll('.form-row.dynamic-field')).pop();
+                if (!targetRow || targetRow.children.length >= 2) {
+                    targetRow = document.createElement('div');
+                    targetRow.className = 'form-row dynamic-field';
+                    specificFieldsContainer.appendChild(targetRow);
                 }
+                wrapper.className = 'form-group dynamic-field';
+                targetRow.appendChild(wrapper);
             }
 
 
@@ -454,7 +463,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         const showIfConfig = element.config.showIf;
                         
                         if (showIfConfig && showIfConfig.field === key) {
-                            const isVisible = selectedValue === showIfConfig.value;
+                            const conditionValues = Array.isArray(showIfConfig.value) ? showIfConfig.value : [showIfConfig.value];
+                            const isVisible = conditionValues.includes(selectedValue);
+                            
                             element.row.style.display = isVisible ? '' : 'none';
                             element.input.required = isVisible;
                         }
@@ -474,11 +485,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
         
-        // --- ATENÇÃO: CORREÇÃO APLICADA AQUI ---
         new Set([...triggerFields, ...autoFillTriggers]).forEach(triggerKey => {
             const triggerElement = fieldElements[triggerKey];
             if (triggerElement) {
-                // Acessa a propriedade .input antes de chamar o dispatchEvent
                 triggerElement.input.dispatchEvent(new Event('change', { bubbles: true }));
             }
         });

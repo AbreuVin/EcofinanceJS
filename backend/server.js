@@ -355,6 +355,7 @@ app.post('/api/save-data/:tableName', (req, res) => {
     const { tableName } = req.params;
     const dataRows = req.body;
     
+    // --- ATENÇÃO: NOVA TABELA ADICIONADA AQUI ---
     const allowedTables = { 
         combustao_movel: 'mobile_combustion_data', 
         combustao_estacionaria: 'stationary_combustion_data', 
@@ -365,8 +366,10 @@ app.post('/api/save-data/:tableName', (req, res) => {
         efluentes_controlados: 'effluents_controlled_data',
         efluentes_domesticos: 'domestic_effluents_data',
         mudanca_uso_solo: 'land_use_change_data',
-        solid_waste: 'solid_waste_data'
+        solid_waste: 'solid_waste_data',
+        electricity_purchase: 'electricity_purchase_data'
     };
+    // --- FIM DA ADIÇÃO ---
 
     if (!allowedTables[tableName]) { return res.status(400).json({ message: "Tipo de tabela inválido." }); }
     if (!dataRows || dataRows.length === 0) { return res.status(400).json({ message: "Nenhum dado para salvar." }); }
@@ -566,6 +569,7 @@ app.get('/api/intelligent-template/:sourceType', (req, res) => {
     const schema = validationSchemas[sourceType];
     if (!schema) { return res.status(404).send('Tipo de fonte não encontrado.'); }
 
+    // --- ATENÇÃO: NOVA FONTE ADICIONADA AQUI ---
     const descriptionKeyMap = { 
         combustao_estacionaria: 'descricao_da_fonte', 
         combustao_movel: 'descricao_fonte', 
@@ -575,8 +579,10 @@ app.get('/api/intelligent-template/:sourceType', (req, res) => {
         fertilizantes: 'tipo_fertilizante',
         efluentes_controlados: 'tratamento_ou_destino',
         mudanca_uso_solo: 'uso_solo_anterior',
-        solid_waste: 'destinacao_final'
+        solid_waste: 'destinacao_final',
+        electricity_purchase: 'fonte_energia'
     };
+    // --- FIM DA ADIÇÃO ---
     
     const getTypologies = new Promise((resolve, reject) => {
         let sql = `
@@ -615,7 +621,7 @@ app.get('/api/intelligent-template/:sourceType', (req, res) => {
                 row['unidade_empresarial'] = typo.unit_name;
                 
                 if (mainDescriptionKey) {
-                    if (sourceType === 'solid_waste') {
+                    if (sourceType === 'solid_waste' || sourceType === 'electricity_purchase') {
                         row[mainDescriptionKey] = assetFields[mainDescriptionKey] || '';
                     } else {
                         row[mainDescriptionKey] = typo.description;
@@ -628,11 +634,9 @@ app.get('/api/intelligent-template/:sourceType', (req, res) => {
                     } 
                 }
                 
-                // --- ATENÇÃO: LÓGICA DE MAPEAMENTO CORRIGIDA AQUI ---
                 if (sourceType === 'solid_waste' && assetFields.destinacao_final === 'Aterro') {
                     row['informar_cidade_uf'] = assetFields.cidade_uf_destino || '';
                 }
-                // --- FIM DA CORREÇÃO ---
                 
                 if (sourceType === 'efluentes_controlados') {
                     row['unidade_efluente_liquido'] = frequency === 'mensal' ? 'm3/mês' : 'm3/ano';
