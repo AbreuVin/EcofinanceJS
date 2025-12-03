@@ -13,8 +13,26 @@ document.addEventListener('DOMContentLoaded', () => {
     const unitIdInput = document.getElementById('unit-id');
     const unitsTbody = document.getElementById('units-tbody');
     const cancelBtn = document.getElementById('cancel-btn');
+    const stateSelect = document.getElementById('estado');
 
     const API_URL = '/api/units';
+
+    // --- ATENÇÃO: Lista de UFs do Brasil ---
+    const ufs = [
+        "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", 
+        "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", 
+        "SP", "SE", "TO"
+    ];
+
+    // --- ATENÇÃO: Nova função para popular o dropdown de estados ---
+    const populateStatesDropdown = () => {
+        ufs.forEach(uf => {
+            const option = document.createElement('option');
+            option.value = uf;
+            option.textContent = uf;
+            stateSelect.appendChild(option);
+        });
+    };
 
     const fetchUnits = async () => {
         try {
@@ -30,6 +48,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 units.forEach(unit => {
                     const tr = document.createElement('tr');
                     
+                    // Escapa as aspas nos nomes para evitar quebrar o HTML no onclick
+                    const escapedName = unit.name ? unit.name.replace(/'/g, "\\'") : '';
+                    const escapedCidade = unit.cidade ? unit.cidade.replace(/'/g, "\\'") : '';
+                    const escapedPais = unit.pais ? unit.pais.replace(/'/g, "\\'") : '';
                     
                     tr.innerHTML = `
                         <td>${unit.name ?? ''}</td>
@@ -38,12 +60,11 @@ document.addEventListener('DOMContentLoaded', () => {
                         <td>${unit.pais ?? ''}</td>
                         <td>${unit.numero_colaboradores ?? ''}</td>
                         <td>
-                            <button class="action-btn edit-btn" onclick="editUnit(${unit.id}, '${unit.name ?? ''}', '${unit.cidade ?? ''}', '${unit.estado ?? ''}', '${unit.pais ?? ''}', '${unit.numero_colaboradores ?? ''}')">Editar</button>
+                            <button class="action-btn edit-btn" onclick="editUnit(${unit.id}, '${escapedName}', '${escapedCidade}', '${unit.estado ?? ''}', '${escapedPais}', '${unit.numero_colaboradores ?? ''}')">Editar</button>
                             <button class="action-btn delete-btn" onclick="deleteUnit(${unit.id})">Deletar</button>
                         </td>
                     `;
                     
-
                     unitsTbody.appendChild(tr);
                 });
             } else {
@@ -58,7 +79,6 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
         const id = unitIdInput.value;
         
-        
         const unitData = {
             name: document.getElementById('name').value,
             cidade: document.getElementById('cidade').value,
@@ -67,7 +87,6 @@ document.addEventListener('DOMContentLoaded', () => {
             numero_colaboradores: document.getElementById('numero-colaboradores').value,
         };
         
-
         const method = id ? 'PUT' : 'POST';
         const url = id ? `${API_URL}/${id}` : API_URL;
 
@@ -92,6 +111,9 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('pais').value = pais;
         document.getElementById('numero-colaboradores').value = numero_colaboradores;
         cancelBtn.style.display = 'inline-block';
+
+        // --- ATENÇÃO: Rolagem automática para o topo ---
+        window.scrollTo(0, 0);
     };
     
 
@@ -108,5 +130,7 @@ document.addEventListener('DOMContentLoaded', () => {
         cancelBtn.style.display = 'none';
     };
 
+    populateStatesDropdown();
     fetchUnits();
+    
 });

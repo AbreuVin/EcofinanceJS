@@ -174,7 +174,7 @@ app.delete('/api/contacts/:id', (req, res) => {
     });
 });
 
-// --- ROTAS DE UNIDADES ---
+// --- ROTAS DE UNIDADES (AGORA COM VALIDAÇÃO) ---
 app.get('/api/units', (req, res) => {
     db.all("SELECT * FROM units ORDER BY name", [], (err, rows) => {
         if (err) { res.status(500).json({ "error": err.message }); return; }
@@ -183,7 +183,10 @@ app.get('/api/units', (req, res) => {
 });
 app.post('/api/units', (req, res) => {
     const { name, cidade, estado, pais, numero_colaboradores } = req.body;
-    if (!name) { return res.status(400).json({ "error": "O nome da unidade é obrigatório." }); }
+    // --- ATENÇÃO: Validação de backend adicionada ---
+    if (!name || !cidade || !estado || !pais || !numero_colaboradores) { 
+        return res.status(400).json({ "error": "Todos os campos são obrigatórios." }); 
+    }
     const sql = "INSERT INTO units (name, cidade, estado, pais, numero_colaboradores) VALUES (?, ?, ?, ?, ?)";
     const params = [name, cidade, estado, pais, numero_colaboradores];
     db.run(sql, params, function(err) {
@@ -193,6 +196,10 @@ app.post('/api/units', (req, res) => {
 });
 app.put('/api/units/:id', (req, res) => {
     const { name, cidade, estado, pais, numero_colaboradores } = req.body;
+    // --- ATENÇÃO: Validação de backend adicionada ---
+    if (!name || !cidade || !estado || !pais || !numero_colaboradores) { 
+        return res.status(400).json({ "error": "Todos os campos são obrigatórios." }); 
+    }
     const sql = "UPDATE units SET name = ?, cidade = ?, estado = ?, pais = ?, numero_colaboradores = ? WHERE id = ?";
     const params = [name, cidade, estado, pais, numero_colaboradores, req.params.id];
     db.run(sql, params, function(err) {
@@ -355,7 +362,6 @@ app.post('/api/save-data/:tableName', (req, res) => {
     const { tableName } = req.params;
     const dataRows = req.body;
     
-    // --- ATENÇÃO: NOVA TABELA ADICIONADA AQUI ---
     const allowedTables = { 
         combustao_movel: 'mobile_combustion_data', 
         combustao_estacionaria: 'stationary_combustion_data', 
@@ -369,7 +375,6 @@ app.post('/api/save-data/:tableName', (req, res) => {
         solid_waste: 'solid_waste_data',
         electricity_purchase: 'electricity_purchase_data'
     };
-    // --- FIM DA ADIÇÃO ---
 
     if (!allowedTables[tableName]) { return res.status(400).json({ message: "Tipo de tabela inválido." }); }
     if (!dataRows || dataRows.length === 0) { return res.status(400).json({ message: "Nenhum dado para salvar." }); }
@@ -569,7 +574,6 @@ app.get('/api/intelligent-template/:sourceType', (req, res) => {
     const schema = validationSchemas[sourceType];
     if (!schema) { return res.status(404).send('Tipo de fonte não encontrado.'); }
 
-    // --- ATENÇÃO: NOVA FONTE ADICIONADA AQUI ---
     const descriptionKeyMap = { 
         combustao_estacionaria: 'descricao_da_fonte', 
         combustao_movel: 'descricao_fonte', 
@@ -582,7 +586,6 @@ app.get('/api/intelligent-template/:sourceType', (req, res) => {
         solid_waste: 'destinacao_final',
         electricity_purchase: 'fonte_energia'
     };
-    // --- FIM DA ADIÇÃO ---
     
     const getTypologies = new Promise((resolve, reject) => {
         let sql = `

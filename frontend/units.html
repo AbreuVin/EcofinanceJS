@@ -26,21 +26,24 @@
                 <div class="form-row">
                     <div class="form-group">
                         <label for="cidade">Cidade</label>
-                        <input type="text" id="cidade" placeholder="Cidade">
+                        <input type="text" id="cidade" placeholder="Cidade" required>
                     </div>
                     <div class="form-group">
                         <label for="estado">Estado</label>
-                        <input type="text" id="estado" placeholder="UF">
+                        <!-- --- ATENÇÃO: Input trocado por Select --- -->
+                        <select id="estado" required>
+                            <option value="">-- Selecione o UF --</option>
+                        </select>
                     </div>
                 </div>
                  <div class="form-row">
                     <div class="form-group">
                         <label for="pais">País</label>
-                        <input type="text" id="pais" placeholder="País">
+                        <input type="text" id="pais" placeholder="País" required>
                     </div>
                     <div class="form-group">
                         <label for="numero-colaboradores">Nº de Colaboradores</label>
-                        <input type="number" id="numero-colaboradores" placeholder="Ex: 150" min="0">
+                        <input type="number" id="numero-colaboradores" placeholder="Ex: 150" min="0" required>
                     </div>
                 </div>
                 <button type="submit">Salvar Unidade</button>
