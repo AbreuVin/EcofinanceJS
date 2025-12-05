@@ -51,7 +51,6 @@ export const validationSchemas = {
                 errors.unidade_medida = "Selecione 'kWh' ou 'MWh'.";
             }
 
-            // Regra Condicional para 'especificar_fonte'
             const isSIN = rowData.fonte_energia === 'Sistema Interligado Nacional';
             if (!isSIN) {
                 if (!this.validOptions.especificar_fonte.includes(rowData.especificar_fonte)) {
@@ -224,6 +223,7 @@ export const validationSchemas = {
             return { isValid: Object.keys(errors).length === 0, errors: errors, sanitizedData: rowData };
         }
     },
+    // --- ATENÇÃO: SCHEMA DE COMBUSTÃO ESTACIONÁRIA ATUALIZADO ---
     combustao_estacionaria: {
         displayName: "Combustão Estacionária",
         hasUnits: true,
@@ -232,14 +232,53 @@ export const validationSchemas = {
         },
         validOptions: {
             periodo: ["Anual", "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"],
-            combustivel_estacionario: ["Acetileno", "Alcatrão", "Asfaltos", "Bagaço de Cana", "Biodiesel (B100)", "Biogás (outros)", "Biogás de aterro", "Biometano", "Caldo de Cana", "Carvão Metalúrgico Importado", "Carvão Metalúrgico Nacional", "Carvão Vapor 2100 kcal / kg", "Carvão Vapor 2200 kcal / kg", "Carvão Vapor 2700 kcal / kg", "Carvão Vapor 4200 kcal / kg", "Carvão Vapor 4500 kcal / kg", "Carvão Vapor 4700 kcal / kg", "Carvão Vapor 5200 kcal / kg", "Carvão Vapor 5900 kcal / kg", "Carvão Vapor 6000 kcal / kg", "Carvão Vapor sem Especificação", "Carvão Vegetal", "Coque de Carvão Mineral", "Coque de Petróleo", "Etano", "Etanol Anidro", "Etanol Hidratado", "Gás de Coqueria", "Gás de Refinaria", "Gás Liquefeito de Petróleo (GLP)", "Gás Natural Seco", "Gás Natural Úmido", "Gasolina Automotiva", "Gasolina de Aviação", "Lenha Comercial", "Licor Negro (Lixívia)", "Líquidos de Gás Natural (LGN)", "Lubrificantes", "Melaço", "Nafta", "Óleo Combustível", "Óleo de Xisto", "Óleo Diesel", "Óleos Residuais", "Outros Produtos de Petróleo", "Parafina", "Petróleo Bruto", "Querosene de Aviação", "Querosene Iluminante", "Resíduos Industriais", "Resíduos Municipais (fração biomassa)", "Resíduos Municipais (fração não-biomassa)", "Resíduos Vegetais", "Solventes", "Turfa", "Xisto Betuminoso e Areias Betuminosas"],
-            unidade: ["kg", "m2", "m3", "Toneladas", "Litros", "TJ"],
+            combustivel_estacionario: [
+                "Acetileno", "Alcatrão", "Asfaltos", "Bagaço de Cana", "Biodiesel (B100)", 
+                "Biogás (outros)", "Biogás de aterro", "Biometano", "Caldo de Cana", "Carvão Metalúrgico Importado", 
+                "Carvão Metalúrgico Nacional", "Carvão Vapor 3100 kcal / kg", "Carvão Vapor 3300 kcal / kg", 
+                "Carvão Vapor 3700 kcal / kg", "Carvão Vapor 4200 kcal / kg", "Carvão Vapor 4500 kcal / kg", 
+                "Carvão Vapor 4700 kcal / kg", "Carvão Vapor 5200 kcal / kg", "Carvão Vapor 5900 kcal / kg", 
+                "Carvão Vapor 6000 kcal / kg", "Carvão Vapor sem Especificação", "Carvão Vegetal", 
+                "Coque de Carvão Mineral", "Coque de Petróleo", "Etano", "Etanol Anidro", "Etanol Hidratado", 
+                "Gás de Coqueria", "Gás de Refinaria", "Gás Liquefeito de Petróleo (GLP)", "Gás Natural Seco", 
+                "Gás Natural Úmido", "Gasolina Automotiva (pura)", "Gasolina de Aviação", "Lenha Comercial", 
+                "Licor Negro (Lixívia)", "Líquidos de Gás Natural (LGN)", "Lubrificantes", "Melaço", "Nafta", 
+                "Óleo Combustível", "Óleo de Xisto", "Óleo Diesel (puro)", "Óleos Residuais", 
+                "Outros Produtos de Petróleo", "Parafina", "Petróleo Bruto", "Querosene de Aviação", 
+                "Querosene Iluminante", "Resíduos Industriais", "Resíduos Municipais (fração biomassa)", 
+                "Resíduos Municipais (fração não-biomassa)", "Resíduos Vegetais", "Solventes", "Turfa", 
+                "Xisto Betuminoso e Areias Betuminosas"
+            ],
+            unidade: ["kg", "m³", "Toneladas", "Litros", "TJ"],
             controlado_empresa: ["Sim", "Não"],
         },
         autoFillMap: {
             combustivel_estacionario: {
                 targetColumn: "unidade",
-                map: { "Acetileno": "kg", "Alcatrão": "m2", "Asfaltos": "m2", "Bagaço de Cana": "Toneladas", "Biodiesel (B100)": "Litros", "Biogás (outros)": "Toneladas", "Biogás de aterro": "Toneladas", "Biometano": "Toneladas", "Caldo de Cana": "Toneladas", "Carvão Metalúrgico Importado": "Toneladas", "Carvão Metalúrgico Nacional": "Toneladas", "Carvão Vapor 2100 kcal / kg": "Toneladas", "Carvão Vapor 2200 kcal / kg": "Toneladas", "Carvão Vapor 2700 kcal / kg": "Toneladas", "Carvão Vapor 4200 kcal / kg": "Toneladas", "Carvão Vapor 4500 kcal / kg": "Toneladas", "Carvão Vapor 4700 kcal / kg": "Toneladas", "Carvão Vapor 5200 kcal / kg": "Toneladas", "Carvão Vapor 5900 kcal / kg": "Toneladas", "Carvão Vapor 6000 kcal / kg": "Toneladas", "Carvão Vapor sem Especificação": "Toneladas", "Carvão Vegetal": "Toneladas", "Coque de Carvão Mineral": "Toneladas", "Coque de Petróleo": "m2", "Etano": "Toneladas", "Etanol Anidro": "Litros", "Etanol Hidratado": "Litros", "Gás de Coqueria": "Toneladas", "Gás de Refinaria": "Toneladas", "Gás Liquefeito de Petróleo (GLP)": "Toneladas", "Gás Natural Seco": "m3", "Gás Natural Úmido": "m3", "Gasolina Automotiva": "Litros", "Gasolina de Aviação": "Litros", "Lenha Comercial": "Toneladas", "Licor Negro (Lixívia)": "Toneladas", "Líquidos de Gás Natural (LGN)": "Toneladas", "Lubrificantes": "Litros", "Melaço": "Toneladas", "Nafta": "m2", "Óleo Combustível": "Litros", "Óleo de Xisto": "Toneladas", "Óleo Diesel": "Litros", "Óleos Residuais": "Toneladas", "Outros Produtos de Petróleo": "Toneladas", "Parafina": "Toneladas", "Petróleo Bruto": "m3", "Querosene de Aviação": "Toneladas", "Querosene Iluminante": "Toneladas", "Resíduos Industriais": "TJ", "Resíduos Municipais (fração biomassa)": "Toneladas", "Resíduos Municipais (fração não-biomassa)": "Toneladas", "Resíduos Vegetais": "Toneladas", "Solventes": "Litros", "Turfa": "Toneladas", "Xisto Betuminoso e Areias Betuminosas": "Toneladas" }
+                map: {
+                    "Acetileno": "kg", "Alcatrão": "m³", "Asfaltos": "m³", "Bagaço de Cana": "Toneladas", 
+                    "Biodiesel (B100)": "Litros", "Biogás (outros)": "Toneladas", "Biogás de aterro": "Toneladas", 
+                    "Biometano": "Toneladas", "Caldo de Cana": "Toneladas", "Carvão Metalúrgico Importado": "Toneladas", 
+                    "Carvão Metalúrgico Nacional": "Toneladas", "Carvão Vapor 3100 kcal / kg": "Toneladas", 
+                    "Carvão Vapor 3300 kcal / kg": "Toneladas", "Carvão Vapor 3700 kcal / kg": "Toneladas", 
+                    "Carvão Vapor 4200 kcal / kg": "Toneladas", "Carvão Vapor 4500 kcal / kg": "Toneladas", 
+                    "Carvão Vapor 4700 kcal / kg": "Toneladas", "Carvão Vapor 5200 kcal / kg": "Toneladas", 
+                    "Carvão Vapor 5900 kcal / kg": "Toneladas", "Carvão Vapor 6000 kcal / kg": "Toneladas", 
+                    "Carvão Vapor sem Especificação": "Toneladas", "Carvão Vegetal": "Toneladas", 
+                    "Coque de Carvão Mineral": "Toneladas", "Coque de Petróleo": "m³", "Etano": "Toneladas", 
+                    "Etanol Anidro": "Litros", "Etanol Hidratado": "Litros", "Gás de Coqueria": "Toneladas", 
+                    "Gás de Refinaria": "Toneladas", "Gás Liquefeito de Petróleo (GLP)": "Toneladas", 
+                    "Gás Natural Seco": "m³", "Gás Natural Úmido": "m³", "Gasolina Automotiva (pura)": "Litros", 
+                    "Gasolina de Aviação": "Litros", "Lenha Comercial": "Toneladas", "Licor Negro (Lixívia)": "Toneladas", 
+                    "Líquidos de Gás Natural (LGN)": "Toneladas", "Lubrificantes": "Litros", "Melaço": "Toneladas", 
+                    "Nafta": "m³", "Óleo Combustível": "Litros", "Óleo de Xisto": "Toneladas", 
+                    "Óleo Diesel (puro)": "Litros", "Óleos Residuais": "Toneladas", "Outros Produtos de Petróleo": "Toneladas", 
+                    "Parafina": "Toneladas", "Petróleo Bruto": "m³", "Querosene de Aviação": "Toneladas", 
+                    "Querosene Iluminante": "Toneladas", "Resíduos Industriais": "TJ", 
+                    "Resíduos Municipais (fração biomassa)": "Toneladas", "Resíduos Municipais (fração não-biomassa)": "Toneladas", 
+                    "Resíduos Vegetais": "Toneladas", "Solventes": "Litros", "Turfa": "Toneladas", 
+                    "Xisto Betuminoso e Areias Betuminosas": "Toneladas"
+                }
             }
         },
         validateRow: function(rowData) {

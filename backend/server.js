@@ -174,7 +174,7 @@ app.delete('/api/contacts/:id', (req, res) => {
     });
 });
 
-// --- ROTAS DE UNIDADES (AGORA COM VALIDAÇÃO) ---
+// --- ROTAS DE UNIDADES ---
 app.get('/api/units', (req, res) => {
     db.all("SELECT * FROM units ORDER BY name", [], (err, rows) => {
         if (err) { res.status(500).json({ "error": err.message }); return; }
@@ -183,7 +183,6 @@ app.get('/api/units', (req, res) => {
 });
 app.post('/api/units', (req, res) => {
     const { name, cidade, estado, pais, numero_colaboradores } = req.body;
-    // --- ATENÇÃO: Validação de backend adicionada ---
     if (!name || !cidade || !estado || !pais || !numero_colaboradores) { 
         return res.status(400).json({ "error": "Todos os campos são obrigatórios." }); 
     }
@@ -196,7 +195,6 @@ app.post('/api/units', (req, res) => {
 });
 app.put('/api/units/:id', (req, res) => {
     const { name, cidade, estado, pais, numero_colaboradores } = req.body;
-    // --- ATENÇÃO: Validação de backend adicionada ---
     if (!name || !cidade || !estado || !pais || !numero_colaboradores) { 
         return res.status(400).json({ "error": "Todos os campos são obrigatórios." }); 
     }
@@ -432,6 +430,7 @@ app.post('/api/save-data/:tableName', (req, res) => {
 // --- ROTAS DE CADASTRO DE FONTES ---
 app.get('/api/asset-typologies', (req, res) => {
     const { source_type } = req.query;
+    // --- ATENÇÃO: Query atualizada para incluir a frequência ---
     let sql = `
         SELECT 
             T.*, 
@@ -463,8 +462,9 @@ app.get('/api/asset-typologies', (req, res) => {
     });
 });
 app.post('/api/asset-typologies', (req, res) => {
-    const { unit_id, source_type, description, asset_fields, responsible_contact_id } = req.body;
-    if (!unit_id || !source_type || !description || !asset_fields) { return res.status(400).json({ "error": "Campos obrigatórios faltando." }); }
+    // --- ATENÇÃO: reporting_frequency adicionado ---
+    const { unit_id, source_type, description, asset_fields, responsible_contact_id, reporting_frequency } = req.body;
+    if (!unit_id || !source_type || !description || !asset_fields || !reporting_frequency) { return res.status(400).json({ "error": "Campos obrigatórios faltando." }); }
     const assetFieldsStr = JSON.stringify(asset_fields);
     const contactId = responsible_contact_id || null;
 
@@ -473,13 +473,13 @@ app.post('/api/asset-typologies', (req, res) => {
             if (err) return res.status(500).json({ "error": `Erro ao buscar unidades: ${err.message}` });
             if (!units || units.length === 0) return res.status(404).json({ "error": "Nenhuma unidade cadastrada para aplicar a regra." });
 
-            const sql = `INSERT INTO asset_typologies (unit_id, source_type, description, asset_fields, responsible_contact_id) VALUES (?, ?, ?, ?, ?)`;
+            const sql = `INSERT INTO asset_typologies (unit_id, source_type, description, asset_fields, responsible_contact_id, reporting_frequency) VALUES (?, ?, ?, ?, ?, ?)`;
             db.serialize(() => {
                 db.run("BEGIN TRANSACTION");
                 let errorOccurred = false;
                 units.forEach(unit => {
                     if (errorOccurred) return;
-                    db.run(sql, [unit.id, source_type, description, assetFieldsStr, contactId], function(err) {
+                    db.run(sql, [unit.id, source_type, description, assetFieldsStr, contactId, reporting_frequency], function(err) {
                         if (err) { console.error("Erro ao inserir tipologia para unidade " + unit.id, err); errorOccurred = true; }
                     });
                 });
@@ -492,18 +492,19 @@ app.post('/api/asset-typologies', (req, res) => {
             });
         });
     } else {
-        const sql = `INSERT INTO asset_typologies (unit_id, source_type, description, asset_fields, responsible_contact_id) VALUES (?, ?, ?, ?, ?)`;
-        db.run(sql, [unit_id, source_type, description, assetFieldsStr, contactId], function(err) {
+        const sql = `INSERT INTO asset_typologies (unit_id, source_type, description, asset_fields, responsible_contact_id, reporting_frequency) VALUES (?, ?, ?, ?, ?, ?)`;
+        db.run(sql, [unit_id, source_type, description, assetFieldsStr, contactId, reporting_frequency], function(err) {
             if (err) { return res.status(500).json({ "error": err.message }); }
             res.status(201).json({ "id": this.lastID });
         });
     }
 });
 app.put('/api/asset-typologies/:id', (req, res) => {
-    const { unit_id, source_type, description, asset_fields, responsible_contact_id } = req.body;
-    if (!unit_id || !source_type || !description || !asset_fields) { return res.status(400).json({ "error": "Campos obrigatórios faltando." }); }
-    const sql = `UPDATE asset_typologies SET unit_id = ?, source_type = ?, description = ?, asset_fields = ?, responsible_contact_id = ? WHERE id = ?`;
-    const params = [unit_id, source_type, description, JSON.stringify(asset_fields), responsible_contact_id || null, req.params.id];
+    // --- ATENÇÃO: reporting_frequency adicionado ---
+    const { unit_id, source_type, description, asset_fields, responsible_contact_id, reporting_frequency } = req.body;
+    if (!unit_id || !source_type || !description || !asset_fields || !reporting_frequency) { return res.status(400).json({ "error": "Campos obrigatórios faltando." }); }
+    const sql = `UPDATE asset_typologies SET unit_id = ?, source_type = ?, description = ?, asset_fields = ?, responsible_contact_id = ?, reporting_frequency = ? WHERE id = ?`;
+    const params = [unit_id, source_type, description, JSON.stringify(asset_fields), responsible_contact_id || null, reporting_frequency, req.params.id];
     db.run(sql, params, function(err) {
         if (err) { res.status(500).json({ "error": err.message }); return; }
         res.status(200).json({ changes: this.changes });
@@ -546,27 +547,8 @@ app.delete('/api/options/:id', (req, res) => {
         res.status(200).json({ deleted: this.changes });
     });
 });
-app.get('/api/source-configurations', (req, res) => {
-    db.all("SELECT * FROM source_configurations", [], (err, rows) => {
-        if (err) { res.status(500).json({ "error": err.message }); return; }
-        res.json(rows);
-    });
-});
-app.post('/api/source-configurations', (req, res) => {
-    const { source_type, reporting_frequency } = req.body;
-    if (!source_type || !reporting_frequency) { return res.status(400).json({ "error": "Campos 'source_type' e 'reporting_frequency' são obrigatórios." }); }
-    db.run(`UPDATE source_configurations SET reporting_frequency = ? WHERE source_type = ?`, [reporting_frequency, source_type], function (err) {
-        if (err) { return res.status(500).json({ "error": err.message }); }
-        if (this.changes === 0) {
-            db.run(`INSERT INTO source_configurations (source_type, reporting_frequency) VALUES (?, ?)`, [source_type, reporting_frequency], function (err) {
-                if (err) { return res.status(500).json({ "error": err.message }); }
-                res.status(201).json({ message: "Configuração criada com sucesso." });
-            });
-        } else {
-            res.status(200).json({ message: "Configuração atualizada com sucesso." });
-        }
-    });
-});
+
+// --- ATENÇÃO: ROTAS DE CONFIGURAÇÃO DE FREQUÊNCIA REMOVIDAS ---
 
 app.get('/api/intelligent-template/:sourceType', (req, res) => {
     const { sourceType } = req.params;
@@ -588,14 +570,13 @@ app.get('/api/intelligent-template/:sourceType', (req, res) => {
     };
     
     const getTypologies = new Promise((resolve, reject) => {
+        // --- ATENÇÃO: Query simplificada, não precisa mais do JOIN ---
         let sql = `
             SELECT 
                 T.*, 
-                U.name as unit_name,
-                SC.reporting_frequency
+                U.name as unit_name
             FROM asset_typologies T 
             JOIN units U ON T.unit_id = U.id
-            LEFT JOIN source_configurations SC ON T.source_type = SC.source_type
             WHERE T.source_type = ?
         `;
         const params = [sourceType];
@@ -611,6 +592,7 @@ app.get('/api/intelligent-template/:sourceType', (req, res) => {
         const mainDescriptionKey = descriptionKeyMap[sourceType];
 
         typologies.forEach(typo => {
+            // --- ATENÇÃO: Frequência lida diretamente da tipologia ---
             const frequency = typo.reporting_frequency || 'anual';
             const periods = frequency === 'mensal' ? ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"] : ["Anual"];
             const assetFields = JSON.parse(typo.asset_fields || '{}');

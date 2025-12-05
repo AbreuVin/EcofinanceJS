@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const tableContainer = document.getElementById('table-container');
     const tableActions = document.getElementById('table-actions');
     const saveButton = document.getElementById('save-data-btn');
+    const exportButton = document.getElementById('export-btn');
     const downloadIntelligentBtn = document.getElementById('download-intelligent-btn');
     
     if(downloadIntelligentBtn) downloadIntelligentBtn.textContent = 'Baixar Template';
@@ -25,7 +26,9 @@ document.addEventListener('DOMContentLoaded', () => {
     let managedOptionsCache = {}; 
     let maskInstances = {};
     let maskIdCounter = 0;
+    let currentReportYear = null;
 
+    // --- UTILS ---
     function loadNavbar() {
         const navPlaceholder = document.getElementById('nav-placeholder');
         if (navPlaceholder) { 
@@ -80,12 +83,102 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    
+    // --- LÓGICA DE RASCUNHO (LOCALSTORAGE) ---
+    function getDraftKey() {
+        if (!currentSchema || !currentReportYear) return null;
+        return `ecofinance_draft_${tableSelector.value}_${currentReportYear}`;
+    }
+
+    function saveDraft() {
+        const key = getDraftKey();
+        if (!key) return;
+        
+        const headers = Object.keys(currentSchema.headerDisplayNames);
+        const activeRowsData = [];
+        
+        document.querySelectorAll('#table-container tbody tr').forEach(row => {
+            const isLocked = row.querySelector('input:disabled, select:disabled');
+            if (!isLocked) {
+                activeRowsData.push(getRowDataFromDOM(row, headers));
+            }
+        });
+
+        if (activeRowsData.length > 0) {
+            localStorage.setItem(key, JSON.stringify(activeRowsData));
+        } else {
+            localStorage.removeItem(key); 
+        }
+    }
+
+    function checkAndLoadDraft() {
+        const key = getDraftKey();
+        if (!key) return;
+
+        const savedDraft = localStorage.getItem(key);
+        if (savedDraft) {
+            const draftData = JSON.parse(savedDraft);
+            if (draftData.length > 0) {
+                if (confirm(`Encontramos um rascunho não salvo com ${draftData.length} linhas para o ano ${currentReportYear}. Deseja restaurá-lo?`)) {
+                    generateTable(draftData, false); 
+                    feedbackDiv.textContent = 'Rascunho restaurado com sucesso. Não se esqueça de salvar!';
+                    feedbackDiv.style.color = 'blue';
+                } else {
+                    localStorage.removeItem(key); 
+                }
+            }
+        }
+    }
+
+    function clearDraft() {
+        const key = getDraftKey();
+        if (key) localStorage.removeItem(key);
+    }
+
+    // --- LÓGICA DE REDIMENSIONAMENTO DE COLUNA (EXCEL-LIKE) ---
+    function createResizableHeaders(table) {
+        const cols = table.querySelectorAll('th');
+        [].forEach.call(cols, function (col) {
+            const resizer = document.createElement('div');
+            resizer.classList.add('resizer');
+            resizer.style.height = `${table.offsetHeight}px`; 
+            col.appendChild(resizer);
+            
+            createResizableColumn(col, resizer);
+        });
+    }
+
+    function createResizableColumn(col, resizer) {
+        let x = 0;
+        let w = 0;
+
+        const mouseDownHandler = function (e) {
+            x = e.clientX;
+            const styles = window.getComputedStyle(col);
+            w = parseInt(styles.width, 10);
+
+            document.addEventListener('mousemove', mouseMoveHandler);
+            document.addEventListener('mouseup', mouseUpHandler);
+            resizer.classList.add('resizing');
+        };
+
+        const mouseMoveHandler = function (e) {
+            const dx = e.clientX - x;
+            col.style.width = `${w + dx}px`;
+        };
+
+        const mouseUpHandler = function () {
+            document.removeEventListener('mousemove', mouseMoveHandler);
+            document.removeEventListener('mouseup', mouseUpHandler);
+            resizer.classList.remove('resizing');
+        };
+
+        resizer.addEventListener('mousedown', mouseDownHandler);
+    }
+
     function sanitizeAndPreprocessRow(rowData) {
         const sourceType = tableSelector.value;
         const cleanedRow = { ...rowData }; 
 
-        
         if (sourceType === 'emissoes_fugitivas') {
             const gasValue = cleanedRow['tipo_gas'];
             if (gasValue) {
@@ -98,11 +191,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        
         if (sourceType === 'emissoes_fugitivas' || sourceType === 'fertilizantes') {
             cleanedRow['unidade'] = 'kg';
         }
-        
         
         if (sourceType === 'combustao_movel' && cleanedRow.tipo_entrada) {
             if (cleanedRow.tipo_entrada === 'consumo') {
@@ -127,13 +218,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function generateTable(data, fromUpload = false) {
         if (!currentSchema) return;
-        if (!fromUpload && data.length === 0) {
-            tableContainer.innerHTML = `<p style="text-align: center; margin: 2rem 0;">Nenhuma fonte cadastrada. Cadastre na aba "Cadastro de Fontes".</p>`;
-            return;
+        
+        let tbody = tableContainer.querySelector('tbody');
+        if (!tbody) {
+             if (!fromUpload && data.length === 0) {
+                tableContainer.innerHTML = `<p style="text-align: center; margin: 2rem 0;">Nenhuma fonte cadastrada para o ano de ${currentReportYear}. Cadastre na aba "Cadastro de Fontes".</p>`;
+                return;
+            }
+            createEmptyTableAndHeaders();
+            tbody = tableContainer.querySelector('tbody');
         }
 
-        createEmptyTableAndHeaders();
-        const tbody = tableContainer.querySelector('tbody');
         const headers = Object.keys(currentSchema.headerDisplayNames);
 
         data.forEach((originalRowData, index) => {
@@ -153,6 +248,9 @@ document.addEventListener('DOMContentLoaded', () => {
             
             updateDisabledFields(rowElement, cleanedData);
         });
+        
+        const table = tableContainer.querySelector('table');
+        if(table) createResizableHeaders(table);
 
         checkTableAndToggleSaveButton();
     }
@@ -168,15 +266,23 @@ document.addEventListener('DOMContentLoaded', () => {
         const tbody = document.createElement('tbody');
         const headerRow = document.createElement('tr');
         const headers = Object.keys(currentSchema.headerDisplayNames);
+        
         headers.forEach(headerKey => {
-            const displayName = currentSchema.headerDisplayNames[headerKey] || headerKey;
-            headerRow.innerHTML += `<th>${displayName}</th>`;
+            const th = document.createElement('th');
+            th.textContent = currentSchema.headerDisplayNames[headerKey] || headerKey;
+            headerRow.appendChild(th);
         });
-        headerRow.innerHTML += `<th>Ações</th>`;
+        
+        const actionsTh = document.createElement('th');
+        actionsTh.textContent = 'Ações';
+        headerRow.appendChild(actionsTh);
+
+        // --- CORREÇÃO AQUI: Adicionando thead à tabela antes de tudo ---
         thead.appendChild(headerRow);
         table.appendChild(thead);
         table.appendChild(tbody);
         tableContainer.appendChild(table);
+        
         tbody.addEventListener('click', handleTableClick);
         tbody.addEventListener('blur', (e) => handleTableChange(e, headers), true);
         tbody.addEventListener('change', (e) => handleTableChange(e, headers));
@@ -191,7 +297,6 @@ document.addEventListener('DOMContentLoaded', () => {
             const isAutoFilledUnit = currentSchema.autoFillMap && Object.values(currentSchema.autoFillMap).some(rule => rule.targetColumn === header);
             const options = managedOptionsCache[header];
 
-            // --- ATENÇÃO: Lógica de bloqueio adicionada ---
             if (header === 'informar_cidade_uf') {
                 cell.textContent = currentValue;
                 cell.setAttribute('contenteditable', 'false');
@@ -309,6 +414,10 @@ document.addEventListener('DOMContentLoaded', () => {
              } else {
                 setFieldsState(rowElement, vegNaturalFields, false, false);
              }
+        } else if (sourceType === 'electricity_purchase') {
+            const especificarFonteField = ['especificar_fonte'];
+            const isSIN = sanitizedData.fonte_energia === 'Sistema Interligado Nacional';
+            setFieldsState(rowElement, especificarFonteField, isSIN, isSIN);
         }
     }
 
@@ -332,16 +441,28 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function checkTableAndToggleSaveButton() {
         const hasAnyErrors = tableContainer.querySelector('.invalid-cell');
-        const hasRows = tableContainer.querySelector('tbody tr');
-        const areDataValid = !hasAnyErrors && hasRows;
+        const activeRows = Array.from(tableContainer.querySelectorAll('tbody tr')).filter(row => {
+            return !row.querySelector('input:disabled, select:disabled');
+        });
+        
+        const hasActiveRows = activeRows.length > 0;
+        const areDataValid = !hasAnyErrors && hasActiveRows;
+
         saveButton.style.display = areDataValid ? 'inline-block' : 'none';
-        if (hasAnyErrors && hasRows) {
+        
+        const hasAnyRows = tableContainer.querySelector('tbody tr');
+        exportButton.style.display = hasAnyRows ? 'inline-block' : 'none';
+
+        if (hasAnyErrors && hasActiveRows) {
             feedbackDiv.textContent = "Dados inválidos. Corrija as células em vermelho.";
             feedbackDiv.style.color = 'red';
         } else if (areDataValid) {
             feedbackDiv.textContent = 'Todos os dados são válidos! Você pode salvar.';
             feedbackDiv.style.color = 'green';
-        } else if (!hasRows) {
+        } else if (!hasActiveRows && hasAnyRows) {
+            feedbackDiv.textContent = "Todos os dados exibidos já foram salvos.";
+            feedbackDiv.style.color = 'green';
+        } else {
             feedbackDiv.textContent = "";
         }
     }
@@ -349,7 +470,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function handleTableClick(event) {
         if (event.target.classList.contains('delete-row-btn')) {
             const rowToDelete = event.target.closest('tr');
-            if (confirm('Tem certeza que deseja deletar esta linha?')) {
+            if (confirm('Tem certeza que deseja remover esta linha da visualização?')) {
                 rowToDelete.querySelectorAll('input[id^="mask-"]').forEach(input => {
                     if (maskInstances[input.id]) {
                         maskInstances[input.id].destroy();
@@ -358,6 +479,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
                 rowToDelete.remove();
                 checkTableAndToggleSaveButton();
+                saveDraft(); 
             }
         }
     }
@@ -381,7 +503,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     const isAutoFilledUnit = currentSchema.autoFillMap && Object.values(currentSchema.autoFillMap).some(rule => rule.targetColumn === fieldName);
                     if(!isAutoFilledUnit) {
                         cell.style.backgroundColor = '';
-                        if (input) input.disabled = false;
+                        const rowIsLocked = row.querySelector('.delete-row-btn').disabled === true;
+                        if (input && !rowIsLocked) input.disabled = false;
                     }
                 }
             }
@@ -411,32 +534,59 @@ document.addEventListener('DOMContentLoaded', () => {
         updateDisabledFields(editedRow, rowData);
         updateValidationAppearance(editedRow);
         checkTableAndToggleSaveButton();
+        
+        saveDraft();
     }
 
     tableSelector.addEventListener('change', async () => {
         const selectedKey = tableSelector.value;
         currentSchema = validationSchemas[selectedKey];
+        
         uploadForm.reset(); 
         tableContainer.innerHTML = '';
         tableActions.style.display = 'none'; 
-        feedbackDiv.textContent = 'Carregando...';
-        feedbackDiv.style.color = 'blue';
+        feedbackDiv.textContent = '';
         saveButton.style.display = 'none';
+        exportButton.style.display = 'none';
+        currentReportYear = null;
+
         if (currentSchema) {
+            const year = prompt("Por favor, digite o ano de reporte (ex: 2024):", new Date().getFullYear());
+            if (!year || isNaN(parseInt(year)) || year.length !== 4) {
+                alert("Ano inválido. Por favor, selecione a fonte novamente e digite um ano com 4 dígitos.");
+                tableSelector.value = ""; 
+                uploadSection.style.display = 'none';
+                return;
+            }
+            currentReportYear = year; 
+
             uploadSection.style.display = 'block';
             tableActions.style.display = 'flex';
             downloadIntelligentBtn.style.display = 'inline-block';
+            feedbackDiv.textContent = 'Carregando...';
+            feedbackDiv.style.color = 'blue';
+
             try {
                 await Promise.all([
                     currentSchema.hasUnits ? fetchUnits() : Promise.resolve(),
                     fetchManagedOptions(currentSchema) 
                 ]);
-                feedbackDiv.textContent = 'Carregando fontes cadastradas...';
-                const response = await fetch(`/api/intelligent-template/${selectedKey}?format=json`);
+                feedbackDiv.textContent = `Carregando fontes cadastradas para o ano de ${currentReportYear}...`;
+                
+                const response = await fetch(`/api/intelligent-template/${selectedKey}?format=json&year=${currentReportYear}`);
                 if (!response.ok) throw new Error('Falha ao carregar template de dados.');
+                
                 const data = await response.json();
                 feedbackDiv.textContent = '';
                 generateTable(data, false);
+                
+                checkAndLoadDraft();
+                
+                // --- FORÇA SCROLL PARA BAIXO ---
+                setTimeout(() => {
+                    uploadSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 100);
+
             } catch (error) {
                 console.error("Erro ao carregar dados da fonte:", error);
                 feedbackDiv.textContent = `Erro: ${error.message}`;
@@ -444,20 +594,188 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         } else {
             uploadSection.style.display = 'none';
-            tableActions.style.display = 'none';
-            downloadIntelligentBtn.style.display = 'none';
-            feedbackDiv.textContent = '';
         }
     });
     
-    uploadForm.addEventListener('submit', async (e) => { e.preventDefault(); feedbackDiv.textContent = 'Enviando e validando arquivo...'; const file = fileInput.files[0]; if (!file) { feedbackDiv.textContent = 'Por favor, selecione um arquivo.'; return; } const formData = new FormData(); formData.append('file', file); formData.append('source_type', tableSelector.value); try { const response = await fetch('/api/upload', { method: 'POST', body: formData }); if (!response.ok) throw new Error(`Erro: ${response.statusText}`); const data = await response.json(); generateTable(data, true); } catch (error) { feedbackDiv.textContent = `Falha no upload: ${error.message}`; feedbackDiv.style.color = 'red'; } });
-    downloadIntelligentBtn.addEventListener('click', async () => { const sourceType = tableSelector.value; if (!sourceType) return; const year = prompt("Por favor, digite o ano de reporte (ex: 2024):", new Date().getFullYear()); if (!year || isNaN(parseInt(year)) || year.length !== 4) { alert("Ano inválido. Por favor, digite um ano com 4 dígitos."); return; } feedbackDiv.textContent = 'Gerando template...'; feedbackDiv.style.color = 'blue'; try { const response = await fetch(`/api/intelligent-template/${sourceType}?year=${year}`); if (!response.ok) { const error = await response.json(); throw new Error(error.message || 'Falha ao gerar o arquivo no servidor.'); } const blob = await response.blob(); const url = window.URL.createObjectURL(blob); const a = document.createElement('a'); a.style.display = 'none'; a.href = url; 
-    const disposition = response.headers.get('Content-Disposition'); let filename = `${sourceType}_template.xlsx`; if (disposition && disposition.indexOf('attachment') !== -1) { const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
-    const matches = filenameRegex.exec(disposition); if (matches != null && matches[1]) { filename = matches[1].replace(/['"]/g, ''); } } a.download = filename; document.body.appendChild(a); a.click(); window.URL.revokeObjectURL(url); a.remove(); feedbackDiv.textContent = 'Template gerado com sucesso!'; feedbackDiv.style.color = 'green'; } catch (error) { feedbackDiv.textContent = `Erro ao gerar template: ${error.message}`; feedbackDiv.style.color = 'red'; } });
-    saveButton.addEventListener('click', async () => { if (!currentSchema || !tableSelector.value) return; const headers = Object.keys(currentSchema.headerDisplayNames); const dataToSave = []; document.querySelectorAll('#table-container tbody tr').forEach(row => { dataToSave.push(getRowDataFromDOM(row, headers)); }); try { const response = await fetch(`/api/save-data/${tableSelector.value}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(dataToSave), }); const result = await 
-    response.json(); if (!response.ok) throw new Error(result.message); const friendlyTableName = currentSchema.displayName; feedbackDiv.textContent = `Dados de "${friendlyTableName}" salvos com sucesso!`;
-    feedbackDiv.style.color = 'green'; saveButton.style.display = 'none'; tableContainer.innerHTML = ''; } catch (error) { feedbackDiv.textContent = `Erro ao salvar: ${error.message}`;
-    feedbackDiv.style.color = 'red'; } });
+    uploadForm.addEventListener('submit', async (e) => { 
+        e.preventDefault(); 
+        feedbackDiv.textContent = 'Enviando e validando arquivo...'; 
+        const file = fileInput.files[0]; 
+        if (!file) { feedbackDiv.textContent = 'Por favor, selecione um arquivo.'; return; } 
+        const formData = new FormData(); 
+        formData.append('file', file); 
+        formData.append('source_type', tableSelector.value); 
+        try { 
+            const response = await fetch('/api/upload', { method: 'POST', body: formData }); 
+            if (!response.ok) throw new Error(`Erro: ${response.statusText}`); 
+            const data = await response.json(); 
+            generateTable(data, true); 
+            saveDraft();
+        } catch (error) { 
+            feedbackDiv.textContent = `Falha no upload: ${error.message}`; 
+            feedbackDiv.style.color = 'red'; 
+        } 
+    });
+    
+    exportButton.addEventListener('click', async () => {
+        if (!currentSchema || !tableSelector.value) return;
+        
+        const headers = Object.keys(currentSchema.headerDisplayNames);
+        const dataToExport = [];
+        
+        document.querySelectorAll('#table-container tbody tr').forEach(row => {
+            dataToExport.push(getRowDataFromDOM(row, headers));
+        });
+
+        if (dataToExport.length === 0) {
+            alert("Não há dados na tabela para exportar.");
+            return;
+        }
+
+        const friendlyData = dataToExport.map(row => {
+            const newRow = {};
+            for (const key in row) {
+                const displayName = currentSchema.headerDisplayNames[key] || key;
+                newRow[displayName] = row[key];
+            }
+            return newRow;
+        });
+
+        try {
+            const response = await fetch('/api/export', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ data: friendlyData, tableName: tableSelector.value })
+            });
+            
+            if (!response.ok) throw new Error("Erro ao gerar arquivo de exportação.");
+            
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = url;
+            a.download = `${tableSelector.value}_dados_${currentReportYear}.xlsx`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            feedbackDiv.textContent = 'Dados exportados com sucesso! Você pode editar no Excel e fazer upload novamente.';
+            feedbackDiv.style.color = 'green';
+        } catch (error) {
+            console.error("Erro na exportação:", error);
+            feedbackDiv.textContent = 'Erro ao exportar dados.';
+            feedbackDiv.style.color = 'red';
+        }
+    });
+
+    downloadIntelligentBtn.addEventListener('click', async () => { 
+        const sourceType = tableSelector.value; 
+        if (!sourceType || !currentReportYear) {
+            alert("Por favor, selecione uma fonte e um ano primeiro.");
+            return;
+        }
+
+        feedbackDiv.textContent = 'Gerando template...'; 
+        feedbackDiv.style.color = 'blue'; 
+        try { 
+            const response = await fetch(`/api/intelligent-template/${sourceType}?year=${currentReportYear}`); 
+            if (!response.ok) { 
+                const error = await response.json(); 
+                throw new Error(error.message || 'Falha ao gerar o arquivo no servidor.'); 
+            } 
+            const blob = await response.blob(); 
+            const url = window.URL.createObjectURL(blob); 
+            const a = document.createElement('a'); 
+            a.style.display = 'none'; 
+            a.href = url; 
+            const disposition = response.headers.get('Content-Disposition'); 
+            let filename = `${sourceType}_template.xlsx`; 
+            if (disposition && disposition.indexOf('attachment') !== -1) { 
+                const filenameRegex = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/;
+                const matches = filenameRegex.exec(disposition); 
+                if (matches != null && matches[1]) { 
+                    filename = matches[1].replace(/['"]/g, ''); 
+                } 
+            } 
+            a.download = filename; 
+            document.body.appendChild(a); 
+            a.click(); 
+            window.URL.revokeObjectURL(url); 
+            a.remove(); 
+            feedbackDiv.textContent = 'Template gerado com sucesso!'; 
+            feedbackDiv.style.color = 'green'; 
+        } catch (error) { 
+            feedbackDiv.textContent = `Erro ao gerar template: ${error.message}`; 
+            feedbackDiv.style.color = 'red'; 
+        } 
+    });
+
+    function lockSavedRows() {
+        const tbody = tableContainer.querySelector('tbody');
+        if (!tbody) return;
+        
+        tbody.querySelectorAll('tr').forEach(row => {
+            if (!row.classList.contains('saved-row')) {
+                row.classList.add('saved-row');
+                row.style.backgroundColor = '#d4edda'; 
+                
+                row.querySelectorAll('input, select').forEach(el => {
+                    el.disabled = true;
+                });
+                
+                const deleteBtn = row.querySelector('.delete-row-btn');
+                if (deleteBtn) {
+                    deleteBtn.disabled = true;
+                    deleteBtn.style.opacity = '0.5';
+                    deleteBtn.title = 'Item já salvo no banco de dados.';
+                }
+            }
+        });
+    }
+
+    saveButton.addEventListener('click', async () => { 
+        if (!currentSchema || !tableSelector.value) return; 
+        
+        const headers = Object.keys(currentSchema.headerDisplayNames); 
+        const dataToSave = []; 
+        
+        document.querySelectorAll('#table-container tbody tr').forEach(row => { 
+            const isLocked = row.querySelector('input:disabled, select:disabled');
+            if (!isLocked) {
+                dataToSave.push(getRowDataFromDOM(row, headers)); 
+            }
+        }); 
+        
+        if (dataToSave.length === 0) {
+            feedbackDiv.textContent = "Não há novos dados para salvar.";
+            return;
+        }
+
+        try { 
+            const response = await fetch(`/api/save-data/${tableSelector.value}`, { 
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json' }, 
+                body: JSON.stringify(dataToSave), 
+            }); 
+            const result = await response.json(); 
+            if (!response.ok) throw new Error(result.message); 
+            
+            const friendlyTableName = currentSchema.displayName; 
+            feedbackDiv.textContent = `Dados de "${friendlyTableName}" salvos com sucesso!`; 
+            feedbackDiv.style.color = 'green'; 
+            
+            lockSavedRows();
+            
+            clearDraft();
+            
+            checkTableAndToggleSaveButton(); 
+            
+        } catch (error) { 
+            feedbackDiv.textContent = `Erro ao salvar: ${error.message}`; 
+            feedbackDiv.style.color = 'red'; 
+        } 
+    });
+    
     function populateSelector() { tableSelector.innerHTML = '<option value="">-- Selecione uma tabela --</option>';
     const sortedKeys = Object.keys(validationSchemas).sort((a, b) => validationSchemas[a].displayName.localeCompare(validationSchemas[b].displayName)); sortedKeys.forEach(key => { tableSelector.innerHTML += `<option value="${key}">${validationSchemas[key].displayName}</option>`; }); }
 

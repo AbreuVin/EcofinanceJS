@@ -28,23 +28,6 @@
 
         <div id="asset-management-section" style="display: none;">
             
-            <div class="form-container">
-                <h2 style="font-size: 1.2rem; margin-bottom: 1rem;">Configuração da Fonte</h2>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="reporting-frequency">Frequência de Reporte</label>
-                        <select id="reporting-frequency">
-                            <option value="anual">Anual</option>
-                            <option value="mensal">Mensal</option>
-                        </select>
-                    </div>
-                    <div class="form-group" style="justify-content: flex-end;">
-                        <button type="button" id="save-frequency-btn" class="action-btn edit-btn" style="width: auto; padding: 0.75rem 1.5rem;">Salvar Frequência</button>
-                    </div>
-                </div>
-                 <div id="frequency-feedback" class="feedback-area" style="text-align: left; margin-top: 0.5rem; margin-bottom: 0;"></div>
-            </div>
-
             
 
             <div class="form-container">
@@ -52,7 +35,6 @@
                 <form id="asset-form">
                     <input type="hidden" id="asset-id">
                     
-                    <!-- --- ATENÇÃO: ESTRUTURA ALTERADA AQUI --- -->
                     <div class="form-row">
                         <div class="form-group">
                             <label for="asset-description">Descrição da Fonte</label>
@@ -65,9 +47,8 @@
                     </div>
                     
                     <div id="specific-fields-container">
-                        <!-- Os campos dinâmicos, incluindo a "Destinação Final", serão inseridos aqui pelo JS -->
+                        
                     </div>
-                    <!-- --- FIM DA ALTERAÇÃO --- -->
 
                     <div class="form-actions">
                         <button type="submit">Salvar Fonte</button>

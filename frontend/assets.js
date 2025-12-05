@@ -36,11 +36,10 @@ document.addEventListener('DOMContentLoaded', () => {
         combustao_movel: { 
             displayName: "Combustão Móvel", 
             fields: { 
-                
-                tipo_entrada: { label: "Como os dados serão reportados?", type: "select", options: ["Por Consumo", "Por Distância"] }, 
-                combustivel_movel: { label: "Combustível Padrão", type: "select", showIf: { field: "tipo_entrada", value: "Por Consumo" } }, 
-                unidade_consumo: { label: "Unidade de Consumo", type: "text", showIf: { field: "tipo_entrada", value: "Por Consumo" }, disabled: true }, 
-                tipo_veiculo: { label: "Tipo de Veículo Padrão", type: "select" }
+                tipo_entrada: { label: "Como os dados serão reportados?", type: "select" }, 
+                combustivel: { label: "Combustível Padrão", type: "select", showIf: { field: "tipo_entrada", value: "consumo" } }, 
+                unidade_consumo: { label: "Unidade de Consumo", type: "text", showIf: { field: "tipo_entrada", value: "consumo" }, disabled: true }, 
+                tipo_veiculo: { label: "Tipo de Veículo Padrão", type: "select", showIf: { field: "tipo_entrada", value: "distancia" } }
             } 
         },
         dados_producao_venda: { 
@@ -94,7 +93,6 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     };
-
     
     const navPlaceholder = document.getElementById('nav-placeholder');
     const sourceSelector = document.getElementById('source-selector');
@@ -108,14 +106,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const tableTitle = document.getElementById('table-title');
     const cancelBtn = document.getElementById('cancel-btn');
     const unitSelect = document.getElementById('asset-unit');
-    const reportingFrequencySelect = document.getElementById('reporting-frequency');
-    const saveFrequencyBtn = document.getElementById('save-frequency-btn');
-    const frequencyFeedback = document.getElementById('frequency-feedback');
     let currentSourceType = null;
-    let allConfigs = [];
     let contactsList = [];
 
-    
     async function initializePage() { 
         if (navPlaceholder) { 
             fetch('nav.html').then(response => response.text()).then(data => { navPlaceholder.innerHTML = data; }); 
@@ -131,13 +124,11 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         
         try { 
-            const [unitsResponse, configsResponse, contactsResponse] = await Promise.all([ 
+            const [unitsResponse, contactsResponse] = await Promise.all([ 
                 fetch('/api/units'), 
-                fetch('/api/source-configurations'),
                 fetch('/api/contacts') 
             ]); 
             const unitsList = await unitsResponse.json(); 
-            allConfigs = await configsResponse.json(); 
             contactsList = await contactsResponse.json();
             
             unitSelect.innerHTML = '<option value="">-- Selecione --</option>'; 
@@ -161,7 +152,6 @@ document.addEventListener('DOMContentLoaded', () => {
     async function handleSourceSelection() { 
         currentSourceType = sourceSelector.value; 
         resetForm(); 
-        frequencyFeedback.textContent = ''; 
         if (!currentSourceType) { 
             assetManagementSection.style.display = 'none'; 
             return; 
@@ -169,8 +159,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const schema = assetSchemas[currentSourceType]; 
         formTitle.textContent = `Adicionar Nova Fonte`; 
         tableTitle.textContent = `Fontes de ${schema.displayName} Cadastradas`; 
-        const currentConfig = allConfigs.find(c => c.source_type === currentSourceType); 
-        reportingFrequencySelect.value = currentConfig ? currentConfig.reporting_frequency : 'anual'; 
         await buildDynamicForm(schema); 
         buildDynamicTableHeaders(schema); 
         loadAssetTypologies(); 
@@ -185,7 +173,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const mainDescriptionKey = usesCustomDescription ? Object.keys(schema.fields)[0] : 'description';
         const mainDescriptionLabel = usesCustomDescription ? schema.fields[mainDescriptionKey].label : 'Descrição';
 
-        let headers = `<th>${mainDescriptionLabel}</th><th>Unidade</th>`; 
+        let headers = `<th>${mainDescriptionLabel}</th><th>Unidade</th><th>Frequência</th>`; 
         
         for (const key in schema.fields) { 
             if (usesCustomDescription && key === mainDescriptionKey) continue;
@@ -212,7 +200,21 @@ document.addEventListener('DOMContentLoaded', () => {
                     ? (typo.asset_fields[mainDescriptionKey] || typo.description) 
                     : typo.description;
                 
-                let rowHtml = `<td>${mainDescription}</td><td>${typo.unit_name}</td>`; 
+                // --- ATENÇÃO: Lógica de limpeza de dados para exibição ---
+                const displayFields = { ...typo.asset_fields };
+                if (currentSourceType === 'combustao_movel') {
+                    const tipoEntrada = displayFields.tipo_entrada;
+                    if (tipoEntrada === 'consumo') {
+                        displayFields.tipo_veiculo = ''; // Limpa o campo de veículo
+                    } else if (tipoEntrada === 'distancia') {
+                        displayFields.combustivel = ''; // Limpa os campos de consumo
+                        displayFields.unidade_consumo = '';
+                    }
+                }
+                // --- FIM DA LÓGICA DE LIMPEZA ---
+                
+                const frequencyText = typo.reporting_frequency === 'mensal' ? 'Mensal' : 'Anual';
+                let rowHtml = `<td>${mainDescription}</td><td>${typo.unit_name}</td><td>${frequencyText}</td>`; 
                 const schema = assetSchemas[currentSourceType]; 
                 
                 for (const key in schema.fields) { 
@@ -220,7 +222,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (key === 'responsible_contact_id') {
                         rowHtml += `<td>${typo.responsible_contact_name || ''}</td>`;
                     } else {
-                        rowHtml += `<td>${typo.asset_fields[key] || ''}</td>`; 
+                        // Usa os dados limpos para a exibição
+                        rowHtml += `<td>${displayFields[key] || ''}</td>`; 
                     }
                 } 
                 rowHtml += `<td> <button class="action-btn edit-btn" data-id="${typo.id}">Editar</button> <button class="action-btn delete-btn" data-id="${typo.id}">Deletar</button> </td>`; 
@@ -238,14 +241,15 @@ document.addEventListener('DOMContentLoaded', () => {
         const asset_fields = {}; 
         
         let responsibleContactId = null;
-        
+        let reportingFrequency = document.getElementById('reporting-frequency').value;
+
         form.querySelectorAll('[data-key]').forEach(input => {
              const fieldWrapper = input.closest('.form-group');
              if (fieldWrapper && fieldWrapper.style.display !== 'none') {
                  const key = input.dataset.key;
                  if (key === 'responsible_contact_id') {
                      responsibleContactId = input.value;
-                 } else {
+                 } else if (key !== 'reporting_frequency') {
                      asset_fields[key] = input.value;
                  }
              }
@@ -264,7 +268,8 @@ document.addEventListener('DOMContentLoaded', () => {
             unit_id: unitValue, 
             source_type: currentSourceType, 
             asset_fields: asset_fields,
-            responsible_contact_id: responsibleContactId
+            responsible_contact_id: responsibleContactId,
+            reporting_frequency: reportingFrequency
         }; 
         
         const method = id ? 'PUT' : 'POST'; 
@@ -275,7 +280,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 const errorData = await response.json(); 
                 throw new Error(errorData.error || 'Falha ao salvar a fonte.'); 
             } 
-            resetForm(); 
+            
+            if (id) {
+                resetForm();
+            } else {
+                assetIdInput.value = '';
+            }
+            
             loadAssetTypologies(); 
         } catch (error) { 
             console.error("Erro ao salvar:", error); 
@@ -305,6 +316,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 await buildDynamicForm(assetSchemas[currentSourceType]); 
                 
+                document.getElementById('reporting-frequency').value = typoToEdit.reporting_frequency;
+
                 form.querySelectorAll('[data-key]').forEach(input => {
                     const key = input.dataset.key;
                     if (key === 'responsible_contact_id') {
@@ -355,14 +368,13 @@ document.addEventListener('DOMContentLoaded', () => {
             descriptionGroup.querySelector('input').required = true;
         }
 
-        const triggerFields = ['field-tipo_entrada', 'field-tratamento_ou_destino', 'uso_solo_anterior', 'field-combustivel_movel', 'field-combustivel_estacionario', 'field-destinacao_final', 'field-fonte_energia'];
+        const triggerFields = ['field-tipo_entrada', 'field-tratamento_ou_destino', 'uso_solo_anterior', 'field-combustivel', 'field-combustivel_estacionario', 'field-destinacao_final', 'field-fonte_energia'];
         triggerFields.forEach(id => {
             const trigger = document.getElementById(id);
             if (trigger) trigger.dispatchEvent(new Event('change'));
         });
     }
 
-    
     async function buildDynamicForm(schema) { 
         specificFieldsContainer.innerHTML = '';
         form.querySelectorAll('.dynamic-field').forEach(el => el.remove()); 
@@ -385,6 +397,20 @@ document.addEventListener('DOMContentLoaded', () => {
                 triggerFields.add(schema.fields[key].showIf.field);
             }
         }
+        
+        const frequencyWrapper = document.createElement('div');
+        frequencyWrapper.className = 'form-row dynamic-field';
+        frequencyWrapper.innerHTML = `
+            <div class="form-group">
+                <label for="reporting-frequency">Frequência de Reporte</label>
+                <select id="reporting-frequency" data-key="reporting_frequency">
+                    <option value="anual">Anual</option>
+                    <option value="mensal">Mensal</option>
+                </select>
+            </div>
+        `;
+        specificFieldsContainer.appendChild(frequencyWrapper);
+
 
         for (const key in schema.fields) { 
             const field = schema.fields[key]; 
@@ -466,7 +492,8 @@ document.addEventListener('DOMContentLoaded', () => {
                             const conditionValues = Array.isArray(showIfConfig.value) ? showIfConfig.value : [showIfConfig.value];
                             const isVisible = conditionValues.includes(selectedValue);
                             
-                            element.row.style.display = isVisible ? '' : 'none';
+                            const parentWrapper = element.row.closest('.form-row.dynamic-field') || element.row;
+                            parentWrapper.style.display = isVisible ? '' : 'none';
                             element.input.required = isVisible;
                         }
                     }
@@ -495,11 +522,7 @@ document.addEventListener('DOMContentLoaded', () => {
         resetForm();
     }
     
-    async function handleSaveFrequency() { if (!currentSourceType) return; frequencyFeedback.textContent = 'Salvando...'; frequencyFeedback.style.color = 'blue'; try { const response = await fetch('/api/source-configurations', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ source_type: currentSourceType, reporting_frequency: reportingFrequencySelect.value }) }); if (!response.ok) throw new Error('Falha ao salvar configuração.'); const existingConfig = allConfigs.find(c => c.source_type === currentSourceType); if (existingConfig) { existingConfig.reporting_frequency = reportingFrequencySelect.value; } else { allConfigs.push({ source_type: currentSourceType, reporting_frequency: reportingFrequencySelect.value }); } frequencyFeedback.textContent = 'Frequência salva com sucesso!'; frequencyFeedback.style.color = 'green'; } catch (error) { console.error('Erro ao salvar frequência:', error); frequencyFeedback.textContent = 'Erro ao salvar.'; frequencyFeedback.style.color = 'red'; } }
-    
-    
     sourceSelector.addEventListener('change', handleSourceSelection);
-    saveFrequencyBtn.addEventListener('click', handleSaveFrequency);
     form.addEventListener('submit', handleFormSubmit);
     assetsTbody.addEventListener('click', handleTableClick);
     cancelBtn.addEventListener('click', resetForm);
