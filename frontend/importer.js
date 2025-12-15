@@ -18,8 +18,11 @@ document.addEventListener('DOMContentLoaded', () => {
     
     if(downloadIntelligentBtn) downloadIntelligentBtn.textContent = 'Baixar Template';
 
-    const INTEGER_FIELDS = [ 'quantidade_vendida', 'num_trabalhadores' ];
-    const DECIMAL_FIELDS = [ 'consumo', 'distancia_percorrida', 'quantidade_reposta', 'quantidade_kg', 'percentual_nitrogenio', 'percentual_carbonato', 'area_hectare', 'qtd_efluente_liquido_m3', 'qtd_componente_organico', 'qtd_nitrogenio_mg_l', 'componente_organico_removido_lodo', 'carga_horaria_media', 'quantidade_gerado' ];
+    // --- SPRINT 20: Adicionado 'dias_deslocados' ---
+    const INTEGER_FIELDS = [ 'quantidade_vendida', 'num_trabalhadores', 'numero_viagens', 'num_funcionarios', 'dias_deslocados' ];
+    // --- SPRINT 20: Adicionado 'distancia_km' ---
+    // --- SPRINT 18: Adicionado 'total_geracao' ---
+    const DECIMAL_FIELDS = [ 'consumo', 'distancia_percorrida', 'quantidade_reposta', 'quantidade_kg', 'percentual_nitrogenio', 'percentual_carbonato', 'area_hectare', 'qtd_efluente_liquido_m3', 'qtd_componente_organico', 'qtd_nitrogenio_mg_l', 'componente_organico_removido_lodo', 'carga_horaria_media', 'quantidade_gerado', 'quantidade', 'valor_aquisicao', 'distancia_trecho', 'carga_transportada', 'distancia_km', 'total_geracao' ];
 
     let currentSchema = null;
     let unitsList = [];
@@ -211,6 +214,40 @@ document.addEventListener('DOMContentLoaded', () => {
             if (cleanedRow.uso_solo_anterior !== 'Vegetação natural') {
                 ['bioma', 'fitofisionomia', 'tipo_area'].forEach(k => cleanedRow[k] = '');
             }
+        } else if (sourceType === 'purchased_goods_services' && cleanedRow.tipo_item) {
+            if (cleanedRow.tipo_item === 'Serviço') {
+                cleanedRow.quantidade = '';
+                cleanedRow.unidade = '';
+            }
+        } else if (sourceType === 'capital_goods') {
+            cleanedRow.unidade = 'Unidades';
+        } else if (sourceType === 'upstream_transport' && cleanedRow.tipo_reporte) {
+            if (cleanedRow.tipo_reporte === 'Consumo') {
+                ['classificacao_veiculo', 'distancia_trecho', 'unidade_distancia', 'carga_transportada', 'numero_viagens'].forEach(k => cleanedRow[k] = '');
+            } else if (cleanedRow.tipo_reporte === 'Distância') {
+                ['combustivel', 'consumo', 'unidade_consumo'].forEach(k => cleanedRow[k] = '');
+            }
+        } else if (sourceType === 'business_travel_land' && cleanedRow.tipo_reporte) {
+            if (cleanedRow.tipo_reporte === 'Consumo') {
+                ['distancia_percorrida', 'unidade_distancia'].forEach(k => cleanedRow[k] = '');
+            } else if (cleanedRow.tipo_reporte === 'Distância') {
+                ['combustivel', 'consumo', 'unidade_consumo'].forEach(k => cleanedRow[k] = '');
+            }
+        } else if ((sourceType === 'downstream_transport' || sourceType === 'waste_transport') && cleanedRow.tipo_reporte) {
+            if (cleanedRow.tipo_reporte === 'Consumo') {
+                ['classificacao_veiculo', 'distancia_trecho', 'unidade_distancia', 'carga_transportada', 'numero_viagens'].forEach(k => cleanedRow[k] = '');
+            } else if (cleanedRow.tipo_reporte === 'Distância') {
+                ['combustivel', 'consumo', 'unidade_consumo'].forEach(k => cleanedRow[k] = '');
+            }
+        } else if (sourceType === 'employee_commuting' && cleanedRow.tipo_reporte) {
+            // --- SPRINT 20: Lógica para Transporte de Funcionários ---
+            if (cleanedRow.tipo_reporte === 'Consumo') {
+                ['distancia_km', 'endereco_funcionario', 'endereco_trabalho'].forEach(k => cleanedRow[k] = '');
+            } else if (cleanedRow.tipo_reporte === 'Distância') {
+                ['tipo_combustivel', 'consumo', 'unidade_consumo', 'endereco_funcionario', 'endereco_trabalho'].forEach(k => cleanedRow[k] = '');
+            } else if (cleanedRow.tipo_reporte === 'Endereço') {
+                ['tipo_combustivel', 'consumo', 'unidade_consumo', 'distancia_km'].forEach(k => cleanedRow[k] = '');
+            }
         }
         
         return cleanedRow;
@@ -277,7 +314,6 @@ document.addEventListener('DOMContentLoaded', () => {
         actionsTh.textContent = 'Ações';
         headerRow.appendChild(actionsTh);
 
-        // --- CORREÇÃO AQUI: Adicionando thead à tabela antes de tudo ---
         thead.appendChild(headerRow);
         table.appendChild(thead);
         table.appendChild(tbody);
@@ -418,6 +454,80 @@ document.addEventListener('DOMContentLoaded', () => {
             const especificarFonteField = ['especificar_fonte'];
             const isSIN = sanitizedData.fonte_energia === 'Sistema Interligado Nacional';
             setFieldsState(rowElement, especificarFonteField, isSIN, isSIN);
+        } else if (sourceType === 'purchased_goods_services') {
+            const qtdUnidFields = ['quantidade', 'unidade'];
+            if (sanitizedData.tipo_item === 'Serviço') {
+                setFieldsState(rowElement, qtdUnidFields, true, true);
+            } else {
+                setFieldsState(rowElement, qtdUnidFields, false, false);
+            }
+        } else if (sourceType === 'upstream_transport') {
+            const consumoFields = ['combustivel', 'consumo', 'unidade_consumo'];
+            const distanciaFields = ['classificacao_veiculo', 'distancia_trecho', 'unidade_distancia', 'carga_transportada', 'numero_viagens'];
+            
+            if (sanitizedData.tipo_reporte === 'Consumo') {
+                setFieldsState(rowElement, distanciaFields, true, true); 
+                setFieldsState(rowElement, consumoFields, false, false); 
+            } else if (sanitizedData.tipo_reporte === 'Distância') {
+                setFieldsState(rowElement, consumoFields, true, true); 
+                setFieldsState(rowElement, distanciaFields, false, false); 
+            } else {
+                setFieldsState(rowElement, consumoFields, true, false);
+                setFieldsState(rowElement, distanciaFields, true, false);
+            }
+        } else if (sourceType === 'business_travel_land') {
+            const consumoFields = ['combustivel', 'consumo', 'unidade_consumo'];
+            const distanciaFields = ['distancia_percorrida', 'unidade_distancia'];
+            // modal_viagem e km_reembolsado não entram aqui pois são sempre habilitados
+            
+            if (sanitizedData.tipo_reporte === 'Consumo') {
+                setFieldsState(rowElement, distanciaFields, true, true);
+                setFieldsState(rowElement, consumoFields, false, false);
+            } else if (sanitizedData.tipo_reporte === 'Distância') {
+                setFieldsState(rowElement, consumoFields, true, true);
+                setFieldsState(rowElement, distanciaFields, false, false);
+            } else {
+                setFieldsState(rowElement, consumoFields, true, false);
+                setFieldsState(rowElement, distanciaFields, true, false);
+            }
+        } else if (sourceType === 'downstream_transport' || sourceType === 'waste_transport') {
+            const consumoFields = ['combustivel', 'consumo', 'unidade_consumo'];
+            const distanciaFields = ['classificacao_veiculo', 'distancia_trecho', 'unidade_distancia', 'carga_transportada', 'numero_viagens'];
+            
+            if (sanitizedData.tipo_reporte === 'Consumo') {
+                setFieldsState(rowElement, distanciaFields, true, true);
+                setFieldsState(rowElement, consumoFields, false, false);
+            } else if (sanitizedData.tipo_reporte === 'Distância') {
+                setFieldsState(rowElement, consumoFields, true, true);
+                setFieldsState(rowElement, distanciaFields, false, false);
+            } else {
+                setFieldsState(rowElement, consumoFields, true, false);
+                setFieldsState(rowElement, distanciaFields, true, false);
+            }
+        } else if (sourceType === 'employee_commuting') {
+            // --- SPRINT 20: Lógica Visual para Transporte de Funcionários ---
+            const consumoFields = ['tipo_combustivel', 'consumo', 'unidade_consumo'];
+            const distanciaFields = ['distancia_km'];
+            const enderecoFields = ['endereco_funcionario', 'endereco_trabalho'];
+
+            if (sanitizedData.tipo_reporte === 'Consumo') {
+                setFieldsState(rowElement, consumoFields, false, false);
+                setFieldsState(rowElement, distanciaFields, true, true);
+                setFieldsState(rowElement, enderecoFields, true, true);
+            } else if (sanitizedData.tipo_reporte === 'Distância') {
+                setFieldsState(rowElement, consumoFields, true, true);
+                setFieldsState(rowElement, distanciaFields, false, false);
+                setFieldsState(rowElement, enderecoFields, true, true);
+            } else if (sanitizedData.tipo_reporte === 'Endereço') {
+                setFieldsState(rowElement, consumoFields, true, true);
+                setFieldsState(rowElement, distanciaFields, true, true);
+                setFieldsState(rowElement, enderecoFields, false, false);
+            } else {
+                // Se nada selecionado, bloqueia tudo exceto os comuns
+                setFieldsState(rowElement, consumoFields, true, false);
+                setFieldsState(rowElement, distanciaFields, true, false);
+                setFieldsState(rowElement, enderecoFields, true, false);
+            }
         }
     }
 
@@ -490,11 +600,16 @@ document.addEventListener('DOMContentLoaded', () => {
             if (cell) {
                 const input = cell.querySelector('select, input');
                 if (disable) {
-                    if (clear && input) {
-                        if (input.id && maskInstances[input.id]) {
-                            maskInstances[input.id].unmaskedValue = '';
+                    if (clear) {
+                        if (input) {
+                            if (input.id && maskInstances[input.id]) {
+                                maskInstances[input.id].unmaskedValue = '';
+                            } else {
+                                input.value = '';
+                            }
                         } else {
-                            input.value = '';
+                            // Limpa texto puro se não houver input (ex: unidades auto-preenchidas)
+                            cell.textContent = '';
                         }
                     }
                     cell.style.backgroundColor = '#e9ecef';

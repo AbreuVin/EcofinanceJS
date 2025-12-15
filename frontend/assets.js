@@ -26,6 +26,121 @@ document.addEventListener('DOMContentLoaded', () => {
                 responsible_contact_id: { label: "Responsável pela Informação", type: "select", isContact: true }
             }
         },
+        purchased_goods_services: {
+            displayName: "Bens e Serviços Comprados",
+            fields: {
+                tipo_item: { label: "Tipo (Produto ou Serviço) Padrão", type: "select" },
+                unidade: { label: "Unidade de Medida Padrão", type: "select", showIf: { field: "tipo_item", value: "Produto" } },
+                bens_terceiros: { label: "Bens comprados por terceiros? (Padrão)", type: "select" },
+                responsible_contact_id: { label: "Responsável pela Informação", type: "select", isContact: true }
+            }
+        },
+        capital_goods: {
+            displayName: "Bens de Capital",
+            fields: {
+                responsible_contact_id: { label: "Responsável pela Informação", type: "select", isContact: true }
+            }
+        },
+        upstream_transport: {
+            displayName: "Logística de Insumo",
+            fields: {
+                modal_transporte: { label: "Modal de Transporte Padrão", type: "select" },
+                tipo_reporte: { label: "Forma de Reporte Padrão", type: "select" },
+                responsible_contact_id: { label: "Responsável pela Informação", type: "select", isContact: true }
+            }
+        },
+        downstream_transport: {
+            displayName: "Logística de Produto Final",
+            fields: {
+                insumo_transportado: { label: "Produto Transportado (Descrição)", type: "text" },
+                modal_transporte: { label: "Modal de Transporte Padrão", type: "select" },
+                tipo_reporte: { label: "Forma de Reporte Padrão", type: "select" },
+                
+                // Consumo
+                combustivel: { label: "Combustível Padrão", type: "select", showIf: { field: "tipo_reporte", value: "Consumo" } },
+                unidade_consumo: { label: "Unidade (Preenchimento Automático)", type: "text", showIf: { field: "tipo_reporte", value: "Consumo" }, disabled: true },
+                
+                // Distância
+                classificacao_veiculo: { label: "Classificação do Veículo Padrão", type: "select", showIf: { field: "tipo_reporte", value: "Distância" } },
+                unidade_distancia: { label: "Unidade de Distância Padrão", type: "select", showIf: { field: "tipo_reporte", value: "Distância" } },
+
+                responsible_contact_id: { label: "Responsável pela Informação", type: "select", isContact: true }
+            }
+        },
+        waste_transport: {
+            displayName: "Logística de Resíduos",
+            fields: {
+                insumo_transportado: { label: "Resíduo Transportado (Descrição)", type: "text" },
+                tipo_reporte: { label: "Forma de Reporte Padrão", type: "select" },
+                
+                // Consumo
+                combustivel: { label: "Combustível Padrão", type: "select", showIf: { field: "tipo_reporte", value: "Consumo" } },
+                unidade_consumo: { label: "Unidade (Preenchimento Automático)", type: "text", showIf: { field: "tipo_reporte", value: "Consumo" }, disabled: true },
+                
+                // Distância
+                classificacao_veiculo: { label: "Classificação do Veículo Padrão", type: "select", showIf: { field: "tipo_reporte", value: "Distância" } },
+                unidade_distancia: { label: "Unidade de Distância Padrão", type: "select", showIf: { field: "tipo_reporte", value: "Distância" } },
+
+                responsible_contact_id: { label: "Responsável pela Informação", type: "select", isContact: true }
+            }
+        },
+        home_office: {
+            displayName: "Home Office",
+            fields: {
+                regime_trabalho: { 
+                    label: "Dias da semana em Home Office (Regime)", 
+                    type: "checkbox-group", 
+                    options: ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"]
+                },
+                responsible_contact_id: { label: "Responsável pela Informação", type: "select", isContact: true }
+            }
+        },
+        air_travel: {
+            displayName: "Viagens Aéreas",
+            fields: {
+                descricao_viagem: { label: "Descrição da Viagem (Grupo/Categoria)", type: "text", placeholder: "Ex: Viagens Comerciais, Diretoria..." },
+                responsible_contact_id: { label: "Responsável pela Informação", type: "select", isContact: true }
+            }
+        },
+        employee_commuting: {
+            displayName: "Transporte de Funcionários",
+            fields: {
+                meio_utilizado: { label: "Meio Utilizado (Descrição)", type: "select" },
+                tipo_reporte: { label: "Forma de Reporte Padrão", type: "select" },
+                
+                // Consumo
+                tipo_combustivel: { label: "Combustível Padrão", type: "select", showIf: { field: "tipo_reporte", value: "Consumo" } },
+                unidade_consumo: { label: "Unidade (Preenchimento Automático)", type: "text", showIf: { field: "tipo_reporte", value: "Consumo" }, disabled: true },
+
+                responsible_contact_id: { label: "Responsável pela Informação", type: "select", isContact: true }
+            }
+        },
+        // --- SPRINT 18: Geração de Energia (Descrição via Dropdown) ---
+        energy_generation: {
+            displayName: "Geração de Energia",
+            fields: {
+                // O primeiro campo será usado como a Descrição da Fonte
+                fonte_geracao: { label: "Tipo de Fonte Padrão", type: "select" },
+                unidade_medida: { label: "Unidade de Medida Padrão", type: "select" },
+                responsible_contact_id: { label: "Responsável pela Informação", type: "select", isContact: true }
+            }
+        },
+        business_travel_land: {
+            displayName: "Viagens a Negócios Terrestres",
+            fields: {
+                tipo_reporte: { label: "Forma de Reporte Padrão", type: "select" },
+                
+                // Campos GLOBAIS
+                modal_viagem: { label: "Modal de Viagem Padrão", type: "select" },
+                km_reembolsado: { label: "Reembolso de Km (Padrão)?", type: "select" },
+                
+                // Campos Específicos para Consumo
+                combustivel: { label: "Combustível Padrão", type: "select", showIf: { field: "tipo_reporte", value: "Consumo" } }, 
+                unidade_consumo: { label: "Unidade (Preenchimento Automático)", type: "text", showIf: { field: "tipo_reporte", value: "Consumo" }, disabled: true }, 
+
+                responsible_contact_id: { label: "Responsável pela Informação", type: "select", isContact: true }
+            }
+        },
         combustao_estacionaria: { 
             displayName: "Combustão Estacionária", 
             fields: { 
@@ -169,7 +284,8 @@ document.addEventListener('DOMContentLoaded', () => {
         assetsThead.innerHTML = ''; 
         const headerRow = document.createElement('tr'); 
         
-        const usesCustomDescription = ['solid_waste', 'electricity_purchase'].includes(currentSourceType);
+        // --- SPRINT 18: Atualizado para incluir 'energy_generation' ---
+        const usesCustomDescription = ['solid_waste', 'electricity_purchase', 'downstream_transport', 'waste_transport', 'home_office', 'air_travel', 'employee_commuting', 'energy_generation'].includes(currentSourceType);
         const mainDescriptionKey = usesCustomDescription ? Object.keys(schema.fields)[0] : 'description';
         const mainDescriptionLabel = usesCustomDescription ? schema.fields[mainDescriptionKey].label : 'Descrição';
 
@@ -193,25 +309,54 @@ document.addEventListener('DOMContentLoaded', () => {
             typologies.forEach(typo => { 
                 const tr = document.createElement('tr'); 
                 
-                const usesCustomDescription = ['solid_waste', 'electricity_purchase'].includes(currentSourceType);
+                // --- SPRINT 18: Atualizado para incluir 'energy_generation' ---
+                const usesCustomDescription = ['solid_waste', 'electricity_purchase', 'downstream_transport', 'waste_transport', 'home_office', 'air_travel', 'employee_commuting', 'energy_generation'].includes(currentSourceType);
                 const mainDescriptionKey = usesCustomDescription ? Object.keys(assetSchemas[currentSourceType].fields)[0] : 'description';
 
                 const mainDescription = usesCustomDescription 
                     ? (typo.asset_fields[mainDescriptionKey] || typo.description) 
                     : typo.description;
                 
-                // --- ATENÇÃO: Lógica de limpeza de dados para exibição ---
+                // Lógica de limpeza de dados para exibição
                 const displayFields = { ...typo.asset_fields };
                 if (currentSourceType === 'combustao_movel') {
                     const tipoEntrada = displayFields.tipo_entrada;
                     if (tipoEntrada === 'consumo') {
-                        displayFields.tipo_veiculo = ''; // Limpa o campo de veículo
+                        displayFields.tipo_veiculo = ''; 
                     } else if (tipoEntrada === 'distancia') {
-                        displayFields.combustivel = ''; // Limpa os campos de consumo
+                        displayFields.combustivel = ''; 
                         displayFields.unidade_consumo = '';
                     }
+                } else if (currentSourceType === 'business_travel_land') {
+                     const tipoReporte = displayFields.tipo_reporte;
+                     if (tipoReporte === 'Consumo') {
+                         // modal e reembolso são globais
+                     } else if (tipoReporte === 'Distância') {
+                         displayFields.combustivel = '';
+                         displayFields.unidade_consumo = '';
+                     }
+                } else if (currentSourceType === 'downstream_transport' || currentSourceType === 'waste_transport') {
+                     const tipoReporte = displayFields.tipo_reporte;
+                     if (tipoReporte === 'Consumo') {
+                         displayFields.classificacao_veiculo = '';
+                         displayFields.unidade_distancia = '';
+                     } else if (tipoReporte === 'Distância') {
+                         displayFields.combustivel = '';
+                         displayFields.unidade_consumo = '';
+                     }
+                } else if (currentSourceType === 'employee_commuting') {
+                     // --- SPRINT 20: Lógica Visual para Transporte de Funcionários ---
+                     const tipoReporte = displayFields.tipo_reporte;
+                     if (tipoReporte === 'Consumo') {
+                         // Mantém combustível
+                     } else if (tipoReporte === 'Distância') {
+                         displayFields.tipo_combustivel = '';
+                         displayFields.unidade_consumo = '';
+                     } else if (tipoReporte === 'Endereço') {
+                         displayFields.tipo_combustivel = '';
+                         displayFields.unidade_consumo = '';
+                     }
                 }
-                // --- FIM DA LÓGICA DE LIMPEZA ---
                 
                 const frequencyText = typo.reporting_frequency === 'mensal' ? 'Mensal' : 'Anual';
                 let rowHtml = `<td>${mainDescription}</td><td>${typo.unit_name}</td><td>${frequencyText}</td>`; 
@@ -222,7 +367,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (key === 'responsible_contact_id') {
                         rowHtml += `<td>${typo.responsible_contact_name || ''}</td>`;
                     } else {
-                        // Usa os dados limpos para a exibição
                         rowHtml += `<td>${displayFields[key] || ''}</td>`; 
                     }
                 } 
@@ -255,7 +399,8 @@ document.addEventListener('DOMContentLoaded', () => {
              }
         });
 
-        const usesCustomDescription = ['solid_waste', 'electricity_purchase'].includes(currentSourceType);
+        // --- SPRINT 18: Atualizado para incluir 'energy_generation' ---
+        const usesCustomDescription = ['solid_waste', 'electricity_purchase', 'downstream_transport', 'waste_transport', 'home_office', 'air_travel', 'employee_commuting', 'energy_generation'].includes(currentSourceType);
         const mainDescriptionKey = usesCustomDescription ? Object.keys(assetSchemas[currentSourceType].fields)[0] : null;
 
         const descriptionValue = usesCustomDescription
@@ -307,7 +452,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (typoToEdit) {
                 assetIdInput.value = typoToEdit.id;
                 
-                const usesCustomDescription = ['solid_waste', 'electricity_purchase'].includes(currentSourceType);
+                // --- SPRINT 18: Atualizado para incluir 'energy_generation' ---
+                const usesCustomDescription = ['solid_waste', 'electricity_purchase', 'downstream_transport', 'waste_transport', 'home_office', 'air_travel', 'employee_commuting', 'energy_generation'].includes(currentSourceType);
                 if (!usesCustomDescription) {
                     document.getElementById('asset-description').value = typoToEdit.description;
                 }
@@ -324,9 +470,18 @@ document.addEventListener('DOMContentLoaded', () => {
                         input.value = typoToEdit.responsible_contact_id || '';
                     } else if (typoToEdit.asset_fields[key] !== undefined) {
                         input.value = typoToEdit.asset_fields[key];
+                        
+                        // Lógica especial para checkbox-group
+                        if (assetSchemas[currentSourceType].fields[key].type === 'checkbox-group') {
+                            const selectedValues = (typoToEdit.asset_fields[key] || '').split(', ');
+                            const container = input.closest('.form-group');
+                            container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                                cb.checked = selectedValues.includes(cb.value);
+                            });
+                        }
                     }
                         
-                    const conditionalTriggers = ['tipo_entrada', 'tratamento_ou_destino', 'uso_solo_anterior', 'destinacao_final', 'fonte_energia'];
+                    const conditionalTriggers = ['tipo_entrada', 'tratamento_ou_destino', 'uso_solo_anterior', 'destinacao_final', 'fonte_energia', 'tipo_item', 'tipo_reporte', 'combustivel', 'tipo_combustivel'];
                     if (conditionalTriggers.includes(key)) {
                         input.dispatchEvent(new Event('change', { bubbles: true }));
                     }
@@ -358,7 +513,8 @@ document.addEventListener('DOMContentLoaded', () => {
         cancelBtn.style.display = 'none';
 
         const descriptionGroup = document.getElementById('asset-description').parentElement;
-        const usesCustomDescription = ['solid_waste', 'electricity_purchase'].includes(currentSourceType);
+        // --- SPRINT 18: Atualizado para incluir 'energy_generation' ---
+        const usesCustomDescription = ['solid_waste', 'electricity_purchase', 'downstream_transport', 'waste_transport', 'home_office', 'air_travel', 'employee_commuting', 'energy_generation'].includes(currentSourceType);
 
         if (usesCustomDescription) {
             descriptionGroup.style.display = 'none';
@@ -368,11 +524,14 @@ document.addEventListener('DOMContentLoaded', () => {
             descriptionGroup.querySelector('input').required = true;
         }
 
-        const triggerFields = ['field-tipo_entrada', 'field-tratamento_ou_destino', 'uso_solo_anterior', 'field-combustivel', 'field-combustivel_estacionario', 'field-destinacao_final', 'field-fonte_energia'];
+        const triggerFields = ['field-tipo_entrada', 'field-tratamento_ou_destino', 'uso_solo_anterior', 'field-combustivel', 'field-combustivel_estacionario', 'field-destinacao_final', 'field-fonte_energia', 'field-tipo_item', 'field-tipo_reporte', 'field-tipo_combustivel'];
         triggerFields.forEach(id => {
             const trigger = document.getElementById(id);
             if (trigger) trigger.dispatchEvent(new Event('change'));
         });
+        
+        // Resetar checkboxes
+        form.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
     }
 
     async function buildDynamicForm(schema) { 
@@ -382,7 +541,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const fieldElements = {};
         const triggerFields = new Set();
         const autoFillTriggers = new Set();
-        const usesCustomDescription = ['solid_waste', 'electricity_purchase'].includes(currentSourceType);
+        // --- SPRINT 18: Atualizado para incluir 'energy_generation' ---
+        const usesCustomDescription = ['solid_waste', 'electricity_purchase', 'downstream_transport', 'waste_transport', 'home_office', 'air_travel', 'employee_commuting', 'energy_generation'].includes(currentSourceType);
         
         const firstRowContainer = document.querySelector('#asset-form .form-row');
         const descriptionFieldGroup = document.getElementById('asset-description').parentElement;
@@ -421,10 +581,53 @@ document.addEventListener('DOMContentLoaded', () => {
             const label = document.createElement('label'); 
             label.setAttribute('for', `field-${key}`); 
             label.textContent = field.label; 
+            
             let input; 
             
             if (field.type === 'select') {
                 input = document.createElement('select');
+            } else if (field.type === 'checkbox-group') {
+                // --- NOVO: Lógica para Checkbox Group ---
+                input = document.createElement('input');
+                input.type = 'hidden'; // O input principal fica oculto e guarda a string
+                
+                const checkboxContainer = document.createElement('div');
+                checkboxContainer.style.display = 'flex';
+                checkboxContainer.style.flexWrap = 'wrap';
+                checkboxContainer.style.gap = '10px';
+                checkboxContainer.style.marginTop = '5px';
+
+                field.options.forEach(opt => {
+                    const cbWrapper = document.createElement('div');
+                    cbWrapper.style.display = 'flex';
+                    cbWrapper.style.alignItems = 'center';
+                    
+                    const cb = document.createElement('input');
+                    cb.type = 'checkbox';
+                    cb.value = opt;
+                    cb.id = `cb-${key}-${opt}`;
+                    cb.style.marginRight = '5px';
+                    
+                    const cbLabel = document.createElement('label');
+                    cbLabel.htmlFor = `cb-${key}-${opt}`;
+                    cbLabel.textContent = opt;
+                    cbLabel.style.fontWeight = 'normal';
+                    cbLabel.style.marginBottom = '0';
+
+                    cb.addEventListener('change', () => {
+                        const checkedOptions = Array.from(checkboxContainer.querySelectorAll('input[type="checkbox"]:checked'))
+                                                    .map(c => c.value);
+                        input.value = checkedOptions.join(', ');
+                    });
+
+                    cbWrapper.appendChild(cb);
+                    cbWrapper.appendChild(cbLabel);
+                    checkboxContainer.appendChild(cbWrapper);
+                });
+                
+                // Adiciona o container de checkboxes ao wrapper, mas o input hidden será adicionado abaixo
+                wrapper.appendChild(label);
+                wrapper.appendChild(checkboxContainer);
             } else { 
                 input = document.createElement('input'); 
                 input.type = field.type || 'text';
@@ -433,7 +636,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             input.id = `field-${key}`; 
             input.dataset.key = key; 
-            input.required = !field.showIf;
+            input.required = !field.showIf && field.type !== 'checkbox-group'; // Checkbox group validação manual se necessário
             if (field.disabled) input.disabled = true;
 
             if (field.type === 'select') {
@@ -461,8 +664,12 @@ document.addEventListener('DOMContentLoaded', () => {
             
             fieldElements[key] = { row: wrapper, input: input, config: field };
 
-            wrapper.appendChild(label); 
-            wrapper.appendChild(input); 
+            if (field.type !== 'checkbox-group') {
+                wrapper.appendChild(label); 
+                wrapper.appendChild(input); 
+            } else {
+                wrapper.appendChild(input); // Adiciona o input hidden
+            }
 
             const mainDescriptionKey = usesCustomDescription ? Object.keys(schema.fields)[0] : null;
 
@@ -492,8 +699,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             const conditionValues = Array.isArray(showIfConfig.value) ? showIfConfig.value : [showIfConfig.value];
                             const isVisible = conditionValues.includes(selectedValue);
                             
-                            const parentWrapper = element.row.closest('.form-row.dynamic-field') || element.row;
-                            parentWrapper.style.display = isVisible ? '' : 'none';
+                            element.row.style.display = isVisible ? '' : 'none';
                             element.input.required = isVisible;
                         }
                     }

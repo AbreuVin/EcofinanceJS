@@ -123,9 +123,225 @@ const db = new sqlite3.Database(dbPath, (err) => {
             )
         `, (err) => { if (err) console.error('Erro tabela electricity_purchase_data:', err); else console.log('Tabela "electricity_purchase_data" pronta.'); });
 
+        db.run(`
+            CREATE TABLE IF NOT EXISTS purchased_goods_services_data (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                ano INTEGER,
+                periodo TEXT,
+                unidade_empresarial TEXT,
+                descricao_item TEXT,
+                tipo_item TEXT,
+                quantidade REAL,
+                unidade TEXT,
+                valor_aquisicao REAL,
+                bens_terceiros TEXT,
+                responsavel TEXT,
+                area_responsavel TEXT,
+                email TEXT,
+                telefone TEXT,
+                comentarios TEXT
+            )
+        `, (err) => { if (err) console.error('Erro tabela purchased_goods_services_data:', err); else console.log('Tabela "purchased_goods_services_data" pronta.'); });
+
+        db.run(`
+            CREATE TABLE IF NOT EXISTS capital_goods_data (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                ano INTEGER,
+                periodo TEXT,
+                unidade_empresarial TEXT,
+                bem_capital TEXT,
+                quantidade INTEGER,
+                unidade TEXT,
+                valor_aquisicao REAL,
+                responsavel TEXT,
+                area_responsavel TEXT,
+                email TEXT,
+                telefone TEXT,
+                comentarios TEXT
+            )
+        `, (err) => { if (err) console.error('Erro tabela capital_goods_data:', err); else console.log('Tabela "capital_goods_data" pronta.'); });
+
+        db.run(`
+            CREATE TABLE IF NOT EXISTS upstream_transport_data (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                ano INTEGER,
+                periodo TEXT,
+                unidade_empresarial TEXT,
+                insumo_transportado TEXT,
+                modal_transporte TEXT,
+                tipo_reporte TEXT,
+                combustivel TEXT,
+                consumo REAL,
+                unidade_consumo TEXT,
+                classificacao_veiculo TEXT,
+                distancia_trecho REAL,
+                unidade_distancia TEXT,
+                carga_transportada REAL,
+                numero_viagens INTEGER,
+                local_embarque TEXT,
+                local_destino TEXT,
+                responsavel TEXT,
+                area_responsavel TEXT,
+                email TEXT,
+                telefone TEXT,
+                comentarios TEXT
+            )
+        `, (err) => { if (err) console.error('Erro tabela upstream_transport_data:', err); else console.log('Tabela "upstream_transport_data" pronta.'); });
+
+        db.run(`
+            CREATE TABLE IF NOT EXISTS business_travel_land_data (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                ano INTEGER,
+                periodo TEXT,
+                unidade_empresarial TEXT,
+                descricao_viagem TEXT,
+                modal_viagem TEXT,
+                tipo_reporte TEXT,
+                combustivel TEXT,
+                consumo REAL,
+                unidade_consumo TEXT,
+                distancia_percorrida REAL,
+                unidade_distancia TEXT,
+                km_reembolsado TEXT,
+                responsavel TEXT,
+                area_responsavel TEXT,
+                email TEXT,
+                telefone TEXT,
+                comentarios TEXT
+            )
+        `, (err) => { if (err) console.error('Erro tabela business_travel_land_data:', err); else console.log('Tabela "business_travel_land_data" pronta.'); });
+
+        db.run(`
+            CREATE TABLE IF NOT EXISTS downstream_transport_data (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                ano INTEGER,
+                periodo TEXT,
+                unidade_empresarial TEXT,
+                insumo_transportado TEXT,
+                modal_transporte TEXT,
+                tipo_reporte TEXT,
+                combustivel TEXT,
+                consumo REAL,
+                unidade_consumo TEXT,
+                classificacao_veiculo TEXT,
+                distancia_trecho REAL,
+                unidade_distancia TEXT,
+                carga_transportada REAL,
+                numero_viagens INTEGER,
+                local_embarque TEXT,
+                local_destino TEXT,
+                responsavel TEXT,
+                area_responsavel TEXT,
+                email TEXT,
+                telefone TEXT,
+                comentarios TEXT
+            )
+        `, (err) => { if (err) console.error('Erro tabela downstream_transport_data:', err); else console.log('Tabela "downstream_transport_data" pronta.'); });
+
+        db.run(`
+            CREATE TABLE IF NOT EXISTS waste_transport_data (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                ano INTEGER,
+                periodo TEXT,
+                unidade_empresarial TEXT,
+                insumo_transportado TEXT,
+                tipo_reporte TEXT,
+                combustivel TEXT,
+                consumo REAL,
+                unidade_consumo TEXT,
+                classificacao_veiculo TEXT,
+                distancia_trecho REAL,
+                unidade_distancia TEXT,
+                carga_transportada REAL,
+                numero_viagens INTEGER,
+                responsavel TEXT,
+                area_responsavel TEXT,
+                email TEXT,
+                telefone TEXT,
+                comentarios TEXT
+            )
+        `, (err) => { if (err) console.error('Erro tabela waste_transport_data:', err); else console.log('Tabela "waste_transport_data" pronta.'); });
+
+        db.run(`
+            CREATE TABLE IF NOT EXISTS home_office_data (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                ano INTEGER,
+                periodo TEXT,
+                unidade_empresarial TEXT,
+                regime_trabalho TEXT,
+                num_funcionarios INTEGER,
+                responsavel TEXT,
+                area_responsavel TEXT,
+                email TEXT,
+                telefone TEXT,
+                comentarios TEXT
+            )
+        `, (err) => { if (err) console.error('Erro tabela home_office_data:', err); else console.log('Tabela "home_office_data" pronta.'); });
+
+        db.run(`
+            CREATE TABLE IF NOT EXISTS air_travel_data (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                ano INTEGER,
+                periodo TEXT,
+                unidade_empresarial TEXT,
+                descricao_viagem TEXT,
+                codigo_aeroporto_partida TEXT,
+                codigo_aeroporto_chegada TEXT,
+                numero_viagens INTEGER,
+                responsavel TEXT,
+                area_responsavel TEXT,
+                email TEXT,
+                telefone TEXT,
+                comentarios TEXT
+            )
+        `, (err) => { if (err) console.error('Erro tabela air_travel_data:', err); else console.log('Tabela "air_travel_data" pronta.'); });
+
+        db.run(`
+            CREATE TABLE IF NOT EXISTS employee_commuting_data (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                ano INTEGER,
+                periodo TEXT,
+                unidade_empresarial TEXT,
+                descricao_identificadora TEXT,
+                meio_utilizado TEXT,
+                tipo_reporte TEXT,
+                tipo_combustivel TEXT,
+                consumo REAL,
+                unidade_consumo TEXT,
+                distancia_km REAL,
+                endereco_funcionario TEXT,
+                endereco_trabalho TEXT,
+                dias_deslocados INTEGER,
+                responsavel TEXT,
+                area_responsavel TEXT,
+                email TEXT,
+                telefone TEXT,
+                comentarios TEXT
+            )
+        `, (err) => { if (err) console.error('Erro tabela employee_commuting_data:', err); else console.log('Tabela "employee_commuting_data" pronta.'); });
+
+        // --- SPRINT 18: TABELA - Geração de Energia ---
+        db.run(`
+            CREATE TABLE IF NOT EXISTS energy_generation_data (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                ano INTEGER,
+                periodo TEXT,
+                unidade_empresarial TEXT,
+                descricao_fonte TEXT,
+                fonte_geracao TEXT,
+                total_geracao REAL,
+                unidade_medida TEXT,
+                responsavel TEXT,
+                area_responsavel TEXT,
+                email TEXT,
+                telefone TEXT,
+                comentarios TEXT
+            )
+        `, (err) => { if (err) console.error('Erro tabela energy_generation_data:', err); else console.log('Tabela "energy_generation_data" pronta.'); });
+
+
         db.run(`CREATE TABLE IF NOT EXISTS asset_typologies (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, unit_id INTEGER NOT NULL, source_type TEXT NOT NULL, description TEXT NOT NULL, asset_fields TEXT, is_active BOOLEAN DEFAULT TRUE)`, (err) => { if (err) console.error('Erro tabela asset_typologies:', err); else console.log('Tabela "asset_typologies" pronta.'); });
         
-        // --- ATENÇÃO: LÓGICA DE MIGRAÇÃO DA ESTRUTURA ---
         db.all("PRAGMA table_info(asset_typologies)", (err, columns) => {
             if (err) {
                 console.error("Erro ao ler colunas de asset_typologies:", err);
@@ -149,7 +365,6 @@ const db = new sqlite3.Database(dbPath, (err) => {
             }
         });
 
-        // --- ATENÇÃO: REMOÇÃO DE TABELA OBSOLETA ---
         db.run(`DROP TABLE IF EXISTS source_configurations`, (err) => { 
             if (err) console.error('Erro ao remover tabela obsoleta source_configurations:', err); 
             else console.log('Tabela obsoleta "source_configurations" verificada/removida.'); 

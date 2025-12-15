@@ -223,7 +223,6 @@ export const validationSchemas = {
             return { isValid: Object.keys(errors).length === 0, errors: errors, sanitizedData: rowData };
         }
     },
-    // --- ATENÇÃO: SCHEMA DE COMBUSTÃO ESTACIONÁRIA ATUALIZADO ---
     combustao_estacionaria: {
         displayName: "Combustão Estacionária",
         hasUnits: true,
@@ -342,7 +341,7 @@ export const validationSchemas = {
         hasUnits: true,
         headerDisplayNames: { ano: "Ano", periodo: "Período", unidade_empresarial: "Unidade Empresarial", fonte_emissao: "Fonte de Emissão / Equipamento", tipo_gas: "Tipo de Gás", quantidade_reposta: "Quantidade Reposta", unidade: "Unidade", controlado_empresa: "Controlado pela Empresa?", comentarios: "Comentários" },
         
-        gasList: ["Dióxido de carbono (CO2)", "Metano (CH4)", "Óxido nitroso (N2O)", "HFC-23", "HFC-32", "HFC-41", "HFC-125", "HFC-134", "HFC-134a", "HFC-143", "HFC-143a", "HFC-152", "HFC-152a", "HFC-161", "HFC-227ea", "HFC-236cb", "HFC-236ea", "HFC-236fa", "HFC-245ca", "HFC-245fa", "HFC-365mfc", "HFC-43-10mee", "Hexafluoreto de enxofre (SF6)", "Trifluoreto de nitrogênio (NF3)", "PFC-14", "PFC-116", "PFC-218", "PFC-318", "PFC-3-1-10", "PFC-4-1-12", "PFC-5-1-14", "PFC-9-1-18", "Trifluorometil pentafluoreto de enxofre (SF5CF3)", "Perfluorociclopropano (c-C3F6)", "R-400", "R-401A", "R-401B", "R-401C", "R-402A", "R-402B", "R-403A", "R-403B", "R-404A", "R-405A", "R-406A", "R-407A", "R-407B", "R-407C", "R-407D", "R-407E", "R-407F", "R-407G", "R-407H", "R-407I", "R-408A", "R-409A", "R-409B", "R-410A", "R-410B", "R-411A", "R-411B", "R-412A", "R-413A", "R-414A", "R-414B", "R-415A", "R-415B", "R-416A", "R-417A", "R-417B", "R-417C", "R-418A", "R-419A", "R-419B", "R-420A", "R-421A", "R-421B", "R-422A", "R-422B", "R-422C", "R-422D", "R-422E", "R-423A", "R-424A", "R-425A", "R-426A", "R-427A", "R-428A", "R-429A", "R-430A", "R-431A", "R-432A", "R-433A", "R-433B", "R-433C", "R-434A", "R-435A", "R-436A", "R-436B", "R-436C", "R-437A", "R-438A", "R-439A", "R-440A", "R-441A", "R-442A", "R-443A", "R-444A", "R-444B", "R-445A", "R-446A", "R-447A", "R-447B", "R-448A", "R-449A", "R-449B", "R-449C", "R-450A", "R-451A", "R-451B", "R-452A", "R-452B", "R-452C", "R-453A", "R-454A", "R-454B", "R-454C", "R-455A", "R-456A", "R-457A", "R-458A", "R-459A", "R-459B", "R-460A", "R-460B", "R-460C", "R-461A", "R-462A", "R-463A", "R-464A", "R-465A", "R-500", "R-501", "R-502", "R-503", "R-504", "R-505", "R-506", "R-507 ou R-507A", "R-508A", "R-508B", "R-509 ou R-509A", "R-510A", "R-511A", "R-512A", "R-513A", "R-513B", "R-514A", "R-515A", "R-516A", "CFC-11", "CFC-12", "CFC-13", "CFC-113", "CFC-114", "CFC-115", "Halon-1301", "Halon-1211", "Halon-2402", "Tetracloreto de carbono (CCl4)", "Bromometano (CH3Br)", "Methyl chloroform (CH3CCl3)", "HCFC-21", "HCFC-22 (R22)", "HCFC-123", "HCFC-124", "HCFC-141b", "HCFC-142b", "HCFC-225ca", "HCFC-225cb"],
+        gasList: ["Dióxido de carbono (CO2)", "Metano (CH4)", "Óxido nitroso (N2O)", "HFC-23", "HFC-32", "HFC-41", "HFC-125", "HFC-134", "HFC-134a", "HFC-143", "HFC-143a", "HFC-152", "HFC-152a", "HFC-161", "HFC-227ea", "HFC-236cb", "HFC-236ea", "HFC-236fa", "HFC-245ca", "HFC-245fa", "HFC-365mfc", "HFC-43-10mee", "Hexafluoreto de enxofre (SF6)", "Trifluoreto de nitrogênio (NF3)", "PFC-14", "PFC-116", "PFC-218", "PFC-318", "PFC-3-1-10", "PFC-4-1-12", "PFC-5-1-14", "PFC-9-1-18", "Trifluorometil pentafluoreto de enxofre (SF5CF3)", "Perfluorociclopropano (c-C3F6)", "R-400", "R-401A", "R-401B", "R-401C", "R-402A", "R-402B", "R-403A", "R-403B", "R-404A", "R-405A", "R-406A", "R-407A", "R-407B", "R-407C", "R-407D", "R-407E", "R-407F", "R-407G", "R-407H", "R-407I", "R-408A", "R-409A", "R-409B", "R-410A", "R-410B", "R-411A", "R-411B", "R-412A", "R-413A", "R-414A", "R-414B", "R-415A", "R-415B", "R-416A", "R-417A", "R-417B", "R-417C", "R-418A", "R-419A", "R-419B", "R-420A", "R-421A", "R-421B", "R-422A", "R-422B", "R-422C", "R-422D", "R-422E", "R-423A", "R-424A", "R-425A", "R-426A", "R-427A", "R-428A", "R-429A", "R-430A", "R-431A", "R-432A", "R-433A", "R-433B", "R-433C", "R-434A", "R-435A", "R-436A", "R-436B", "R-436C", "R-437A", "R-438A", "R-439A", "R-440A", "R-441A", "R-442A", "R-443A", "R-444B", "R-445A", "R-446A", "R-447A", "R-447B", "R-448A", "R-449A", "R-449B", "R-449C", "R-450A", "R-451A", "R-451B", "R-452A", "R-452B", "R-452C", "R-453A", "R-454A", "R-454B", "R-454C", "R-455A", "R-456A", "R-457A", "R-458A", "R-459A", "R-459B", "R-460A", "R-460B", "R-460C", "R-461A", "R-462A", "R-463A", "R-464A", "R-465A", "R-500", "R-501", "R-502", "R-503", "R-504", "R-505", "R-506", "R-507 ou R-507A", "R-508A", "R-508B", "R-509 ou R-509A", "R-510A", "R-511A", "R-512A", "R-513A", "R-513B", "R-514A", "R-515A", "R-516A", "CFC-11", "CFC-12", "CFC-13", "CFC-113", "CFC-114", "CFC-115", "Halon-1301", "Halon-1211", "Halon-2402", "Tetracloreto de carbono (CCl4)", "Bromometano (CH3Br)", "Methyl chloroform (CH3CCl3)", "HCFC-21", "HCFC-22 (R22)", "HCFC-123", "HCFC-124", "HCFC-141b", "HCFC-142b", "HCFC-225ca", "HCFC-225cb"],
         
         get validOptions() { return { periodo: ["Anual", "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"], tipo_gas: this.gasList, unidade: ["kg"], controlado_empresa: ["Sim", "Não"] }; },
         autoFillMap: {},
@@ -499,6 +498,776 @@ export const validationSchemas = {
                 if (isFilled(rowData.fitofisionomia)) { errors.fitofisionomia = "Deve estar vazio se o uso do solo não for 'Vegetação natural'."; }
                 if (isFilled(rowData.tipo_area)) { errors.tipo_area = "Deve estar vazio se o uso do solo não for 'Vegetação natural'."; }
             }
+            return { isValid: Object.keys(errors).length === 0, errors: errors, sanitizedData: rowData };
+        }
+    },
+    purchased_goods_services: {
+        displayName: "Bens e Serviços Comprados",
+        hasUnits: true,
+        headerDisplayNames: {
+            ano: "Ano",
+            periodo: "Período",
+            unidade_empresarial: "Unidade Empresarial",
+            descricao_item: "Descrição do Item",
+            tipo_item: "Tipo de Item",
+            quantidade: "Quantidade Adquirida",
+            unidade: "Unidade de Medida",
+            valor_aquisicao: "Valor da Aquisição (R$)",
+            bens_terceiros: "Bens de Terceiros?",
+            comentarios: "Comentários"
+        },
+        validOptions: {
+            periodo: ["Anual", "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"],
+            tipo_item: ["Produto", "Serviço"],
+            unidade: ["Tonelada", "Quilo", "Unidade", "M³", "Litro"],
+            bens_terceiros: ["Sim", "Não"]
+        },
+        autoFillMap: {},
+        validateRow: function(rowData) {
+            const errors = {};
+            const isFilled = (value) => value !== null && value !== undefined && value !== '';
+
+            // Validações Básicas
+            if (!rowData.ano || isNaN(parseInt(rowData.ano)) || String(rowData.ano).length !== 4) errors.ano = "Deve ser um ano com 4 dígitos.";
+            if (!this.validOptions.periodo.includes(rowData.periodo)) errors.periodo = "Período inválido.";
+            if (!rowData.unidade_empresarial) errors.unidade_empresarial = "Obrigatório.";
+            if (!rowData.descricao_item) errors.descricao_item = "Obrigatório.";
+            
+            // Validação de Tipo
+            if (!this.validOptions.tipo_item.includes(rowData.tipo_item)) {
+                errors.tipo_item = "Selecione 'Produto' ou 'Serviço'.";
+            }
+
+            // Lógica Condicional: Produto vs Serviço
+            if (rowData.tipo_item === 'Produto') {
+                const qtdVal = rowData.quantidade;
+                if (!isFilled(qtdVal) || isNaN(parseFloat(qtdVal)) || parseFloat(qtdVal) <= 0) {
+                    errors.quantidade = "Quantidade obrigatória para Produtos (número positivo).";
+                }
+                if (!this.validOptions.unidade.includes(rowData.unidade)) {
+                    errors.unidade = "Selecione uma unidade válida para Produtos.";
+                }
+            } else if (rowData.tipo_item === 'Serviço') {
+                if (isFilled(rowData.quantidade)) {
+                    errors.quantidade = "Deve estar vazio para Serviços.";
+                }
+                if (isFilled(rowData.unidade)) {
+                    errors.unidade = "Deve estar vazio para Serviços.";
+                }
+            }
+
+            // Valor da Aquisição (Sempre Obrigatório)
+            const valorVal = rowData.valor_aquisicao;
+            if (!isFilled(valorVal) || isNaN(parseFloat(valorVal)) || parseFloat(valorVal) <= 0) {
+                errors.valor_aquisicao = "Valor obrigatório e positivo.";
+            }
+
+            // Bens de Terceiros
+            const normalizedTerceiros = normalizeString(rowData.bens_terceiros);
+            if (['sim', 's'].includes(normalizedTerceiros)) { rowData.bens_terceiros = 'Sim'; } 
+            else if (['nao', 'n'].includes(normalizedTerceiros)) { rowData.bens_terceiros = 'Não'; }
+            if (!this.validOptions.bens_terceiros.includes(rowData.bens_terceiros)) {
+                errors.bens_terceiros = "Deve ser 'Sim' ou 'Não'.";
+            }
+
+            return { isValid: Object.keys(errors).length === 0, errors: errors, sanitizedData: rowData };
+        }
+    },
+    capital_goods: {
+        displayName: "Bens de Capital",
+        hasUnits: true,
+        headerDisplayNames: {
+            ano: "Ano",
+            periodo: "Período",
+            unidade_empresarial: "Unidade Empresarial",
+            bem_capital: "Bem de Capital Adquirido",
+            quantidade: "Quantidade Adquirida",
+            unidade: "Unidade",
+            valor_aquisicao: "Valor da Aquisição (R$)",
+            comentarios: "Comentários"
+        },
+        validOptions: {
+            periodo: ["Anual", "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"]
+        },
+        autoFillMap: {},
+        validateRow: function(rowData) {
+            const errors = {};
+            const isFilled = (value) => value !== null && value !== undefined && value !== '';
+
+            if (!rowData.ano || isNaN(parseInt(rowData.ano)) || String(rowData.ano).length !== 4) errors.ano = "Deve ser um ano com 4 dígitos.";
+            if (!this.validOptions.periodo.includes(rowData.periodo)) errors.periodo = "Período inválido.";
+            if (!rowData.unidade_empresarial) errors.unidade_empresarial = "Obrigatório.";
+            if (!rowData.bem_capital) errors.bem_capital = "Obrigatório.";
+
+            // Inteiro e Positivo
+            const qtdVal = rowData.quantidade;
+            if (!isFilled(qtdVal) || isNaN(parseInt(qtdVal)) || parseInt(qtdVal) <= 0 || String(qtdVal).includes('.') || String(qtdVal).includes(',')) {
+                errors.quantidade = "Quantidade deve ser um número inteiro positivo.";
+            }
+
+            // Unidade Fixa
+            if (rowData.unidade !== 'Unidades') {
+                errors.unidade = "A unidade deve ser 'Unidades'.";
+            }
+
+            // Float Positivo
+            const valorVal = rowData.valor_aquisicao;
+            if (!isFilled(valorVal) || isNaN(parseFloat(valorVal)) || parseFloat(valorVal) <= 0) {
+                errors.valor_aquisicao = "Valor obrigatório e positivo.";
+            }
+
+            return { isValid: Object.keys(errors).length === 0, errors: errors, sanitizedData: rowData };
+        }
+    },
+    upstream_transport: {
+        displayName: "Logística de Insumo",
+        hasUnits: true,
+        headerDisplayNames: {
+            ano: "Ano",
+            periodo: "Período",
+            unidade_empresarial: "Unidade Empresarial",
+            insumo_transportado: "Insumo Transportado",
+            modal_transporte: "Modal de Transporte",
+            tipo_reporte: "Tipo de Reporte (Consumo ou Distância)",
+            combustivel: "Combustível",
+            consumo: "Consumo",
+            unidade_consumo: "Unidade (Combustível)",
+            classificacao_veiculo: "Classificação do Veículo",
+            distancia_trecho: "Distância do Trecho",
+            unidade_distancia: "Unidade (Distância)",
+            carga_transportada: "Carga Transportada (t)",
+            numero_viagens: "Número de Viagens",
+            local_embarque: "Local de Embarque",
+            local_destino: "Local de Destino",
+            comentarios: "Comentários"
+        },
+        validOptions: {
+            periodo: ["Anual", "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"],
+            modal_transporte: ["Transporte Marítimo", "Transporte Ferroviário", "Transporte Rodoviário"],
+            tipo_reporte: ["Consumo", "Distância"],
+            combustivel: [
+                "Gasolina Automotiva", "Óleo Diesel", "Gás Natural Veicular (GNV)", "Gás Natural Liquefeito (GNL)", 
+                "Gás Liquefeito de Petróleo (GLP)", "Querosene de Aviação", "Gasolina de Aviação", "Lubrificantes", 
+                "Metanol", "Óleo Combustível", "Etanol Hidratado", "Biodiesel (B100)", "Biometano", 
+                "Bioquerosene (SAF)", "HVO (diesel verde)", "Biometanol", "Etanol Anidro"
+            ],
+            classificacao_veiculo: [
+                "Caminhão - rígido (3,5 a 7,5 toneladas)", "Caminhão - rígido (7,5 a 17 toneladas)", 
+                "Caminhão - rígido (acima de 17 toneladas)", "Caminhão - rígido (média)", 
+                "Caminhão - articulado (3,5 a 33 toneladas)", "Caminhão - articulado (acima de 33 toneladas)", 
+                "Caminhão - articulado (média)", "Caminhão - caminhão (média)", 
+                "Caminhão refrigerado - rígido (3,5 a 7,5 toneladas)", "Caminhão refrigerado - rígido (7,5 a 17 toneladas)", 
+                "Caminhão refrigerado - rígido (acima de 17 toneladas)", "Caminhão refrigerado - rígido (média)", 
+                "Caminhão refrigerado - articulado (3,5 a 33 toneladas)", "Caminhão refrigerado - articulado (acima de 33 toneladas)", 
+                "Caminhão refrigerado - articulado (média)", "Caminhão refrigerado - caminhão (média)"
+            ],
+            unidade_distancia: ["km", "Milhas"]
+        },
+        autoFillMap: {
+            combustivel: {
+                targetColumn: "unidade_consumo",
+                map: {
+                    "Gasolina Automotiva": "Litros", "Óleo Diesel": "Litros", "Gás Natural Veicular (GNV)": "m³", 
+                    "Gás Natural Liquefeito (GNL)": "Litros", "Gás Liquefeito de Petróleo (GLP)": "kg", 
+                    "Querosene de Aviação": "Litros", "Gasolina de Aviação": "Litros", "Lubrificantes": "Litros", 
+                    "Metanol": "Litros", "Óleo Combustível": "Litros", "Etanol Hidratado": "Litros", 
+                    "Biodiesel (B100)": "Litros", "Biometano": "m³", "Bioquerosene (SAF)": "Litros", 
+                    "HVO (diesel verde)": "Litros", "Biometanol": "Litros", "Etanol Anidro": "Litros"
+                }
+            }
+        },
+        validateRow: function(rowData) {
+            const errors = {};
+            const isFilled = (value) => value !== null && value !== undefined && value !== '';
+
+            // Validações Básicas
+            if (!rowData.ano || isNaN(parseInt(rowData.ano)) || String(rowData.ano).length !== 4) errors.ano = "Deve ser um ano com 4 dígitos.";
+            if (!this.validOptions.periodo.includes(rowData.periodo)) errors.periodo = "Período inválido.";
+            if (!rowData.unidade_empresarial) errors.unidade_empresarial = "Obrigatório.";
+            if (!rowData.insumo_transportado) errors.insumo_transportado = "Obrigatório.";
+            
+            if (!this.validOptions.modal_transporte.includes(rowData.modal_transporte)) errors.modal_transporte = "Modal inválido.";
+            if (!this.validOptions.tipo_reporte.includes(rowData.tipo_reporte)) errors.tipo_reporte = "Selecione 'Consumo' ou 'Distância'.";
+
+            // Lógica Condicional
+            if (rowData.tipo_reporte === 'Consumo') {
+                // Campos de Consumo Obrigatórios
+                if (!this.validOptions.combustivel.includes(rowData.combustivel)) errors.combustivel = "Selecione um combustível válido.";
+                const consumoVal = rowData.consumo;
+                if (!isFilled(consumoVal) || isNaN(parseFloat(consumoVal)) || parseFloat(consumoVal) <= 0) errors.consumo = "Consumo obrigatório e positivo.";
+                
+                // Validação de Unidade Automática
+                const expectedUnit = this.autoFillMap.combustivel.map[rowData.combustivel];
+                if (rowData.combustivel && rowData.unidade_consumo !== expectedUnit) errors.unidade_consumo = `Unidade incorreta (deve ser ${expectedUnit}).`;
+
+                // Campos de Distância devem ser vazios
+                if (isFilled(rowData.classificacao_veiculo)) errors.classificacao_veiculo = "Deve ser vazio para reporte por Consumo.";
+                if (isFilled(rowData.distancia_trecho)) errors.distancia_trecho = "Deve ser vazio para reporte por Consumo.";
+                if (isFilled(rowData.unidade_distancia)) errors.unidade_distancia = "Deve ser vazio para reporte por Consumo.";
+                if (isFilled(rowData.carga_transportada)) errors.carga_transportada = "Deve ser vazio para reporte por Consumo.";
+                if (isFilled(rowData.numero_viagens)) errors.numero_viagens = "Deve ser vazio para reporte por Consumo.";
+            
+            } else if (rowData.tipo_reporte === 'Distância') {
+                // Campos de Distância Obrigatórios
+                if (!this.validOptions.classificacao_veiculo.includes(rowData.classificacao_veiculo)) errors.classificacao_veiculo = "Classificação de veículo inválida.";
+                
+                const distVal = rowData.distancia_trecho;
+                if (!isFilled(distVal) || isNaN(parseFloat(distVal)) || parseFloat(distVal) <= 0) errors.distancia_trecho = "Distância obrigatória e positiva.";
+                
+                if (!this.validOptions.unidade_distancia.includes(rowData.unidade_distancia)) errors.unidade_distancia = "Selecione 'km' ou 'Milhas'.";
+                
+                const cargaVal = rowData.carga_transportada;
+                if (!isFilled(cargaVal) || isNaN(parseFloat(cargaVal)) || parseFloat(cargaVal) <= 0) errors.carga_transportada = "Carga obrigatória e positiva (toneladas).";
+                
+                const viagensVal = rowData.numero_viagens;
+                if (!isFilled(viagensVal) || isNaN(parseInt(viagensVal)) || parseInt(viagensVal) <= 0) errors.numero_viagens = "Número de viagens obrigatório (inteiro).";
+
+                // Campos de Consumo devem ser vazios
+                if (isFilled(rowData.combustivel)) errors.combustivel = "Deve ser vazio para reporte por Distância.";
+                if (isFilled(rowData.consumo)) errors.consumo = "Deve ser vazio para reporte por Distância.";
+                if (isFilled(rowData.unidade_consumo)) errors.unidade_consumo = "Deve ser vazio para reporte por Distância.";
+            }
+
+            if (!rowData.local_embarque) errors.local_embarque = "Local de embarque obrigatório.";
+            if (!rowData.local_destino) errors.local_destino = "Local de destino obrigatório.";
+
+            return { isValid: Object.keys(errors).length === 0, errors: errors, sanitizedData: rowData };
+        }
+    },
+    business_travel_land: {
+        displayName: "Viagens a Negócios Terrestres",
+        hasUnits: true,
+        headerDisplayNames: {
+            ano: "Ano",
+            periodo: "Período",
+            unidade_empresarial: "Unidade Empresarial",
+            descricao_viagem: "Descrição da Viagem",
+            modal_viagem: "Modal de Viagem",
+            tipo_reporte: "Tipo de Reporte (Consumo ou Distância)",
+            combustivel: "Combustível",
+            consumo: "Consumo",
+            unidade_consumo: "Unidade (Combustível)",
+            distancia_percorrida: "Distância Percorrida",
+            unidade_distancia: "Unidade (Distância)",
+            km_reembolsado: "Km Reembolsado?",
+            comentarios: "Comentários"
+        },
+        validOptions: {
+            periodo: ["Anual", "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"],
+            tipo_reporte: ["Consumo", "Distância"],
+            modal_viagem: [
+                "Automóvel a gasolina", "Automóvel a etanol", "Automóvel flex a gasolina", "Automóvel flex a etanol", 
+                "Motocicleta a gasolina", "Motocicleta flex a gasolina", "Motocicleta flex a etanol", 
+                "Veículo comercial leve a gasolina", "Veículo comercial leve a etanol", "Veículo comercial leve flex a gasolina", 
+                "Veículo comercial leve flex a etanol", "Veículo comercial leve a diesel", 
+                "Micro-ônibus a diesel", "Ônibus rodoviário a diesel", "Ônibus urbano a diesel", "Trem", "Metrô"
+            ],
+            combustivel: [
+                "Gasolina Automotiva", "Óleo Diesel", "Gás Natural Veicular (GNV)", "Gás Natural Liquefeito (GNL)", 
+                "Gás Liquefeito de Petróleo (GLP)", "Querosene de Aviação", "Gasolina de Aviação", "Lubrificantes", 
+                "Metanol", "Óleo Combustível", "Etanol Hidratado", "Biodiesel (B100)", "Biometano", 
+                "Bioquerosene (SAF)", "HVO (diesel verde)", "Biometanol", "Etanol Anidro"
+            ],
+            unidade_distancia: ["Km", "Milha"],
+            km_reembolsado: ["Sim", "Não"]
+        },
+        autoFillMap: {
+            combustivel: {
+                targetColumn: "unidade_consumo",
+                map: {
+                    "Gasolina Automotiva": "Litros", "Óleo Diesel": "Litros", "Gás Natural Veicular (GNV)": "m³", 
+                    "Gás Natural Liquefeito (GNL)": "Litros", "Gás Liquefeito de Petróleo (GLP)": "kg", 
+                    "Querosene de Aviação": "Litros", "Gasolina de Aviação": "Litros", "Lubrificantes": "Litros", 
+                    "Metanol": "Litros", "Óleo Combustível": "Litros", "Etanol Hidratado": "Litros", 
+                    "Biodiesel (B100)": "Litros", "Biometano": "m³", "Bioquerosene (SAF)": "Litros", 
+                    "HVO (diesel verde)": "Litros", "Biometanol": "Litros", "Etanol Anidro": "Litros"
+                }
+            }
+        },
+        validateRow: function(rowData) {
+            const errors = {};
+            const isFilled = (value) => value !== null && value !== undefined && value !== '';
+
+            // Validações Básicas
+            if (!rowData.ano || isNaN(parseInt(rowData.ano)) || String(rowData.ano).length !== 4) errors.ano = "Deve ser um ano com 4 dígitos.";
+            if (!this.validOptions.periodo.includes(rowData.periodo)) errors.periodo = "Período inválido.";
+            if (!rowData.unidade_empresarial) errors.unidade_empresarial = "Obrigatório.";
+            if (!rowData.descricao_viagem) errors.descricao_viagem = "Obrigatório.";
+            
+            if (!this.validOptions.tipo_reporte.includes(rowData.tipo_reporte)) errors.tipo_reporte = "Selecione 'Consumo' ou 'Distância'.";
+
+            // CAMPOS GLOBAIS (Obrigatórios para AMBOS os tipos)
+            if (!this.validOptions.modal_viagem.includes(rowData.modal_viagem)) errors.modal_viagem = "Modal de viagem inválido.";
+            
+            const normalizedKm = normalizeString(rowData.km_reembolsado);
+            if (['sim', 's'].includes(normalizedKm)) { rowData.km_reembolsado = 'Sim'; } 
+            else if (['nao', 'n'].includes(normalizedKm)) { rowData.km_reembolsado = 'Não'; }
+            if (!this.validOptions.km_reembolsado.includes(rowData.km_reembolsado)) errors.km_reembolsado = "Deve ser 'Sim' ou 'Não'.";
+
+            // Lógica Condicional (Específica)
+            if (rowData.tipo_reporte === 'Consumo') {
+                // Consumo
+                if (!this.validOptions.combustivel.includes(rowData.combustivel)) errors.combustivel = "Selecione um combustível válido.";
+                const consumoVal = rowData.consumo;
+                if (!isFilled(consumoVal) || isNaN(parseFloat(consumoVal)) || parseFloat(consumoVal) <= 0) errors.consumo = "Consumo obrigatório e positivo.";
+                
+                const expectedUnit = this.autoFillMap.combustivel.map[rowData.combustivel];
+                if (rowData.combustivel && rowData.unidade_consumo !== expectedUnit) errors.unidade_consumo = `Unidade incorreta (deve ser ${expectedUnit}).`;
+
+                // Distância deve ser vazio
+                if (isFilled(rowData.distancia_percorrida)) errors.distancia_percorrida = "Deve ser vazio para reporte por Consumo.";
+                if (isFilled(rowData.unidade_distancia)) errors.unidade_distancia = "Deve ser vazio para reporte por Consumo.";
+            
+            } else if (rowData.tipo_reporte === 'Distância') {
+                // Distância
+                const distVal = rowData.distancia_percorrida;
+                if (!isFilled(distVal) || isNaN(parseFloat(distVal)) || parseFloat(distVal) <= 0) errors.distancia_percorrida = "Distância obrigatória e positiva.";
+                
+                if (!this.validOptions.unidade_distancia.includes(rowData.unidade_distancia)) errors.unidade_distancia = "Selecione 'Km' ou 'Milha'.";
+
+                // Consumo deve ser vazio
+                if (isFilled(rowData.combustivel)) errors.combustivel = "Deve ser vazio para reporte por Distância.";
+                if (isFilled(rowData.consumo)) errors.consumo = "Deve ser vazio para reporte por Distância.";
+                if (isFilled(rowData.unidade_consumo)) errors.unidade_consumo = "Deve ser vazio para reporte por Distância.";
+            }
+
+            return { isValid: Object.keys(errors).length === 0, errors: errors, sanitizedData: rowData };
+        }
+    },
+    downstream_transport: {
+        displayName: "Logística de Produto Final",
+        hasUnits: true,
+        headerDisplayNames: {
+            ano: "Ano",
+            periodo: "Período",
+            unidade_empresarial: "Unidade Empresarial",
+            insumo_transportado: "Insumo Transportado",
+            modal_transporte: "Modal de Transporte",
+            tipo_reporte: "Tipo de Reporte (Consumo ou Distância)",
+            combustivel: "Combustível",
+            consumo: "Consumo",
+            unidade_consumo: "Unidade (Combustível)",
+            classificacao_veiculo: "Classificação do Veículo",
+            distancia_trecho: "Distância do Trecho",
+            unidade_distancia: "Unidade (Distância)",
+            carga_transportada: "Carga Transportada (t)",
+            numero_viagens: "Número de Viagens",
+            local_embarque: "Local de Embarque",
+            local_destino: "Local de Destino",
+            comentarios: "Comentários"
+        },
+        validOptions: {
+            periodo: ["Anual", "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"],
+            modal_transporte: ["Transporte Marítimo", "Transporte Ferroviário", "Transporte Rodoviário"],
+            tipo_reporte: ["Consumo", "Distância"],
+            combustivel: [
+                "Óleo Diesel", "Gasolina", "Gás Natural Veicular", "Gás Liquefeito de Petróleo", 
+                "Querosene de Aviação", "Gasolina de Aviação", "Lubrificantes", 
+                "Óleo combustível residual", "Etanol", "Biodiesel"
+            ],
+            classificacao_veiculo: [
+                "Caminhão - rígido (3,5 a 7,5 toneladas)", "Caminhão - rígido (7,5 a 17 toneladas)", 
+                "Caminhão - rígido (acima de 17 toneladas)", "Caminhão - rígido (média)", 
+                "Caminhão - articulado (3,5 a 33 toneladas)", "Caminhão - articulado (acima de 33 toneladas)", 
+                "Caminhão - articulado (média)", "Caminhão - caminhão (média)", 
+                "Caminhão refrigerado - rígido (3,5 a 7,5 toneladas)", "Caminhão refrigerado - rígido (7,5 a 17 toneladas)", 
+                "Caminhão refrigerado - rígido (acima de 17 toneladas)", "Caminhão refrigerado - rígido (média)", 
+                "Caminhão refrigerado - articulado (3,5 a 33 toneladas)", "Caminhão refrigerado - articulado (acima de 33 toneladas)", 
+                "Caminhão refrigerado - articulado (média)", "Caminhão refrigerado - caminhão (média)"
+            ],
+            unidade_distancia: ["Km", "Milhas"]
+        },
+        autoFillMap: {
+            combustivel: {
+                targetColumn: "unidade_consumo",
+                map: {
+                    "Óleo Diesel": "Litros", "Gasolina": "Litros", "Gás Natural Veicular": "m³", 
+                    "Gás Liquefeito de Petróleo": "kg", "Querosene de Aviação": "Litros", 
+                    "Gasolina de Aviação": "Litros", "Lubrificantes": "Litros", 
+                    "Óleo combustível residual": "Litros", "Etanol": "Litros", "Biodiesel": "Litros"
+                }
+            }
+        },
+        validateRow: function(rowData) {
+            const errors = {};
+            const isFilled = (value) => value !== null && value !== undefined && value !== '';
+
+            if (!rowData.ano || isNaN(parseInt(rowData.ano)) || String(rowData.ano).length !== 4) errors.ano = "Deve ser um ano com 4 dígitos.";
+            if (!this.validOptions.periodo.includes(rowData.periodo)) errors.periodo = "Período inválido.";
+            if (!rowData.unidade_empresarial) errors.unidade_empresarial = "Obrigatório.";
+            if (!rowData.insumo_transportado) errors.insumo_transportado = "Obrigatório.";
+            
+            if (!this.validOptions.modal_transporte.includes(rowData.modal_transporte)) errors.modal_transporte = "Modal inválido.";
+            if (!this.validOptions.tipo_reporte.includes(rowData.tipo_reporte)) errors.tipo_reporte = "Selecione 'Consumo' ou 'Distância'.";
+
+            // Lógica Condicional
+            if (rowData.tipo_reporte === 'Consumo') {
+                // Campos de Consumo Obrigatórios
+                if (!this.validOptions.combustivel.includes(rowData.combustivel)) errors.combustivel = "Selecione um combustível válido.";
+                const consumoVal = rowData.consumo;
+                if (!isFilled(consumoVal) || isNaN(parseFloat(consumoVal)) || parseFloat(consumoVal) <= 0) errors.consumo = "Consumo obrigatório e positivo.";
+                
+                // Validação de Unidade Automática
+                const expectedUnit = this.autoFillMap.combustivel.map[rowData.combustivel];
+                if (rowData.combustivel && rowData.unidade_consumo !== expectedUnit) errors.unidade_consumo = `Unidade incorreta (deve ser ${expectedUnit}).`;
+
+                // Campos de Distância devem ser vazios
+                if (isFilled(rowData.classificacao_veiculo)) errors.classificacao_veiculo = "Deve ser vazio para reporte por Consumo.";
+                if (isFilled(rowData.distancia_trecho)) errors.distancia_trecho = "Deve ser vazio para reporte por Consumo.";
+                if (isFilled(rowData.unidade_distancia)) errors.unidade_distancia = "Deve ser vazio para reporte por Consumo.";
+                if (isFilled(rowData.carga_transportada)) errors.carga_transportada = "Deve ser vazio para reporte por Consumo.";
+                if (isFilled(rowData.numero_viagens)) errors.numero_viagens = "Deve ser vazio para reporte por Consumo.";
+            
+            } else if (rowData.tipo_reporte === 'Distância') {
+                // Campos de Distância Obrigatórios
+                if (!this.validOptions.classificacao_veiculo.includes(rowData.classificacao_veiculo)) errors.classificacao_veiculo = "Classificação de veículo inválida.";
+                
+                const distVal = rowData.distancia_trecho;
+                if (!isFilled(distVal) || isNaN(parseFloat(distVal)) || parseFloat(distVal) <= 0) errors.distancia_trecho = "Distância obrigatória e positiva.";
+                
+                if (!this.validOptions.unidade_distancia.includes(rowData.unidade_distancia)) errors.unidade_distancia = "Selecione 'Km' ou 'Milhas'.";
+                
+                const cargaVal = rowData.carga_transportada;
+                if (!isFilled(cargaVal) || isNaN(parseFloat(cargaVal)) || parseFloat(cargaVal) <= 0) errors.carga_transportada = "Carga obrigatória e positiva (toneladas).";
+                
+                const viagensVal = rowData.numero_viagens;
+                if (!isFilled(viagensVal) || isNaN(parseInt(viagensVal)) || parseInt(viagensVal) <= 0) errors.numero_viagens = "Número de viagens obrigatório (inteiro).";
+
+                // Campos de Consumo devem ser vazios
+                if (isFilled(rowData.combustivel)) errors.combustivel = "Deve ser vazio para reporte por Distância.";
+                if (isFilled(rowData.consumo)) errors.consumo = "Deve ser vazio para reporte por Distância.";
+                if (isFilled(rowData.unidade_consumo)) errors.unidade_consumo = "Deve ser vazio para reporte por Distância.";
+            }
+
+            if (!rowData.local_embarque) errors.local_embarque = "Local de embarque obrigatório.";
+            if (!rowData.local_destino) errors.local_destino = "Local de destino obrigatório.";
+
+            return { isValid: Object.keys(errors).length === 0, errors: errors, sanitizedData: rowData };
+        }
+    },
+    waste_transport: {
+        displayName: "Logística de Resíduos",
+        hasUnits: true,
+        headerDisplayNames: {
+            ano: "Ano",
+            periodo: "Período",
+            unidade_empresarial: "Unidade Empresarial",
+            insumo_transportado: "Resíduo Transportado",
+            tipo_reporte: "Tipo de Reporte",
+            combustivel: "Combustível",
+            consumo: "Consumo",
+            unidade_consumo: "Unidade (Combustível)",
+            classificacao_veiculo: "Classificação do Veículo",
+            distancia_trecho: "Distância do Trecho",
+            unidade_distancia: "Unidade (Distância)",
+            carga_transportada: "Carga Transportada (t)",
+            numero_viagens: "Número de Viagens",
+            comentarios: "Comentários"
+        },
+        validOptions: {
+            periodo: ["Anual", "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"],
+            tipo_reporte: ["Consumo", "Distância"],
+            combustivel: [
+                "Óleo Diesel", "Gasolina", "Gás Natural Veicular", "Gás Liquefeito de Petróleo", 
+                "Querosene de Aviação", "Gasolina de Aviação", "Lubrificantes", 
+                "Óleo combustível residual", "Etanol", "Biodiesel"
+            ],
+            classificacao_veiculo: [
+                "Caminhão - rígido (3,5 a 7,5 toneladas)", "Caminhão - rígido (7,5 a 17 toneladas)", 
+                "Caminhão - rígido (acima de 17 toneladas)", "Caminhão - rígido (média)", 
+                "Caminhão - articulado (3,5 a 33 toneladas)", "Caminhão - articulado (acima de 33 toneladas)", 
+                "Caminhão - articulado (média)", "Caminhão - caminhão (média)", 
+                "Caminhão refrigerado - rígido (3,5 a 7,5 toneladas)", "Caminhão refrigerado - rígido (7,5 a 17 toneladas)", 
+                "Caminhão refrigerado - rígido (acima de 17 toneladas)", "Caminhão refrigerado - rígido (média)", 
+                "Caminhão refrigerado - articulado (3,5 a 33 toneladas)", "Caminhão refrigerado - articulado (acima de 33 toneladas)", 
+                "Caminhão refrigerado - articulado (média)", "Caminhão refrigerado - caminhão (média)"
+            ],
+            unidade_distancia: ["Km", "Milhas"]
+        },
+        autoFillMap: {
+            combustivel: {
+                targetColumn: "unidade_consumo",
+                map: {
+                    "Óleo Diesel": "Litros", "Gasolina": "Litros", "Gás Natural Veicular": "m³", 
+                    "Gás Liquefeito de Petróleo": "kg", "Querosene de Aviação": "Litros", 
+                    "Gasolina de Aviação": "Litros", "Lubrificantes": "Litros", 
+                    "Óleo combustível residual": "Litros", "Etanol": "Litros", "Biodiesel": "Litros"
+                }
+            }
+        },
+        validateRow: function(rowData) {
+            const errors = {};
+            const isFilled = (value) => value !== null && value !== undefined && value !== '';
+
+            if (!rowData.ano || isNaN(parseInt(rowData.ano)) || String(rowData.ano).length !== 4) errors.ano = "Deve ser um ano com 4 dígitos.";
+            if (!this.validOptions.periodo.includes(rowData.periodo)) errors.periodo = "Período inválido.";
+            if (!rowData.unidade_empresarial) errors.unidade_empresarial = "Obrigatório.";
+            if (!rowData.insumo_transportado) errors.insumo_transportado = "Obrigatório.";
+            if (!this.validOptions.tipo_reporte.includes(rowData.tipo_reporte)) errors.tipo_reporte = "Selecione 'Consumo' ou 'Distância'.";
+
+            // Lógica Condicional
+            if (rowData.tipo_reporte === 'Consumo') {
+                if (!this.validOptions.combustivel.includes(rowData.combustivel)) errors.combustivel = "Selecione um combustível válido.";
+                const consumoVal = rowData.consumo;
+                if (!isFilled(consumoVal) || isNaN(parseFloat(consumoVal)) || parseFloat(consumoVal) <= 0) errors.consumo = "Consumo obrigatório e positivo.";
+                
+                // Validação de Unidade Automática
+                const expectedUnit = this.autoFillMap.combustivel.map[rowData.combustivel];
+                if (rowData.combustivel && rowData.unidade_consumo !== expectedUnit) errors.unidade_consumo = `Unidade incorreta (deve ser ${expectedUnit}).`;
+
+                // Campos de Distância devem ser vazios
+                if (isFilled(rowData.classificacao_veiculo)) errors.classificacao_veiculo = "Deve ser vazio para reporte por Consumo.";
+                if (isFilled(rowData.distancia_trecho)) errors.distancia_trecho = "Deve ser vazio para reporte por Consumo.";
+                if (isFilled(rowData.unidade_distancia)) errors.unidade_distancia = "Deve ser vazio para reporte por Consumo.";
+                if (isFilled(rowData.carga_transportada)) errors.carga_transportada = "Deve ser vazio para reporte por Consumo.";
+                if (isFilled(rowData.numero_viagens)) errors.numero_viagens = "Deve ser vazio para reporte por Consumo.";
+            
+            } else if (rowData.tipo_reporte === 'Distância') {
+                if (!this.validOptions.classificacao_veiculo.includes(rowData.classificacao_veiculo)) errors.classificacao_veiculo = "Classificação de veículo inválida.";
+                
+                const distVal = rowData.distancia_trecho;
+                if (!isFilled(distVal) || isNaN(parseFloat(distVal)) || parseFloat(distVal) <= 0) errors.distancia_trecho = "Distância obrigatória e positiva.";
+                
+                if (!this.validOptions.unidade_distancia.includes(rowData.unidade_distancia)) errors.unidade_distancia = "Selecione 'Km' ou 'Milhas'.";
+                
+                const cargaVal = rowData.carga_transportada;
+                if (!isFilled(cargaVal) || isNaN(parseFloat(cargaVal)) || parseFloat(cargaVal) <= 0) errors.carga_transportada = "Carga obrigatória e positiva (toneladas).";
+                
+                const viagensVal = rowData.numero_viagens;
+                if (!isFilled(viagensVal) || isNaN(parseInt(viagensVal)) || parseInt(viagensVal) <= 0) errors.numero_viagens = "Número de viagens obrigatório (inteiro).";
+
+                // Campos de Consumo devem ser vazios
+                if (isFilled(rowData.combustivel)) errors.combustivel = "Deve ser vazio para reporte por Distância.";
+                if (isFilled(rowData.consumo)) errors.consumo = "Deve ser vazio para reporte por Distância.";
+                if (isFilled(rowData.unidade_consumo)) errors.unidade_consumo = "Deve ser vazio para reporte por Distância.";
+            }
+
+            return { isValid: Object.keys(errors).length === 0, errors: errors, sanitizedData: rowData };
+        }
+    },
+    home_office: {
+        displayName: "Home Office",
+        hasUnits: true,
+        headerDisplayNames: {
+            ano: "Ano",
+            periodo: "Período",
+            unidade_empresarial: "Unidade Empresarial",
+            regime_trabalho: "Regime de Trabalho (Dias)",
+            num_funcionarios: "Número de Funcionários",
+            comentarios: "Comentários"
+        },
+        validOptions: {
+            periodo: ["Anual", "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"]
+        },
+        autoFillMap: {},
+        validateRow: function(rowData) {
+            const errors = {};
+            const isFilled = (value) => value !== null && value !== undefined && value !== '';
+
+            if (!rowData.ano || isNaN(parseInt(rowData.ano)) || String(rowData.ano).length !== 4) errors.ano = "Deve ser um ano com 4 dígitos.";
+            if (!this.validOptions.periodo.includes(rowData.periodo)) errors.periodo = "Período inválido.";
+            if (!rowData.unidade_empresarial) errors.unidade_empresarial = "Obrigatório.";
+            
+            // Regime de Trabalho vem da descrição da fonte, então é obrigatório
+            if (!rowData.regime_trabalho) errors.regime_trabalho = "Obrigatório.";
+
+            const numFuncVal = rowData.num_funcionarios;
+            if (!isFilled(numFuncVal) || isNaN(parseInt(numFuncVal)) || parseInt(numFuncVal) <= 0 || String(numFuncVal).includes('.') || String(numFuncVal).includes(',')) {
+                errors.num_funcionarios = "Deve ser um número inteiro e positivo.";
+            }
+
+            return { isValid: Object.keys(errors).length === 0, errors: errors, sanitizedData: rowData };
+        }
+    },
+    air_travel: {
+        displayName: "Viagens Aéreas",
+        hasUnits: true,
+        headerDisplayNames: {
+            ano: "Ano",
+            periodo: "Período",
+            unidade_empresarial: "Unidade Empresarial",
+            descricao_viagem: "Descrição da Viagem",
+            codigo_aeroporto_partida: "Código do Aeroporto de Partida",
+            codigo_aeroporto_chegada: "Código do Aeroporto de Chegada",
+            numero_viagens: "Número de Viagens",
+            comentarios: "Comentários"
+        },
+        validOptions: {
+            periodo: ["Anual", "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"]
+        },
+        autoFillMap: {},
+        validateRow: function(rowData) {
+            const errors = {};
+            const isFilled = (value) => value !== null && value !== undefined && value !== '';
+
+            if (!rowData.ano || isNaN(parseInt(rowData.ano)) || String(rowData.ano).length !== 4) errors.ano = "Deve ser um ano com 4 dígitos.";
+            if (!this.validOptions.periodo.includes(rowData.periodo)) errors.periodo = "Período inválido.";
+            if (!rowData.unidade_empresarial) errors.unidade_empresarial = "Obrigatório.";
+            if (!rowData.descricao_viagem) errors.descricao_viagem = "Obrigatório.";
+
+            if (!rowData.codigo_aeroporto_partida) errors.codigo_aeroporto_partida = "Obrigatório.";
+            if (!rowData.codigo_aeroporto_chegada) errors.codigo_aeroporto_chegada = "Obrigatório.";
+
+            const numViagensVal = rowData.numero_viagens;
+            if (!isFilled(numViagensVal) || isNaN(parseInt(numViagensVal)) || parseInt(numViagensVal) <= 0 || String(numViagensVal).includes('.') || String(numViagensVal).includes(',')) {
+                errors.numero_viagens = "Deve ser um número inteiro e positivo.";
+            }
+
+            return { isValid: Object.keys(errors).length === 0, errors: errors, sanitizedData: rowData };
+        }
+    },
+    // --- SPRINT 20: Transporte de Funcionários ---
+    employee_commuting: {
+        displayName: "Transporte de Funcionários",
+        hasUnits: true,
+        headerDisplayNames: {
+            ano: "Ano",
+            periodo: "Período",
+            unidade_empresarial: "Unidade Empresarial",
+            descricao_identificadora: "Identificação do Grupo",
+            meio_utilizado: "Meio Utilizado",
+            tipo_reporte: "Tipo de Reporte",
+            tipo_combustivel: "Tipo de Combustível",
+            consumo: "Consumo",
+            unidade_consumo: "Unidade (Combustível)",
+            distancia_km: "Distância (km)",
+            endereco_funcionario: "Endereço Funcionário",
+            endereco_trabalho: "Endereço Trabalho",
+            dias_deslocados: "Dias Deslocados (Opcional)",
+            comentarios: "Comentários"
+        },
+        validOptions: {
+            periodo: ["Anual", "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"],
+            meio_utilizado: [
+                "Transporte fretado - Van", "Transporte fretado - ônibus de viagem", "Tranporte fretado - Automóvel pequeno",
+                "Transporte público - Metrô", "Transporte público - ônibus", "Transporte público - trem urbano",
+                "Veículo próprio - automóvel", "Veículo próprio - motocicleta", "Veículo próprio - bicicleta",
+                "Uber", "Sem informação"
+            ],
+            tipo_reporte: ["Consumo", "Distância", "Endereço"],
+            tipo_combustivel: [
+                "Gasolina Automotiva", "Óleo Diesel", "Gás Natural Veicular (GNV)", "Gás Natural Liquefeito (GNL)",
+                "Gás Liquefeito de Petróleo (GLP)", "Querosene de Aviação", "Gasolina de Aviação", "Lubrificantes",
+                "Metanol", "Óleo Combustível", "Etanol Hidratado", "Biodiesel (B100)", "Biometano",
+                "Bioquerosene (SAF)", "HVO (diesel verde)", "Biometanol", "Etanol Anidro"
+            ]
+        },
+        autoFillMap: {
+            tipo_combustivel: {
+                targetColumn: "unidade_consumo",
+                map: {
+                    "Gasolina Automotiva": "litros", "Óleo Diesel": "litros", "Gás Natural Veicular (GNV)": "m³",
+                    "Gás Natural Liquefeito (GNL)": "litros", "Gás Liquefeito de Petróleo (GLP)": "kg",
+                    "Querosene de Aviação": "litros", "Gasolina de Aviação": "litros", "Lubrificantes": "litros",
+                    "Metanol": "litros", "Óleo Combustível": "litros", "Etanol Hidratado": "litros",
+                    "Biodiesel (B100)": "litros", "Biometano": "m³", "Bioquerosene (SAF)": "litros",
+                    "HVO (diesel verde)": "litros", "Biometanol": "litros", "Etanol Anidro": "litros"
+                }
+            }
+        },
+        validateRow: function(rowData) {
+            const errors = {};
+            const isFilled = (value) => value !== null && value !== undefined && value !== '';
+
+            if (!rowData.ano || isNaN(parseInt(rowData.ano)) || String(rowData.ano).length !== 4) errors.ano = "Deve ser um ano com 4 dígitos.";
+            if (!this.validOptions.periodo.includes(rowData.periodo)) errors.periodo = "Período inválido.";
+            if (!rowData.unidade_empresarial) errors.unidade_empresarial = "Obrigatório.";
+            if (!rowData.descricao_identificadora) errors.descricao_identificadora = "Obrigatório.";
+            
+            if (!this.validOptions.meio_utilizado.includes(rowData.meio_utilizado)) errors.meio_utilizado = "Meio utilizado inválido.";
+            if (!this.validOptions.tipo_reporte.includes(rowData.tipo_reporte)) errors.tipo_reporte = "Selecione 'Consumo', 'Distância' ou 'Endereço'.";
+
+            // Lógica Condicional
+            if (rowData.tipo_reporte === 'Consumo') {
+                if (!this.validOptions.tipo_combustivel.includes(rowData.tipo_combustivel)) errors.tipo_combustivel = "Combustível inválido.";
+                
+                const consumoVal = rowData.consumo;
+                if (!isFilled(consumoVal) || isNaN(parseFloat(consumoVal)) || parseFloat(consumoVal) <= 0) errors.consumo = "Consumo obrigatório e positivo.";
+                
+                const expectedUnit = this.autoFillMap.tipo_combustivel.map[rowData.tipo_combustivel];
+                if (rowData.tipo_combustivel && rowData.unidade_consumo !== expectedUnit) errors.unidade_consumo = `Unidade incorreta (deve ser ${expectedUnit}).`;
+
+                // Limpar outros campos
+                if (isFilled(rowData.distancia_km)) errors.distancia_km = "Deve ser vazio para reporte por Consumo.";
+                if (isFilled(rowData.endereco_funcionario)) errors.endereco_funcionario = "Deve ser vazio para reporte por Consumo.";
+                if (isFilled(rowData.endereco_trabalho)) errors.endereco_trabalho = "Deve ser vazio para reporte por Consumo.";
+
+            } else if (rowData.tipo_reporte === 'Distância') {
+                const distVal = rowData.distancia_km;
+                if (!isFilled(distVal) || isNaN(parseFloat(distVal)) || parseFloat(distVal) <= 0) errors.distancia_km = "Distância obrigatória e positiva.";
+
+                // Limpar outros campos
+                if (isFilled(rowData.tipo_combustivel)) errors.tipo_combustivel = "Deve ser vazio para reporte por Distância.";
+                if (isFilled(rowData.consumo)) errors.consumo = "Deve ser vazio para reporte por Distância.";
+                if (isFilled(rowData.unidade_consumo)) errors.unidade_consumo = "Deve ser vazio para reporte por Distância.";
+                if (isFilled(rowData.endereco_funcionario)) errors.endereco_funcionario = "Deve ser vazio para reporte por Distância.";
+                if (isFilled(rowData.endereco_trabalho)) errors.endereco_trabalho = "Deve ser vazio para reporte por Distância.";
+
+            } else if (rowData.tipo_reporte === 'Endereço') {
+                if (!rowData.endereco_funcionario) errors.endereco_funcionario = "Endereço do funcionário obrigatório.";
+                if (!rowData.endereco_trabalho) errors.endereco_trabalho = "Endereço do trabalho obrigatório.";
+
+                // Limpar outros campos
+                if (isFilled(rowData.tipo_combustivel)) errors.tipo_combustivel = "Deve ser vazio para reporte por Endereço.";
+                if (isFilled(rowData.consumo)) errors.consumo = "Deve ser vazio para reporte por Endereço.";
+                if (isFilled(rowData.unidade_consumo)) errors.unidade_consumo = "Deve ser vazio para reporte por Endereço.";
+                if (isFilled(rowData.distancia_km)) errors.distancia_km = "Deve ser vazio para reporte por Endereço.";
+            }
+
+            // Dias Deslocados (Opcional, mas se preenchido deve ser inteiro positivo)
+            const diasVal = rowData.dias_deslocados;
+            if (isFilled(diasVal)) {
+                if (isNaN(parseInt(diasVal)) || parseInt(diasVal) <= 0 || String(diasVal).includes('.') || String(diasVal).includes(',')) {
+                    errors.dias_deslocados = "Deve ser um número inteiro positivo.";
+                }
+            }
+
+            return { isValid: Object.keys(errors).length === 0, errors: errors, sanitizedData: rowData };
+        }
+    },
+    // --- SPRINT 18: Geração de Energia ---
+    energy_generation: {
+        displayName: "Geração de Energia",
+        hasUnits: true,
+        headerDisplayNames: {
+            ano: "Ano",
+            periodo: "Período",
+            unidade_empresarial: "Unidade Empresarial",
+            // descricao_fonte REMOVIDO, pois o "fonte_geracao" atuará como identificador
+            fonte_geracao: "Fonte de Geração",
+            total_geracao: "Total de Geração",
+            unidade_medida: "Unidade de Medida",
+            comentarios: "Comentários"
+        },
+        validOptions: {
+            periodo: ["Anual", "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"],
+            fonte_geracao: ["Eólica", "Solar", "Hidro", "Biomassa", "Carvão"],
+            unidade_medida: ["KWh", "MWh"]
+        },
+        autoFillMap: {},
+        validateRow: function(rowData) {
+            const errors = {};
+            const isFilled = (value) => value !== null && value !== undefined && value !== '';
+
+            if (!rowData.ano || isNaN(parseInt(rowData.ano)) || String(rowData.ano).length !== 4) errors.ano = "Deve ser um ano com 4 dígitos.";
+            if (!this.validOptions.periodo.includes(rowData.periodo)) errors.periodo = "Período inválido.";
+            if (!rowData.unidade_empresarial) errors.unidade_empresarial = "Obrigatório.";
+            
+            // Validação de descricao_fonte REMOVIDA
+
+            if (!this.validOptions.fonte_geracao.includes(rowData.fonte_geracao)) {
+                errors.fonte_geracao = "Selecione uma fonte válida.";
+            }
+
+            const totalVal = rowData.total_geracao;
+            if (!isFilled(totalVal) || isNaN(parseFloat(totalVal)) || parseFloat(totalVal) < 0) {
+                errors.total_geracao = `Entrada inválida ('${totalVal}'). Insira um número positivo ou zero.`;
+            }
+
+            if (!this.validOptions.unidade_medida.includes(rowData.unidade_medida)) {
+                errors.unidade_medida = "Selecione 'KWh' ou 'MWh'.";
+            }
+
             return { isValid: Object.keys(errors).length === 0, errors: errors, sanitizedData: rowData };
         }
     }

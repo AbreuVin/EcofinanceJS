@@ -360,6 +360,7 @@ app.post('/api/save-data/:tableName', (req, res) => {
     const { tableName } = req.params;
     const dataRows = req.body;
     
+    // --- SPRINT 20: Mapeamento de tabelas ---
     const allowedTables = { 
         combustao_movel: 'mobile_combustion_data', 
         combustao_estacionaria: 'stationary_combustion_data', 
@@ -371,7 +372,17 @@ app.post('/api/save-data/:tableName', (req, res) => {
         efluentes_domesticos: 'domestic_effluents_data',
         mudanca_uso_solo: 'land_use_change_data',
         solid_waste: 'solid_waste_data',
-        electricity_purchase: 'electricity_purchase_data'
+        electricity_purchase: 'electricity_purchase_data',
+        purchased_goods_services: 'purchased_goods_services_data',
+        capital_goods: 'capital_goods_data',
+        upstream_transport: 'upstream_transport_data',
+        business_travel_land: 'business_travel_land_data',
+        downstream_transport: 'downstream_transport_data',
+        waste_transport: 'waste_transport_data',
+        home_office: 'home_office_data',
+        air_travel: 'air_travel_data',
+        employee_commuting: 'employee_commuting_data',
+        energy_generation: 'energy_generation_data' // --- SPRINT 18: NOVO ---
     };
 
     if (!allowedTables[tableName]) { return res.status(400).json({ message: "Tipo de tabela inválido." }); }
@@ -390,12 +401,20 @@ app.post('/api/save-data/:tableName', (req, res) => {
                 'controlado_empresa': 'controlado_empresa',
                 'fossa_septica_propriedade': 'fossa_septica_propriedade',
                 'local_controlado_empresa': 'local_controlado_empresa',
-                'informar_cidade_uf': 'informar_cidade_uf'
+                'informar_cidade_uf': 'informar_cidade_uf',
+                'bens_terceiros': 'bens_terceiros',
+                'km_reembolsado': 'km_reembolsado'
             };
             
             for (const frontEndKey in booleanFields) {
                 if (row.hasOwnProperty(frontEndKey)) {
-                    row[booleanFields[frontEndKey]] = (row[frontEndKey] === 'Sim') ? 'Sim' : 'Não';
+                    let val = row[frontEndKey];
+                    if (val && typeof val === 'string') {
+                         val = val.trim();
+                         if(['sim', 's', 'Sim'].includes(val)) val = 'Sim';
+                         else if(['nao', 'n', 'não', 'Não'].includes(val)) val = 'Não';
+                    }
+                    row[booleanFields[frontEndKey]] = val;
                 }
             }
 
@@ -430,7 +449,6 @@ app.post('/api/save-data/:tableName', (req, res) => {
 // --- ROTAS DE CADASTRO DE FONTES ---
 app.get('/api/asset-typologies', (req, res) => {
     const { source_type } = req.query;
-    // --- ATENÇÃO: Query atualizada para incluir a frequência ---
     let sql = `
         SELECT 
             T.*, 
@@ -462,7 +480,6 @@ app.get('/api/asset-typologies', (req, res) => {
     });
 });
 app.post('/api/asset-typologies', (req, res) => {
-    // --- ATENÇÃO: reporting_frequency adicionado ---
     const { unit_id, source_type, description, asset_fields, responsible_contact_id, reporting_frequency } = req.body;
     if (!unit_id || !source_type || !description || !asset_fields || !reporting_frequency) { return res.status(400).json({ "error": "Campos obrigatórios faltando." }); }
     const assetFieldsStr = JSON.stringify(asset_fields);
@@ -500,7 +517,6 @@ app.post('/api/asset-typologies', (req, res) => {
     }
 });
 app.put('/api/asset-typologies/:id', (req, res) => {
-    // --- ATENÇÃO: reporting_frequency adicionado ---
     const { unit_id, source_type, description, asset_fields, responsible_contact_id, reporting_frequency } = req.body;
     if (!unit_id || !source_type || !description || !asset_fields || !reporting_frequency) { return res.status(400).json({ "error": "Campos obrigatórios faltando." }); }
     const sql = `UPDATE asset_typologies SET unit_id = ?, source_type = ?, description = ?, asset_fields = ?, responsible_contact_id = ?, reporting_frequency = ? WHERE id = ?`;
@@ -518,7 +534,6 @@ app.delete('/api/asset-typologies/:id', (req, res) => {
     });
 });
 
-// Outras rotas de API
 app.get('/api/options', (req, res) => {
     const { field_key } = req.query;
     if (!field_key) { return res.status(400).json({ "error": "O parâmetro 'field_key' é obrigatório." }); }
@@ -548,8 +563,6 @@ app.delete('/api/options/:id', (req, res) => {
     });
 });
 
-// --- ATENÇÃO: ROTAS DE CONFIGURAÇÃO DE FREQUÊNCIA REMOVIDAS ---
-
 app.get('/api/intelligent-template/:sourceType', (req, res) => {
     const { sourceType } = req.params;
     const { unitId, year, format } = req.query;
@@ -566,11 +579,20 @@ app.get('/api/intelligent-template/:sourceType', (req, res) => {
         efluentes_controlados: 'tratamento_ou_destino',
         mudanca_uso_solo: 'uso_solo_anterior',
         solid_waste: 'destinacao_final',
-        electricity_purchase: 'fonte_energia'
+        electricity_purchase: 'fonte_energia',
+        purchased_goods_services: 'descricao_item',
+        capital_goods: 'bem_capital',
+        upstream_transport: 'insumo_transportado',
+        business_travel_land: 'descricao_viagem',
+        downstream_transport: 'insumo_transportado',
+        waste_transport: 'insumo_transportado',
+        home_office: 'regime_trabalho',
+        air_travel: 'descricao_viagem',
+        employee_commuting: 'descricao_identificadora',
+        energy_generation: 'fonte_geracao' // --- SPRINT 18 (Refinamento): Mapeado para 'fonte_geracao' ---
     };
     
     const getTypologies = new Promise((resolve, reject) => {
-        // --- ATENÇÃO: Query simplificada, não precisa mais do JOIN ---
         let sql = `
             SELECT 
                 T.*, 
@@ -592,7 +614,6 @@ app.get('/api/intelligent-template/:sourceType', (req, res) => {
         const mainDescriptionKey = descriptionKeyMap[sourceType];
 
         typologies.forEach(typo => {
-            // --- ATENÇÃO: Frequência lida diretamente da tipologia ---
             const frequency = typo.reporting_frequency || 'anual';
             const periods = frequency === 'mensal' ? ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"] : ["Anual"];
             const assetFields = JSON.parse(typo.asset_fields || '{}');
@@ -606,8 +627,11 @@ app.get('/api/intelligent-template/:sourceType', (req, res) => {
                 row['unidade_empresarial'] = typo.unit_name;
                 
                 if (mainDescriptionKey) {
-                    if (sourceType === 'solid_waste' || sourceType === 'electricity_purchase') {
+                    if (['solid_waste', 'electricity_purchase'].includes(sourceType)) {
                         row[mainDescriptionKey] = assetFields[mainDescriptionKey] || '';
+                    } else if (sourceType === 'energy_generation') {
+                        // Para energia, o nome da fonte vem do campo 'fonte_geracao' da tipologia
+                        row[mainDescriptionKey] = assetFields.fonte_geracao || typo.description;
                     } else {
                         row[mainDescriptionKey] = typo.description;
                     }
@@ -622,12 +646,13 @@ app.get('/api/intelligent-template/:sourceType', (req, res) => {
                 if (sourceType === 'solid_waste' && assetFields.destinacao_final === 'Aterro') {
                     row['informar_cidade_uf'] = assetFields.cidade_uf_destino || '';
                 }
-                
                 if (sourceType === 'efluentes_controlados') {
                     row['unidade_efluente_liquido'] = frequency === 'mensal' ? 'm3/mês' : 'm3/ano';
                     row['unidade_nitrogenio'] = 'kgN/m3';
                 } else if (sourceType === 'emissoes_fugitivas' || sourceType === 'fertilizantes') {
                     row['unidade'] = 'kg';
+                } else if (sourceType === 'capital_goods') {
+                    row['unidade'] = 'Unidades';
                 }
                 
                 if (schema.autoFillMap) {
@@ -670,7 +695,7 @@ app.get('/api/intelligent-template/:sourceType', (req, res) => {
             const buffer = xlsx.write(workbook, { bookType: 'xlsx', type: 'buffer' });
             const fileName = `${sourceType}_template_preenchido_${year}.xlsx`;
             res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-            res.setHeader('Content-Disposition', `attachment; filename=${fileName}`);
+            res.setHeader('Content-Disposition', `attachment; filename=${fileName}_template.xlsx`);
             res.status(200).send(buffer);
         } catch (error) {
             console.error("Erro ao gerar o template inteligente:", error);
@@ -681,9 +706,6 @@ app.get('/api/intelligent-template/:sourceType', (req, res) => {
         res.status(500).json({ message: "Erro interno ao processar a geração do template." });
     });
 });
-
-
-// --- 6. INICIALIZAÇÃO ---
 
 app.listen(PORT, () => {
     console.log(`Servidor iniciado com sucesso na porta ${PORT}`);
