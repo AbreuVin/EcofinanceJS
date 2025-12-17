@@ -9,7 +9,210 @@ const normalizeString = (value) => {
         .trim();
 };
 
+// --- Listas de Fitofisionomias por Bioma (Constantes Auxiliares) ---
+const BIOME_DATA = {
+    "Amazônia": [
+        "Floresta Ombrófila Aberta Aluvial", "Floresta Ombrófila Aberta Terras Baixas", "Floresta Ombrófila Aberta Submontana",
+        "Floresta Estacional Decidual Terras Baixas", "Floresta Estacional Decidual Submontana", "Floresta Ombrófila Densa Aluvial",
+        "Floresta Ombrófila Densa de Terras Baixas", "Floresta Ombrófila Densa Montana", "Floresta Ombrófila Densa Submontana",
+        "Floresta Estacional Semidecidual aluvial", "Floresta Estacional Semidecidual de terras baixas", "Floresta Estacional Semidecidual montana",
+        "Floresta Estacional Semidecidual Submontana", "Campinarana Arborizada", "Campinarana Arbustiva", "Campinarana Florestada",
+        "Campinarana gramíneo lenhosa", "Vegetação com influência fluvial e/ou lacustre", "Pioneiras com influência fluviomarinha (mangue)",
+        "Pioneiras com influência Marinha (restinga)", "Refúgio montano", "Savana Arborizada", "Savana Florestada", "Savana Gramíneo- Lenhosa",
+        "Savana Parque", "Savana Estépica Arborizada", "Savana Estépica Florestada", "Savana Estépica Gramíneo Lenhosa", "Savana Estépica Parque",
+        "Floresta Ombrófila Aberta Montana", "Floresta Estacional Decidual Aluvial", "Refúgio Alto-Montano", "Refúgio Submontano",
+        "Contato Savana/Formações Pioneiras - Específico para Formação Pioneira com Influência Marinha (Restinga)", "Contato Savana/Floresta Estacional SN",
+        "Contato Savana/Floresta Ombrófila SO", "Contato Savana/Savana-Estépica ST", "Contato Savana- Estépica/Floresta Estacional TN",
+        "Contato Campinarana/Floresta Ombrófila LO", "Contato Floresta Ombrófila/Floresta Estacional ON", "Savana-Estépica", "Savana",
+        "Áreas das Formações Pioneira", "Campinarana"
+    ],
+    "Cerrado": [
+        "Floresta Ombrófila Aberta Aluvial", "Floresta Ombrófila Aberta das Terras Baixas", "Floresta Ombrófila Aberta Submontana",
+        "Floresta Estacional Decidual Aluvial", "Floresta Estacional Decidual das Terras Baixas", "Floresta Estacional Decidual Montana/BA",
+        "Floresta Estacional Decidual Montana/GO", "Floresta Estacional Decidual Montana/MG", "Floresta Estacional Decidual Montana/PI",
+        "Floresta Estacional Decidual Montana/MS", "Floresta Estacional Decidual Montana/TO", "Floresta Estacional Decidual Submontana/BA",
+        "Floresta Estacional Decidual Submontana/GO", "Floresta Estacional Decidual Submontana/MA", "Floresta Estacional Decidual Submontana/MG",
+        "Floresta Estacional Decidual Submontana/PI", "Floresta Estacional Decidual Submontana/TO", "Floresta Estacional Decidual Submontana/MS",
+        "Floresta Estacional Decidual Submontana/MT", "Floresta Estacional Decidual Submontana/SP", "Floresta Ombrófila Densa Aluvial",
+        "Floresta Ombrófila Densa de Terras Baixas", "Floresta Ombrófila Densa Submontana", "Estepe Gramíneo-Lenhosa",
+        "Floresta Estacional Semidecidual Aluvial/MA", "Floresta Estacional Semidecidual Aluvial/PA", "Floresta Estacional Semidecidual Aluvial/TO",
+        "Floresta Estacional Semidecidual Aluvial/BA", "Floresta Estacional Semidecidual Aluvial/GO", "Floresta Estacional Semidecidual Aluvial/MG",
+        "Floresta Estacional Semidecidual Aluvial/PI", "Floresta Estacional Semidecidual Aluvial/PR", "Floresta Estacional Semidecidual Aluvial/SP",
+        "Floresta Estacional Semidecidual Aluvial/MS", "Floresta Estacional Semidecidual Aluvial/MT", "Floresta Estacional Semidecidual das Terras Baixas/MA",
+        "Floresta Estacional Semidecidual das Terras Baixas/MT", "Floresta Estacional Semidecidual das Terras Baixas/GO", "Floresta Estacional Semidecidual das Terras Baixas/PI",
+        "Floresta Estacional Semidecidual Montana/BA", "Floresta Estacional Semidecidual Montana/PI", "Floresta Estacional Semidecidual Montana/GO",
+        "Floresta Estacional Semidecidual Montana/MG", "Floresta Estacional Semidecidual Montana/MS", "Floresta Estacional Semidecidual Montana/PR",
+        "Floresta Estacional Semidecidual Montana/SP", "Floresta Estacional Semidecidual Montana/TO", "Floresta Estacional Semidecidual Submontana/BA",
+        "Floresta Estacional Semidecidual Submontana/MA", "Floresta Estacional Semidecidual Submontana/PI", "Floresta Estacional Semidecidual Submontana/GO/MG/MS/MT/SP/TO",
+        "Floresta Estacional Semidecidual Submontana/MG", "Floresta Estacional Semidecidual Submontana/MS", "Floresta Estacional Semidecidual Submontana/MT",
+        "Floresta Estacional Semidecidual Submontana/SP", "Floresta Estacional Semidecidual Submontana/TO", "Floresta Ombrófila Mista Aluvial",
+        "Floresta Ombrófila Mista Alto-montana", "Floresta Ombrófila Mista Montana", "Contato Floresta Ombrófila/Floresta Estacional", "Formação Pioneira",
+        "Formação Pioneira com influência fluvial e/", "Formação Pioneira com influência fluvio- marinha (mangue)", "Formação Pioneira com influência marinha (restinga)",
+        "Refúgio Montano", "Savana", "Savana Arborizada", "Savana Florestada/PR", "Savana Florestada/SP", "Savana Florestada/BA", "Savana Florestada/DF",
+        "Savana Florestada/GO", "Savana Florestada/MG", "Savana Florestada/MS", "Savana Florestada/MT", "Savana Florestada/MA", "Savana Florestada/PI",
+        "Savana Florestada/TO", "Savana Gramíneo-lenhosa", "Contato Savana/Floresta Ombrófila Mista", "Contato Savana/Floresta Estacional",
+        "Contato Savana/Floresta Ombrófila", "Savana Parque", "Contato Savana/Savana- Estépica", "Contato Savana/Savana- Estépica/Floresta Estacional",
+        "Savana-Estépica", "Savana Estépica Arborizada", "Savana Estépica Florestada", "Savana Estépica Gramíneo-lenhosa",
+        "Contato Savana- Estépica/Floresta Estacional", "Savana Estépica Parque"
+    ],
+    "Mata_Atlântica": [
+        "Floresta Ombrófila Aberta Aluvial", "Floresta Ombrófila Aberta Terras baixas", "Floresta Ombrófila Aberta Montana",
+        "Floresta Ombrófila Aberta Submontana", "Floresta Estacional Decidual Aluvial", "Floresta Estacional Decidual Terras baixas",
+        "Floresta Estacional Decidual Montana", "Floresta Estacional Decidual Submontana", "Floresta Ombrófila Densa (Floresta Tropical Pluvial)",
+        "Floresta Ombrófila Densa Aluvial", "Floresta Ombrófila Densa Terras baixas", "Floresta Ombrófila Densa Alto-Montana",
+        "Floresta Ombrófila Densa Montana", "Floresta Ombrófila Densa Submontana", "Estepe", "Estepe Gramíneo-Lenhosa",
+        "Contato EstepeFloresta Ombrófila Mista", "Contato Estepe/Floresta Estacional", "Floresta Estacional Semidecidual",
+        "Floresta Estacional Semidecidual Aluvial", "Floresta Estacional Semidecidual Terras baixas", "Floresta Estacional Semidecidual Montana",
+        "Floresta Estacional Semidecidual Submontana", "Campinarana", "Campinarana arborizada", "Campinarana Gramíneo-Lenhosa",
+        "Floresta Ombrófila Mista", "Floresta Ombrófila Mista Aluvial", "Floresta Ombrófila Mista Alto-Montana", "Floresta Ombrófila Mista Montana",
+        "Floresta Ombrófila Mista Submontana", "Contato Floresta Estacional/Floresta Ombrófila Mista", "Contato Floresta Estacional/Formações Pioneiras Específico para Formação Pioneira com Influência Marinha (Restinga)",
+        "Contato Floresta Ombrófila Densa/Floresta Ombrófila Mista", "Contato Floresta Ombrófila/Floresta Estacional",
+        "Contato Floresta Ombrófila/Formações Pioneiras Específico para Formação Pioneira com Influência Marinha (Restinga)", "Áreas das Formações Pioneiras",
+        "Vegetação com influência fluvial e/ou lacustre", "Vegetação com influência marinha (Restinga)", "Vegetação com influência marinha (Restinga)",
+        "Refúgios Alto Montanos", "Refúgios montanos", "Savana", "Savana arborizada", "Savana florestada", "Savana Gramíneo-Lenhosa",
+        "Contato Savana/Floresta Ombrófila Mista", "Contato Savana/Floresta Estacional", "Contato Savana/Floresta Ombrófila",
+        "Contato Savana/Formações Pioneiras", "Savana parque", "Contato Savana/Formações pioneiras Específico para Formação Pioneira com Influência Marinha (Restinga)",
+        "Contato Savana/Savana-Estépica", "Savana- Estépica arborizada", "Savana- Estépica florestada", "Savana- Estépica Gramíneo-Lenhosa",
+        "Contato Savana-Estépica/Floresta Estacional"
+    ],
+    "Caatinga": [
+        "Floresta Ombrófila Aberta Aluvial", "Floresta Ombrófila Aberta Terras Baixas", "Floresta Ombrófila Aberta Montana",
+        "Afloramento Rochoso", "Floresta Ombrófila Aberta Submontana", "Floresta Estacional Decidual Aluvial",
+        "Floresta Estacional Decidual Terras Baixas", "Floresta Estacional Decidual Montana", "Floresta Estacional Decidual Submontana",
+        "Floresta Ombrófila Densa Aluvial", "Floresta Ombrófila Densa Montana", "Dunas", "Floresta Ombrófila Densa Submontana",
+        "Floresta Estacional Semidecidual aluvial", "Floresta Estacional Semidecidual de terras baixas", "Floresta Estacional Semidecidual Montana",
+        "Floresta Estacional Semidecidual Submontana", "Vegetação com influência fluvial e/ou lacustre", "Pioneiras com influência fluviomarinha (mangue)",
+        "Pioneiras com influência Marinha (restinga)", "Refúgio Montano", "Savana Arborizada", "Savana Florestada", "Savana Gramíneo- Lenhosa",
+        "Contato Savana/Floresta", "Savana Parque", "Contato Savana/Formações pioneiras Específico para Formação Pioneira com Influência Marinha (Restinga)",
+        "Savana Estépica Arborizada (caatinga aberta)", "Savana Estépica Florestada (caatinga densa)", "Savana Estépica Gramíneo Lenhosa",
+        "Contato Savana/Floresta Estacional", "Savana Estépica Parque"
+    ],
+    "Pampa": [
+        "Floresta Estacional Decidual Aluvial", "Floresta Estacional Decidual Terras baixas", "Floresta Estacional Decidual Montana",
+        "Floresta Estacional Decidual Submontana", "Floresta Ombrófla Densa Aluvial", "Floresta Ombrófla Densa Terras baixas",
+        "Floresta Ombrófla Densa Montana", "Dunas", "Floresta Ombrófla Densa Submontana", "Estepe", "Estepe Arborizada",
+        "Estepe Gramíneo Lenhosa", "Estepe Parque", "Contato Estepe- Floresta Ombrófila Mista", "Contato Estepe- Floresta Estacional",
+        "Contato Estepe- Formações", "Floresta Estacional Semidecidual Aluvial", "Floresta Estacional Semidecidual Terras baixas",
+        "Floresta Estacional Semidecidual Montana", "Floresta Estacional Semidecidual Submontana", "Floresta Ombrófla Mista Aluvial",
+        "Floresta Ombrófla Mista Submontana", "Contato Floresta Estacional- Floresta Ombrófila Mista",
+        "Contato Floresta Estacional- Formações Pioneiras com Influência Marinha (Restinga)", "Contato Floresta Ombrófila Densa-Floresta Ombrófila Mista",
+        "Contato Floresta Ombrófila- Formações Pioneiras com Influência Marinha (Restinga)", "Áreas das Formações Pioneiras",
+        "Vegetação com influência Fluvial e/ou lacustre", "Vegetação com influência Fluviomarinha", "Vegetação com influência Marinha (Restinga)",
+        "Savana Estépica", "Savana Estépica Gramíneo-Lenhosa", "Savana Estépica Parque"
+    ],
+    "Pantanal": [
+        "Floresta Estacional Decidual Aluvial", "Floresta Estacional Decidual Terras baixas", "Floresta Estacional Decidual Submontana",
+        "Floresta Estacional Semidecidual Aluvial", "Floresta Estacional Semidecidual Terras baixas", "Floresta Estacional Semidecidual Submontana",
+        "Contato Savana/Floresta Estacional", "Contato Savana- Estépica/Floresta Estacional", "Savana", "Savana arborizada", "Savana florestada",
+        "Contato Savana/Savana- Estépica", "Savana-Estépica", "Savana- Estépica arborizada", "Savana- Estépica florestada", "Savana",
+        "Savana Estépica Gramíneo- Lenhosa", "Savana parque", "Savana-Estépica parque"
+    ]
+};
+
+// Flatten para valid options no importer inicial
+const ALL_FITOFISIONOMIAS = [...new Set(Object.values(BIOME_DATA).flat())].sort();
+
 export const validationSchemas = {
+    // --- SPRINT 21: ÁREA DE CONSERVAÇÃO ---
+    conservation_area: {
+        displayName: "Área de Conservação",
+        hasUnits: true,
+        headerDisplayNames: {
+            ano: "Ano",
+            periodo: "Período",
+            unidade_empresarial: "Unidade Empresarial",
+            // DESCRIÇÃO REMOVIDA DAQUI - Outros campos identificam a fonte
+            bioma: "Bioma",
+            fitofisionomia: "Fitofisionomia",
+            area_plantada: "Área de conservação plantada?",
+            plantio: "Plantio",
+            area_inicio_ano: "Área (hectare) - 01/01/{ANO}",
+            area_fim_ano: "Área (hectare) - 31/12/{ANO}",
+            motivo_alteracao: "Motivo Aumento/Redução",
+            comentarios: "Comentários"
+        },
+        validOptions: {
+            periodo: ["Anual", "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"],
+            bioma: ["Amazônia", "Cerrado", "Mata_Atlântica", "Caatinga", "Pampa", "Pantanal"],
+            fitofisionomia: ALL_FITOFISIONOMIAS,
+            area_plantada: ["Sim", "Não"]
+        },
+        autoFillMap: {},
+        dependencyMap: {
+            triggerField: "bioma",
+            targetField: "fitofisionomia",
+            data: BIOME_DATA
+        },
+        validateRow: function(rowData) {
+            const errors = {};
+            const isFilled = (value) => value !== null && value !== undefined && value !== '';
+
+            // 1. Campos Padrão
+            if (!rowData.ano || isNaN(parseInt(rowData.ano)) || String(rowData.ano).length !== 4) errors.ano = "Deve ser um ano com 4 dígitos.";
+            if (!this.validOptions.periodo.includes(rowData.periodo)) errors.periodo = "Período inválido.";
+            if (!rowData.unidade_empresarial) errors.unidade_empresarial = "Obrigatório.";
+            
+            // 3. Bioma e Fitofisionomia (Dependência)
+            if (!this.validOptions.bioma.includes(rowData.bioma)) {
+                errors.bioma = "Selecione um bioma válido.";
+            }
+            
+            // Valida se a fitofisionomia existe e se pertence ao bioma selecionado
+            if (rowData.bioma) {
+                const validFitosForBiome = BIOME_DATA[rowData.bioma];
+                if (!validFitosForBiome) {
+                    errors.bioma = "Bioma desconhecido na base de dados.";
+                } else {
+                    if (!rowData.fitofisionomia) {
+                        errors.fitofisionomia = "Obrigatório.";
+                    } else if (!validFitosForBiome.includes(rowData.fitofisionomia)) {
+                        errors.fitofisionomia = `Esta fitofisionomia não pertence ao bioma ${rowData.bioma}.`;
+                    }
+                }
+            } else if (!rowData.fitofisionomia) {
+                errors.fitofisionomia = "Obrigatório.";
+            }
+
+            // 4. Área Plantada e Plantio (Texto)
+            const normalizedPlantada = normalizeString(rowData.area_plantada);
+            if (['sim', 's'].includes(normalizedPlantada)) rowData.area_plantada = 'Sim';
+            else if (['nao', 'n'].includes(normalizedPlantada)) rowData.area_plantada = 'Não';
+
+            if (!this.validOptions.area_plantada.includes(rowData.area_plantada)) {
+                errors.area_plantada = "Deve ser 'Sim' ou 'Não'.";
+            }
+
+            if (rowData.area_plantada === 'Sim') {
+                if (!isFilled(rowData.plantio)) {
+                    errors.plantio = "Obrigatório se a área for plantada.";
+                }
+            } else {
+                if (isFilled(rowData.plantio)) {
+                    errors.plantio = "Deve estar vazio se a área não for plantada.";
+                }
+            }
+
+            // 5. Áreas (Floats)
+            const areaInicioVal = rowData.area_inicio_ano;
+            if (!isFilled(areaInicioVal) || isNaN(parseFloat(areaInicioVal)) || parseFloat(areaInicioVal) < 0) {
+                errors.area_inicio_ano = "Deve ser um número positivo ou zero.";
+            }
+
+            const areaFimVal = rowData.area_fim_ano;
+            if (!isFilled(areaFimVal) || isNaN(parseFloat(areaFimVal)) || parseFloat(areaFimVal) < 0) {
+                errors.area_fim_ano = "Deve ser um número positivo ou zero.";
+            }
+
+            // 6. Motivo da Alteração
+            if (isFilled(areaInicioVal) && isFilled(areaFimVal)) {
+                const areaInicio = parseFloat(areaInicioVal);
+                const areaFim = parseFloat(areaFimVal);
+                // Validar motivo se necessário no futuro
+            }
+
+            return { isValid: Object.keys(errors).length === 0, errors: errors, sanitizedData: rowData };
+        }
+    },
     electricity_purchase: {
         displayName: "Compra de Eletricidade",
         hasUnits: true,
@@ -1116,7 +1319,6 @@ export const validationSchemas = {
             return { isValid: Object.keys(errors).length === 0, errors: errors, sanitizedData: rowData };
         }
     },
-    // --- SPRINT 20: Transporte de Funcionários ---
     employee_commuting: {
         displayName: "Transporte de Funcionários",
         hasUnits: true,
@@ -1225,7 +1427,6 @@ export const validationSchemas = {
             return { isValid: Object.keys(errors).length === 0, errors: errors, sanitizedData: rowData };
         }
     },
-    // --- SPRINT 18: Geração de Energia ---
     energy_generation: {
         displayName: "Geração de Energia",
         hasUnits: true,
@@ -1253,8 +1454,6 @@ export const validationSchemas = {
             if (!this.validOptions.periodo.includes(rowData.periodo)) errors.periodo = "Período inválido.";
             if (!rowData.unidade_empresarial) errors.unidade_empresarial = "Obrigatório.";
             
-            // Validação de descricao_fonte REMOVIDA
-
             if (!this.validOptions.fonte_geracao.includes(rowData.fonte_geracao)) {
                 errors.fonte_geracao = "Selecione uma fonte válida.";
             }
@@ -1267,6 +1466,65 @@ export const validationSchemas = {
             if (!this.validOptions.unidade_medida.includes(rowData.unidade_medida)) {
                 errors.unidade_medida = "Selecione 'KWh' ou 'MWh'.";
             }
+
+            return { isValid: Object.keys(errors).length === 0, errors: errors, sanitizedData: rowData };
+        }
+    },
+    planted_forest: {
+        displayName: "Área de Floresta Plantada",
+        hasUnits: true,
+        headerDisplayNames: {
+            ano: "Ano",
+            periodo: "Período",
+            unidade_empresarial: "Unidade Empresarial",
+            identificacao_area: "Identificação da Área",
+            nome_especie: "Nome da Espécie",
+            area_antepenultimo: "Área no final de {ANO-2} (ha)",
+            idade_antepenultimo: "Faixa de idade em {ANO-2} (anos)",
+            idade_penultimo: "Faixa de idade em {ANO-1} (anos)",
+            area_colhida_penultimo: "Área Colhida/Desmatada em {ANO-1} (ha)",
+            area_atual: "Área no final de {ANO} (ha)",
+            comentarios: "Comentários"
+        },
+        validOptions: {
+            periodo: ["Anual", "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"],
+            nome_especie: ["Amazônia", "Cerrado", "Mata Atlântica", "Caatinga", "Pampa", "Pantanal"]
+        },
+        autoFillMap: {},
+        validateRow: function(rowData) {
+            const errors = {};
+            const isFilled = (value) => value !== null && value !== undefined && value !== '';
+
+            if (!rowData.ano || isNaN(parseInt(rowData.ano)) || String(rowData.ano).length !== 4) errors.ano = "Deve ser um ano com 4 dígitos.";
+            if (!this.validOptions.periodo.includes(rowData.periodo)) errors.periodo = "Período inválido.";
+            if (!rowData.unidade_empresarial) errors.unidade_empresarial = "Obrigatório.";
+            if (!rowData.identificacao_area) errors.identificacao_area = "Obrigatório.";
+
+            if (!this.validOptions.nome_especie.includes(rowData.nome_especie)) {
+                errors.nome_especie = "Selecione uma espécie válida.";
+            }
+
+            // Validação de Floats
+            const floatFields = ['area_antepenultimo', 'area_colhida_penultimo', 'area_atual'];
+            floatFields.forEach(field => {
+                const val = rowData[field];
+                if (isFilled(val)) {
+                    if (isNaN(parseFloat(val)) || parseFloat(val) < 0) {
+                        errors[field] = "Deve ser um número positivo.";
+                    }
+                }
+            });
+
+            // Validação de Inteiros
+            const intFields = ['idade_antepenultimo', 'idade_penultimo'];
+            intFields.forEach(field => {
+                const val = rowData[field];
+                if (isFilled(val)) {
+                    if (isNaN(parseInt(val)) || parseInt(val) < 0 || String(val).includes('.') || String(val).includes(',')) {
+                        errors[field] = "Deve ser um número inteiro positivo.";
+                    }
+                }
+            });
 
             return { isValid: Object.keys(errors).length === 0, errors: errors, sanitizedData: rowData };
         }

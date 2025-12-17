@@ -320,7 +320,6 @@ const db = new sqlite3.Database(dbPath, (err) => {
             )
         `, (err) => { if (err) console.error('Erro tabela employee_commuting_data:', err); else console.log('Tabela "employee_commuting_data" pronta.'); });
 
-        // --- SPRINT 18: TABELA - Geração de Energia ---
         db.run(`
             CREATE TABLE IF NOT EXISTS energy_generation_data (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -338,6 +337,56 @@ const db = new sqlite3.Database(dbPath, (err) => {
                 comentarios TEXT
             )
         `, (err) => { if (err) console.error('Erro tabela energy_generation_data:', err); else console.log('Tabela "energy_generation_data" pronta.'); });
+
+        // --- SPRINT 19: TABELA - Floresta Plantada ---
+        db.run(`
+            CREATE TABLE IF NOT EXISTS planted_forest_data (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                ano INTEGER,
+                periodo TEXT,
+                unidade_empresarial TEXT,
+                identificacao_area TEXT,
+                nome_especie TEXT,
+                area_antepenultimo REAL,
+                idade_antepenultimo INTEGER,
+                idade_penultimo INTEGER,
+                area_colhida_penultimo REAL,
+                area_atual REAL,
+                responsavel TEXT,
+                area_responsavel TEXT,
+                email TEXT,
+                telefone TEXT,
+                comentarios TEXT
+            )
+        `, (err) => { if (err) console.error('Erro tabela planted_forest_data:', err); else console.log('Tabela "planted_forest_data" pronta.'); });
+
+        // --- SPRINT 21: TABELA - Área de Conservação (ATUALIZADA) ---
+        db.run(`DROP TABLE IF EXISTS conservation_area_data`, (err) => {
+             // Drop para garantir a recriação correta com os novos campos
+             if(!err) {
+                db.run(`
+                    CREATE TABLE IF NOT EXISTS conservation_area_data (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        ano INTEGER,
+                        periodo TEXT,
+                        unidade_empresarial TEXT,
+                        descricao TEXT,
+                        bioma TEXT,
+                        fitofisionomia TEXT,
+                        area_plantada TEXT,
+                        plantio TEXT,
+                        area_inicio_ano REAL,
+                        area_fim_ano REAL,
+                        motivo_alteracao TEXT,
+                        responsavel TEXT,
+                        area_responsavel TEXT,
+                        email TEXT,
+                        telefone TEXT,
+                        comentarios TEXT
+                    )
+                `, (err) => { if (err) console.error('Erro tabela conservation_area_data:', err); else console.log('Tabela "conservation_area_data" atualizada e pronta.'); });
+             }
+        });
 
 
         db.run(`CREATE TABLE IF NOT EXISTS asset_typologies (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, unit_id INTEGER NOT NULL, source_type TEXT NOT NULL, description TEXT NOT NULL, asset_fields TEXT, is_active BOOLEAN DEFAULT TRUE)`, (err) => { if (err) console.error('Erro tabela asset_typologies:', err); else console.log('Tabela "asset_typologies" pronta.'); });

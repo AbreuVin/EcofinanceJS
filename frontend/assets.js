@@ -115,13 +115,32 @@ document.addEventListener('DOMContentLoaded', () => {
                 responsible_contact_id: { label: "Responsável pela Informação", type: "select", isContact: true }
             }
         },
-        // --- SPRINT 18: Geração de Energia (Descrição via Dropdown) ---
         energy_generation: {
             displayName: "Geração de Energia",
             fields: {
-                // O primeiro campo será usado como a Descrição da Fonte
                 fonte_geracao: { label: "Tipo de Fonte Padrão", type: "select" },
                 unidade_medida: { label: "Unidade de Medida Padrão", type: "select" },
+                responsible_contact_id: { label: "Responsável pela Informação", type: "select", isContact: true }
+            }
+        },
+        // --- SPRINT 19: Floresta Plantada ---
+        planted_forest: {
+            displayName: "Área de Floresta Plantada",
+            fields: {
+                identificacao_area: { label: "Identificação da Área (Descrição)", type: "text", placeholder: "Ex: Talhão A - Fazenda Norte" },
+                nome_especie: { label: "Espécie Padrão", type: "select" },
+                responsible_contact_id: { label: "Responsável pela Informação", type: "select", isContact: true }
+            }
+        },
+        // --- SPRINT 21: Área de Conservação (SEM DESCRIÇÃO MANUAL) ---
+        conservation_area: {
+            displayName: "Área de Conservação",
+            fields: {
+                // Bioma agora atua como "Descrição" na lista
+                bioma: { label: "Bioma (Descrição)", type: "select" },
+                fitofisionomia: { label: "Fitofisionomia", type: "select" }, 
+                area_plantada: { label: "Área de conservação plantada?", type: "select" },
+                plantio: { label: "Plantio", type: "text", placeholder: "Ex: 2010 ou 'Nativo'", showIf: { field: "area_plantada", value: "Sim" } },
                 responsible_contact_id: { label: "Responsável pela Informação", type: "select", isContact: true }
             }
         },
@@ -284,8 +303,9 @@ document.addEventListener('DOMContentLoaded', () => {
         assetsThead.innerHTML = ''; 
         const headerRow = document.createElement('tr'); 
         
-        // --- SPRINT 18: Atualizado para incluir 'energy_generation' ---
-        const usesCustomDescription = ['solid_waste', 'electricity_purchase', 'downstream_transport', 'waste_transport', 'home_office', 'air_travel', 'employee_commuting', 'energy_generation'].includes(currentSourceType);
+        // --- Lista de Schemas que usam Descrição Customizada ---
+        // Adicionado 'conservation_area'
+        const usesCustomDescription = ['solid_waste', 'electricity_purchase', 'downstream_transport', 'waste_transport', 'home_office', 'air_travel', 'employee_commuting', 'energy_generation', 'planted_forest', 'conservation_area'].includes(currentSourceType);
         const mainDescriptionKey = usesCustomDescription ? Object.keys(schema.fields)[0] : 'description';
         const mainDescriptionLabel = usesCustomDescription ? schema.fields[mainDescriptionKey].label : 'Descrição';
 
@@ -309,8 +329,8 @@ document.addEventListener('DOMContentLoaded', () => {
             typologies.forEach(typo => { 
                 const tr = document.createElement('tr'); 
                 
-                // --- SPRINT 18: Atualizado para incluir 'energy_generation' ---
-                const usesCustomDescription = ['solid_waste', 'electricity_purchase', 'downstream_transport', 'waste_transport', 'home_office', 'air_travel', 'employee_commuting', 'energy_generation'].includes(currentSourceType);
+                // --- Lista de Schemas que usam Descrição Customizada ---
+                const usesCustomDescription = ['solid_waste', 'electricity_purchase', 'downstream_transport', 'waste_transport', 'home_office', 'air_travel', 'employee_commuting', 'energy_generation', 'planted_forest', 'conservation_area'].includes(currentSourceType);
                 const mainDescriptionKey = usesCustomDescription ? Object.keys(assetSchemas[currentSourceType].fields)[0] : 'description';
 
                 const mainDescription = usesCustomDescription 
@@ -345,7 +365,6 @@ document.addEventListener('DOMContentLoaded', () => {
                          displayFields.unidade_consumo = '';
                      }
                 } else if (currentSourceType === 'employee_commuting') {
-                     // --- SPRINT 20: Lógica Visual para Transporte de Funcionários ---
                      const tipoReporte = displayFields.tipo_reporte;
                      if (tipoReporte === 'Consumo') {
                          // Mantém combustível
@@ -399,8 +418,8 @@ document.addEventListener('DOMContentLoaded', () => {
              }
         });
 
-        // --- SPRINT 18: Atualizado para incluir 'energy_generation' ---
-        const usesCustomDescription = ['solid_waste', 'electricity_purchase', 'downstream_transport', 'waste_transport', 'home_office', 'air_travel', 'employee_commuting', 'energy_generation'].includes(currentSourceType);
+        // --- Lista de Schemas que usam Descrição Customizada ---
+        const usesCustomDescription = ['solid_waste', 'electricity_purchase', 'downstream_transport', 'waste_transport', 'home_office', 'air_travel', 'employee_commuting', 'energy_generation', 'planted_forest', 'conservation_area'].includes(currentSourceType);
         const mainDescriptionKey = usesCustomDescription ? Object.keys(assetSchemas[currentSourceType].fields)[0] : null;
 
         const descriptionValue = usesCustomDescription
@@ -452,8 +471,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (typoToEdit) {
                 assetIdInput.value = typoToEdit.id;
                 
-                // --- SPRINT 18: Atualizado para incluir 'energy_generation' ---
-                const usesCustomDescription = ['solid_waste', 'electricity_purchase', 'downstream_transport', 'waste_transport', 'home_office', 'air_travel', 'employee_commuting', 'energy_generation'].includes(currentSourceType);
+                // --- Lista de Schemas que usam Descrição Customizada ---
+                const usesCustomDescription = ['solid_waste', 'electricity_purchase', 'downstream_transport', 'waste_transport', 'home_office', 'air_travel', 'employee_commuting', 'energy_generation', 'planted_forest', 'conservation_area'].includes(currentSourceType);
                 if (!usesCustomDescription) {
                     document.getElementById('asset-description').value = typoToEdit.description;
                 }
@@ -481,7 +500,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
                     }
                         
-                    const conditionalTriggers = ['tipo_entrada', 'tratamento_ou_destino', 'uso_solo_anterior', 'destinacao_final', 'fonte_energia', 'tipo_item', 'tipo_reporte', 'combustivel', 'tipo_combustivel'];
+                    const conditionalTriggers = ['tipo_entrada', 'tratamento_ou_destino', 'uso_solo_anterior', 'destinacao_final', 'fonte_energia', 'tipo_item', 'tipo_reporte', 'combustivel', 'tipo_combustivel', 'area_plantada', 'bioma'];
                     if (conditionalTriggers.includes(key)) {
                         input.dispatchEvent(new Event('change', { bubbles: true }));
                     }
@@ -513,8 +532,8 @@ document.addEventListener('DOMContentLoaded', () => {
         cancelBtn.style.display = 'none';
 
         const descriptionGroup = document.getElementById('asset-description').parentElement;
-        // --- SPRINT 18: Atualizado para incluir 'energy_generation' ---
-        const usesCustomDescription = ['solid_waste', 'electricity_purchase', 'downstream_transport', 'waste_transport', 'home_office', 'air_travel', 'employee_commuting', 'energy_generation'].includes(currentSourceType);
+        // --- Lista de Schemas que usam Descrição Customizada ---
+        const usesCustomDescription = ['solid_waste', 'electricity_purchase', 'downstream_transport', 'waste_transport', 'home_office', 'air_travel', 'employee_commuting', 'energy_generation', 'planted_forest', 'conservation_area'].includes(currentSourceType);
 
         if (usesCustomDescription) {
             descriptionGroup.style.display = 'none';
@@ -524,7 +543,7 @@ document.addEventListener('DOMContentLoaded', () => {
             descriptionGroup.querySelector('input').required = true;
         }
 
-        const triggerFields = ['field-tipo_entrada', 'field-tratamento_ou_destino', 'uso_solo_anterior', 'field-combustivel', 'field-combustivel_estacionario', 'field-destinacao_final', 'field-fonte_energia', 'field-tipo_item', 'field-tipo_reporte', 'field-tipo_combustivel'];
+        const triggerFields = ['field-tipo_entrada', 'field-tratamento_ou_destino', 'uso_solo_anterior', 'field-combustivel', 'field-combustivel_estacionario', 'field-destinacao_final', 'field-fonte_energia', 'field-tipo_item', 'field-tipo_reporte', 'field-tipo_combustivel', 'field-area_plantada', 'field-bioma'];
         triggerFields.forEach(id => {
             const trigger = document.getElementById(id);
             if (trigger) trigger.dispatchEvent(new Event('change'));
@@ -541,15 +560,22 @@ document.addEventListener('DOMContentLoaded', () => {
         const fieldElements = {};
         const triggerFields = new Set();
         const autoFillTriggers = new Set();
-        // --- SPRINT 18: Atualizado para incluir 'energy_generation' ---
-        const usesCustomDescription = ['solid_waste', 'electricity_purchase', 'downstream_transport', 'waste_transport', 'home_office', 'air_travel', 'employee_commuting', 'energy_generation'].includes(currentSourceType);
+        // --- Lista de Schemas que usam Descrição Customizada ---
+        const usesCustomDescription = ['solid_waste', 'electricity_purchase', 'downstream_transport', 'waste_transport', 'home_office', 'air_travel', 'employee_commuting', 'energy_generation', 'planted_forest', 'conservation_area'].includes(currentSourceType);
         
         const firstRowContainer = document.querySelector('#asset-form .form-row');
         const descriptionFieldGroup = document.getElementById('asset-description').parentElement;
 
         const validationSchema = validationSchemas[currentSourceType];
+        
         if (validationSchema && validationSchema.autoFillMap) {
             Object.keys(validationSchema.autoFillMap).forEach(key => autoFillTriggers.add(key));
+        }
+
+        let dependencyConfig = null;
+        if (validationSchema && validationSchema.dependencyMap) {
+            dependencyConfig = validationSchema.dependencyMap;
+            triggerFields.add(dependencyConfig.triggerField);
         }
 
         for (const key in schema.fields) {
@@ -587,9 +613,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (field.type === 'select') {
                 input = document.createElement('select');
             } else if (field.type === 'checkbox-group') {
-                // --- NOVO: Lógica para Checkbox Group ---
                 input = document.createElement('input');
-                input.type = 'hidden'; // O input principal fica oculto e guarda a string
+                input.type = 'hidden'; 
                 
                 const checkboxContainer = document.createElement('div');
                 checkboxContainer.style.display = 'flex';
@@ -625,7 +650,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     checkboxContainer.appendChild(cbWrapper);
                 });
                 
-                // Adiciona o container de checkboxes ao wrapper, mas o input hidden será adicionado abaixo
                 wrapper.appendChild(label);
                 wrapper.appendChild(checkboxContainer);
             } else { 
@@ -636,7 +660,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             input.id = `field-${key}`; 
             input.dataset.key = key; 
-            input.required = !field.showIf && field.type !== 'checkbox-group'; // Checkbox group validação manual se necessário
+            input.required = !field.showIf && field.type !== 'checkbox-group'; 
             if (field.disabled) input.disabled = true;
 
             if (field.type === 'select') {
@@ -668,7 +692,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 wrapper.appendChild(label); 
                 wrapper.appendChild(input); 
             } else {
-                wrapper.appendChild(input); // Adiciona o input hidden
+                wrapper.appendChild(input); 
             }
 
             const mainDescriptionKey = usesCustomDescription ? Object.keys(schema.fields)[0] : null;
@@ -691,6 +715,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 input.addEventListener('change', () => {
                     const selectedValue = input.value;
                     
+                    // Lógica ShowIf
                     for (const fieldKey in fieldElements) {
                         const element = fieldElements[fieldKey];
                         const showIfConfig = element.config.showIf;
@@ -704,6 +729,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
                     }
 
+                    // Lógica AutoFill
                     if (autoFillTriggers.has(key)) {
                         const rule = validationSchema.autoFillMap[key];
                         const targetValue = rule.map[selectedValue];
@@ -712,6 +738,25 @@ document.addEventListener('DOMContentLoaded', () => {
                             targetField.input.value = targetValue;
                         } else if (targetField) {
                             targetField.input.value = '';
+                        }
+                    }
+
+                    // Lógica de Dependência (Dropdown Dinâmico)
+                    if (dependencyConfig && dependencyConfig.triggerField === key) {
+                        const targetFieldKey = dependencyConfig.targetField;
+                        const targetElement = fieldElements[targetFieldKey];
+                        
+                        if (targetElement && targetElement.input.tagName === 'SELECT') {
+                            targetElement.input.innerHTML = '<option value="">-- Selecione --</option>';
+                            const dependentOptions = dependencyConfig.data[selectedValue];
+                            if (dependentOptions && Array.isArray(dependentOptions)) {
+                                dependentOptions.forEach(opt => {
+                                    const option = document.createElement('option');
+                                    option.value = opt;
+                                    option.textContent = opt;
+                                    targetElement.input.appendChild(option);
+                                });
+                            }
                         }
                     }
                 });

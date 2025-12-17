@@ -18,11 +18,11 @@ document.addEventListener('DOMContentLoaded', () => {
     
     if(downloadIntelligentBtn) downloadIntelligentBtn.textContent = 'Baixar Template';
 
-    // --- SPRINT 20: Adicionado 'dias_deslocados' ---
-    const INTEGER_FIELDS = [ 'quantidade_vendida', 'num_trabalhadores', 'numero_viagens', 'num_funcionarios', 'dias_deslocados' ];
-    // --- SPRINT 20: Adicionado 'distancia_km' ---
-    // --- SPRINT 18: Adicionado 'total_geracao' ---
-    const DECIMAL_FIELDS = [ 'consumo', 'distancia_percorrida', 'quantidade_reposta', 'quantidade_kg', 'percentual_nitrogenio', 'percentual_carbonato', 'area_hectare', 'qtd_efluente_liquido_m3', 'qtd_componente_organico', 'qtd_nitrogenio_mg_l', 'componente_organico_removido_lodo', 'carga_horaria_media', 'quantidade_gerado', 'quantidade', 'valor_aquisicao', 'distancia_trecho', 'carga_transportada', 'distancia_km', 'total_geracao' ];
+    // --- SPRINT 21: 'plantio' agora é texto, removido daqui ---
+    const INTEGER_FIELDS = [ 'quantidade_vendida', 'num_trabalhadores', 'numero_viagens', 'num_funcionarios', 'dias_deslocados', 'idade_antepenultimo', 'idade_penultimo' ];
+    
+    // --- SPRINT 21: Adicionado 'area_inicio_ano', 'area_fim_ano' ---
+    const DECIMAL_FIELDS = [ 'consumo', 'distancia_percorrida', 'quantidade_reposta', 'quantidade_kg', 'percentual_nitrogenio', 'percentual_carbonato', 'area_hectare', 'qtd_efluente_liquido_m3', 'qtd_componente_organico', 'qtd_nitrogenio_mg_l', 'componente_organico_removido_lodo', 'carga_horaria_media', 'quantidade_gerado', 'quantidade', 'valor_aquisicao', 'distancia_trecho', 'carga_transportada', 'distancia_km', 'total_geracao', 'area_antepenultimo', 'area_colhida_penultimo', 'area_atual', 'area_inicio_ano', 'area_fim_ano' ];
 
     let currentSchema = null;
     let unitsList = [];
@@ -84,6 +84,18 @@ document.addEventListener('DOMContentLoaded', () => {
             feedbackDiv.textContent = 'Erro ao carregar opções de seleção. A página pode não funcionar corretamente.';
             feedbackDiv.style.color = 'red';
         }
+    }
+
+    // --- HELPER: Substituição Dinâmica de Ano ---
+    function resolveDynamicHeader(displayName, reportYear) {
+        if (!reportYear) return displayName;
+        const yearInt = parseInt(reportYear);
+        if (isNaN(yearInt)) return displayName;
+
+        return displayName
+            .replace('{ANO}', yearInt)
+            .replace('{ANO-1}', yearInt - 1)
+            .replace('{ANO-2}', yearInt - 2);
     }
 
     // --- LÓGICA DE RASCUNHO (LOCALSTORAGE) ---
@@ -248,6 +260,11 @@ document.addEventListener('DOMContentLoaded', () => {
             } else if (cleanedRow.tipo_reporte === 'Endereço') {
                 ['tipo_combustivel', 'consumo', 'unidade_consumo', 'distancia_km'].forEach(k => cleanedRow[k] = '');
             }
+        } else if (sourceType === 'conservation_area') {
+            // --- SPRINT 21: Lógica para Área de Conservação (Atualizado) ---
+            if (cleanedRow.area_plantada === 'Não') {
+                cleanedRow.plantio = ''; // Limpa o campo plantio (texto)
+            }
         }
         
         return cleanedRow;
@@ -306,7 +323,9 @@ document.addEventListener('DOMContentLoaded', () => {
         
         headers.forEach(headerKey => {
             const th = document.createElement('th');
-            th.textContent = currentSchema.headerDisplayNames[headerKey] || headerKey;
+            // --- SPRINT 19: Lógica Dinâmica de Cabeçalho (ex: {ANO-1} -> 2023) ---
+            const rawDisplayName = currentSchema.headerDisplayNames[headerKey] || headerKey;
+            th.textContent = resolveDynamicHeader(rawDisplayName, currentReportYear);
             headerRow.appendChild(th);
         });
         
@@ -331,7 +350,20 @@ document.addEventListener('DOMContentLoaded', () => {
             cell.dataset.header = header;
             const currentValue = rowData[header] || "";
             const isAutoFilledUnit = currentSchema.autoFillMap && Object.values(currentSchema.autoFillMap).some(rule => rule.targetColumn === header);
-            const options = managedOptionsCache[header];
+            
+            // --- SPRINT 21: Lógica Dinâmica para Dropdowns (ex: Bioma -> Fitofisionomia) ---
+            let options = managedOptionsCache[header];
+            if (currentSchema.dependencyMap && currentSchema.dependencyMap.targetField === header) {
+                // Se este campo é um alvo de dependência, busque as opções baseadas no gatilho
+                const triggerHeader = currentSchema.dependencyMap.triggerField;
+                const triggerValue = rowData[triggerHeader];
+                if (triggerValue && currentSchema.dependencyMap.data[triggerValue]) {
+                    options = currentSchema.dependencyMap.data[triggerValue];
+                } else {
+                    // Se não houver gatilho selecionado, mostra lista vazia ou todas (vamos mostrar vazio para forçar seleção)
+                    options = []; 
+                }
+            }
 
             if (header === 'informar_cidade_uf') {
                 cell.textContent = currentValue;
@@ -523,10 +555,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 setFieldsState(rowElement, distanciaFields, true, true);
                 setFieldsState(rowElement, enderecoFields, false, false);
             } else {
-                // Se nada selecionado, bloqueia tudo exceto os comuns
                 setFieldsState(rowElement, consumoFields, true, false);
                 setFieldsState(rowElement, distanciaFields, true, false);
                 setFieldsState(rowElement, enderecoFields, true, false);
+            }
+        } else if (sourceType === 'conservation_area') {
+            // --- SPRINT 21: Lógica para Área de Conservação (Atualizado) ---
+            const plantioField = ['plantio'];
+            if (sanitizedData.area_plantada === 'Sim') {
+                setFieldsState(rowElement, plantioField, false, false);
+            } else {
+                setFieldsState(rowElement, plantioField, true, true);
             }
         }
     }
@@ -635,6 +674,8 @@ document.addEventListener('DOMContentLoaded', () => {
         let rowData = getRowDataFromDOM(editedRow, headers);
 
         const headerOfEditedCell = cell.dataset.header;
+        
+        // 1. AutoFill Logic
         if (currentSchema.autoFillMap && currentSchema.autoFillMap[headerOfEditedCell]) {
             const rule = currentSchema.autoFillMap[headerOfEditedCell];
             const triggerValue = getCellValue(cell);
@@ -643,6 +684,34 @@ document.addEventListener('DOMContentLoaded', () => {
             if (targetCell) {
                 targetCell.textContent = triggerValue ? (rule.map[triggerValue] || '') : '';
             }
+            rowData = getRowDataFromDOM(editedRow, headers);
+        }
+
+        // 2. --- NOVO: Dependency Logic (Dropdowns Dinâmicos na Tabela) ---
+        if (currentSchema.dependencyMap && currentSchema.dependencyMap.triggerField === headerOfEditedCell) {
+            const triggerValue = getCellValue(cell);
+            const targetHeader = currentSchema.dependencyMap.targetField;
+            const targetCell = editedRow.querySelector(`td[data-header="${targetHeader}"]`);
+            
+            if (targetCell) {
+                const targetSelect = targetCell.querySelector('select');
+                if (targetSelect) {
+                    targetSelect.innerHTML = '<option value="">-- Selecione --</option>';
+                    
+                    if (triggerValue && currentSchema.dependencyMap.data[triggerValue]) {
+                        const newOptions = currentSchema.dependencyMap.data[triggerValue];
+                        newOptions.forEach(opt => {
+                            const option = document.createElement('option');
+                            option.value = opt;
+                            option.textContent = opt;
+                            targetSelect.appendChild(option);
+                        });
+                    }
+                    // Limpa o valor antigo, pois provavelmente é inválido para a nova lista
+                    targetSelect.value = "";
+                }
+            }
+            // Atualiza rowData com a nova informação (valor limpo)
             rowData = getRowDataFromDOM(editedRow, headers);
         }
         
@@ -750,7 +819,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const friendlyData = dataToExport.map(row => {
             const newRow = {};
             for (const key in row) {
-                const displayName = currentSchema.headerDisplayNames[key] || key;
+                let displayName = currentSchema.headerDisplayNames[key] || key;
+                // --- SPRINT 19: Lógica Dinâmica na Exportação ---
+                displayName = resolveDynamicHeader(displayName, currentReportYear);
                 newRow[displayName] = row[key];
             }
             return newRow;

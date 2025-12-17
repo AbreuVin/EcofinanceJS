@@ -360,7 +360,7 @@ app.post('/api/save-data/:tableName', (req, res) => {
     const { tableName } = req.params;
     const dataRows = req.body;
     
-    // --- SPRINT 20: Mapeamento de tabelas ---
+    // --- SPRINT 21: Mapeamento de tabelas ---
     const allowedTables = { 
         combustao_movel: 'mobile_combustion_data', 
         combustao_estacionaria: 'stationary_combustion_data', 
@@ -382,7 +382,9 @@ app.post('/api/save-data/:tableName', (req, res) => {
         home_office: 'home_office_data',
         air_travel: 'air_travel_data',
         employee_commuting: 'employee_commuting_data',
-        energy_generation: 'energy_generation_data' // --- SPRINT 18: NOVO ---
+        energy_generation: 'energy_generation_data',
+        planted_forest: 'planted_forest_data',
+        conservation_area: 'conservation_area_data'
     };
 
     if (!allowedTables[tableName]) { return res.status(400).json({ message: "Tipo de tabela inválido." }); }
@@ -403,7 +405,8 @@ app.post('/api/save-data/:tableName', (req, res) => {
                 'local_controlado_empresa': 'local_controlado_empresa',
                 'informar_cidade_uf': 'informar_cidade_uf',
                 'bens_terceiros': 'bens_terceiros',
-                'km_reembolsado': 'km_reembolsado'
+                'km_reembolsado': 'km_reembolsado',
+                'area_plantada': 'area_plantada'
             };
             
             for (const frontEndKey in booleanFields) {
@@ -419,6 +422,13 @@ app.post('/api/save-data/:tableName', (req, res) => {
             }
 
             const sanitizedRow = {};
+            
+            // --- SPRINT 21: Auto-preencher Descrição para Conservation Area ---
+            if (tableName === 'conservation_area') {
+                // Combina Bioma e Fitofisionomia para ter uma descrição útil no banco
+                row.descricao = `${row.bioma || ''} - ${row.fitofisionomia || ''}`;
+            }
+
             for (const key in row) {
                 if (row[key] !== '' && row[key] !== null && row[key] !== undefined) {
                     sanitizedRow[key] = row[key];
@@ -589,7 +599,9 @@ app.get('/api/intelligent-template/:sourceType', (req, res) => {
         home_office: 'regime_trabalho',
         air_travel: 'descricao_viagem',
         employee_commuting: 'descricao_identificadora',
-        energy_generation: 'fonte_geracao' // --- SPRINT 18 (Refinamento): Mapeado para 'fonte_geracao' ---
+        energy_generation: 'fonte_geracao',
+        planted_forest: 'identificacao_area',
+        conservation_area: 'bioma' // --- SPRINT 21: Mapeado 'bioma' como chave principal do template ---
     };
     
     const getTypologies = new Promise((resolve, reject) => {
@@ -630,8 +642,10 @@ app.get('/api/intelligent-template/:sourceType', (req, res) => {
                     if (['solid_waste', 'electricity_purchase'].includes(sourceType)) {
                         row[mainDescriptionKey] = assetFields[mainDescriptionKey] || '';
                     } else if (sourceType === 'energy_generation') {
-                        // Para energia, o nome da fonte vem do campo 'fonte_geracao' da tipologia
                         row[mainDescriptionKey] = assetFields.fonte_geracao || typo.description;
+                    } else if (sourceType === 'conservation_area') {
+                        // SPRINT 21: Para conservation_area, usa 'bioma' da fonte como chave principal
+                        row[mainDescriptionKey] = assetFields.bioma || '';
                     } else {
                         row[mainDescriptionKey] = typo.description;
                     }
