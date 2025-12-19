@@ -271,6 +271,9 @@ app.post('/api/upload', upload.single('file'), (req, res) => {
             headerMap[normalizeHeader(schema.headerDisplayNames[key])] = key;
         }
 
+        // Adiciona mapeamento para a chave oculta se ela existir no arquivo
+        headerMap['id_fonte'] = 'id_fonte';
+
         if (req.file.originalname.endsWith('.xlsx') || req.file.originalname.endsWith('.xls')) {
             const workbook = xlsx.readFile(filePath);
             const sheetName = workbook.SheetNames[0];
@@ -349,7 +352,7 @@ app.post('/api/export', (req, res) => {
         const buffer = xlsx.write(workbook, { bookType: 'xlsx', type: 'buffer' });
         const fileName = tableName ? `${tableName}_export.xlsx` : 'export.xlsx';
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        res.setHeader('Content-Disposition', `attachment; filename=${fileName}`);
+        res.setHeader('Content-Disposition', `attachment; filename=${fileName}_export.xlsx`);
         res.status(200).send(buffer);
     } catch (error) {
         console.error("Erro ao exportar para Excel:", error);
@@ -428,6 +431,9 @@ app.post('/api/save-data/:tableName', (req, res) => {
                 // Combina Bioma e Fitofisionomia para ter uma descrição útil no banco
                 row.descricao = `${row.bioma || ''} - ${row.fitofisionomia || ''}`;
             }
+            
+            // Remove a chave oculta antes de salvar
+            delete row.id_fonte;
 
             for (const key in row) {
                 if (row[key] !== '' && row[key] !== null && row[key] !== undefined) {
@@ -601,7 +607,7 @@ app.get('/api/intelligent-template/:sourceType', (req, res) => {
         employee_commuting: 'descricao_identificadora',
         energy_generation: 'fonte_geracao',
         planted_forest: 'identificacao_area',
-        conservation_area: 'bioma' // --- SPRINT 21: Mapeado 'bioma' como chave principal do template ---
+        conservation_area: 'bioma' 
     };
     
     const getTypologies = new Promise((resolve, reject) => {
@@ -637,6 +643,7 @@ app.get('/api/intelligent-template/:sourceType', (req, res) => {
                 row['ano'] = reportYear;
                 row['periodo'] = period;
                 row['unidade_empresarial'] = typo.unit_name;
+                row['id_fonte'] = typo.id; // --- Chave Primária Oculta ---
                 
                 if (mainDescriptionKey) {
                     if (['solid_waste', 'electricity_purchase'].includes(sourceType)) {
@@ -644,19 +651,20 @@ app.get('/api/intelligent-template/:sourceType', (req, res) => {
                     } else if (sourceType === 'energy_generation') {
                         row[mainDescriptionKey] = assetFields.fonte_geracao || typo.description;
                     } else if (sourceType === 'conservation_area') {
-                        // SPRINT 21: Para conservation_area, usa 'bioma' da fonte como chave principal
                         row[mainDescriptionKey] = assetFields.bioma || '';
                     } else {
                         row[mainDescriptionKey] = typo.description;
                     }
                 }
                 
+                // --- INSERÇÃO DE DADOS DO CADASTRO NO JSON (Para Front-end) ---
                 for (const assetKey in assetFields) { 
                     if (row.hasOwnProperty(assetKey)) { 
                         row[assetKey] = assetFields[assetKey]; 
                     } 
                 }
                 
+                // --- Preenchimentos Específicos ---
                 if (sourceType === 'solid_waste' && assetFields.destinacao_final === 'Aterro') {
                     row['informar_cidade_uf'] = assetFields.cidade_uf_destino || '';
                 }
@@ -669,6 +677,7 @@ app.get('/api/intelligent-template/:sourceType', (req, res) => {
                     row['unidade'] = 'Unidades';
                 }
                 
+                // --- AutoFill (Unidades baseadas em Combustível) ---
                 if (schema.autoFillMap) {
                     for (const triggerKey in schema.autoFillMap) {
                         const rule = schema.autoFillMap[triggerKey];
@@ -691,9 +700,30 @@ app.get('/api/intelligent-template/:sourceType', (req, res) => {
         }
         
         try {
+            // --- LÓGICA DE EXCLUSÃO DE COLUNAS DO EXCEL ---
+            const excludeColumns = [];
+            
+            // Regra para Controlado pela Empresa (Agora inclui combustao_movel)
+            if (['combustao_estacionaria', 'combustao_movel', 'ippu_lubrificantes', 'emissoes_fugitivas', 'fertilizantes'].includes(sourceType)) {
+                excludeColumns.push('controlado_empresa');
+            }
+            
+            // Regra para Unidade
+            if (['combustao_estacionaria', 'ippu_lubrificantes'].includes(sourceType)) {
+                 excludeColumns.push('unidade'); 
+            }
+            
+            // Regra para Unidade de Consumo (Específica para Combustão Móvel)
+            if (sourceType === 'combustao_movel') {
+                excludeColumns.push('unidade_consumo');
+            }
+
             const dataWithHeaderNames = dataForExcel.map(row => {
                 const newRow = {};
                 for (const key in row) {
+                    if (key === 'id_fonte') continue; // Remove ID oculto do Excel visual
+                    if (excludeColumns.includes(key)) continue; // Remove colunas proibidas
+
                     if (headers[key]) {
                         newRow[headers[key]] = row[key];
                     }
@@ -701,8 +731,13 @@ app.get('/api/intelligent-template/:sourceType', (req, res) => {
                 return newRow;
             });
 
-            const worksheet = xlsx.utils.json_to_sheet(dataWithHeaderNames, { header: Object.values(headers) });
-            worksheet['!cols'] = Object.values(headers).map(header => ({ wch: Math.max(header.length, 15) + 2 }));
+            // Filtra os cabeçalhos também
+            const finalHeaders = Object.keys(headers)
+                .filter(key => !excludeColumns.includes(key))
+                .map(key => headers[key]);
+
+            const worksheet = xlsx.utils.json_to_sheet(dataWithHeaderNames, { header: finalHeaders });
+            worksheet['!cols'] = finalHeaders.map(header => ({ wch: Math.max(header.length, 15) + 2 }));
             const workbook = xlsx.utils.book_new();
             const sheetName = schema.displayName.substring(0, 31);
             xlsx.utils.book_append_sheet(workbook, worksheet, sheetName);

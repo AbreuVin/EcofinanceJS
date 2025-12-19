@@ -109,11 +109,9 @@ const BIOME_DATA = {
     ]
 };
 
-// Flatten para valid options no importer inicial
 const ALL_FITOFISIONOMIAS = [...new Set(Object.values(BIOME_DATA).flat())].sort();
 
 export const validationSchemas = {
-    // --- SPRINT 21: ÁREA DE CONSERVAÇÃO ---
     conservation_area: {
         displayName: "Área de Conservação",
         hasUnits: true,
@@ -121,7 +119,6 @@ export const validationSchemas = {
             ano: "Ano",
             periodo: "Período",
             unidade_empresarial: "Unidade Empresarial",
-            // DESCRIÇÃO REMOVIDA DAQUI - Outros campos identificam a fonte
             bioma: "Bioma",
             fitofisionomia: "Fitofisionomia",
             area_plantada: "Área de conservação plantada?",
@@ -147,17 +144,14 @@ export const validationSchemas = {
             const errors = {};
             const isFilled = (value) => value !== null && value !== undefined && value !== '';
 
-            // 1. Campos Padrão
             if (!rowData.ano || isNaN(parseInt(rowData.ano)) || String(rowData.ano).length !== 4) errors.ano = "Deve ser um ano com 4 dígitos.";
             if (!this.validOptions.periodo.includes(rowData.periodo)) errors.periodo = "Período inválido.";
             if (!rowData.unidade_empresarial) errors.unidade_empresarial = "Obrigatório.";
             
-            // 3. Bioma e Fitofisionomia (Dependência)
             if (!this.validOptions.bioma.includes(rowData.bioma)) {
                 errors.bioma = "Selecione um bioma válido.";
             }
             
-            // Valida se a fitofisionomia existe e se pertence ao bioma selecionado
             if (rowData.bioma) {
                 const validFitosForBiome = BIOME_DATA[rowData.bioma];
                 if (!validFitosForBiome) {
@@ -173,7 +167,6 @@ export const validationSchemas = {
                 errors.fitofisionomia = "Obrigatório.";
             }
 
-            // 4. Área Plantada e Plantio (Texto)
             const normalizedPlantada = normalizeString(rowData.area_plantada);
             if (['sim', 's'].includes(normalizedPlantada)) rowData.area_plantada = 'Sim';
             else if (['nao', 'n'].includes(normalizedPlantada)) rowData.area_plantada = 'Não';
@@ -192,7 +185,6 @@ export const validationSchemas = {
                 }
             }
 
-            // 5. Áreas (Floats)
             const areaInicioVal = rowData.area_inicio_ano;
             if (!isFilled(areaInicioVal) || isNaN(parseFloat(areaInicioVal)) || parseFloat(areaInicioVal) < 0) {
                 errors.area_inicio_ano = "Deve ser um número positivo ou zero.";
@@ -201,13 +193,6 @@ export const validationSchemas = {
             const areaFimVal = rowData.area_fim_ano;
             if (!isFilled(areaFimVal) || isNaN(parseFloat(areaFimVal)) || parseFloat(areaFimVal) < 0) {
                 errors.area_fim_ano = "Deve ser um número positivo ou zero.";
-            }
-
-            // 6. Motivo da Alteração
-            if (isFilled(areaInicioVal) && isFilled(areaFimVal)) {
-                const areaInicio = parseFloat(areaInicioVal);
-                const areaFim = parseFloat(areaFimVal);
-                // Validar motivo se necessário no futuro
             }
 
             return { isValid: Object.keys(errors).length === 0, errors: errors, sanitizedData: rowData };
@@ -229,8 +214,20 @@ export const validationSchemas = {
         validOptions: {
             periodo: ["Anual", "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"],
             fonte_energia: ["Sistema Interligado Nacional", "Mercado Livre Convencional", "Mercado Livre Incentivado", "Fonte Energética Específica"],
-            especificar_fonte: ["Solar", "Eólica", "Biomassa"],
+            // Atualizado com novas opções
+            especificar_fonte: ["Solar", "Eólica", "Biomassa", "Não identificado", "Outros tipos de fonte"],
             unidade_medida: ["kWh", "MWh"]
+        },
+        // Novo Dependency Map para Compra de Eletricidade
+        dependencyMap: {
+            triggerField: "fonte_energia",
+            targetField: "especificar_fonte",
+            data: {
+                "Mercado Livre Convencional": ["Solar", "Eólica", "Biomassa", "Não identificado", "Outros tipos de fonte"],
+                "Mercado Livre Incentivado": ["Solar", "Eólica", "Biomassa", "Não identificado"],
+                "Fonte Energética Específica": ["Solar", "Eólica", "Biomassa", "Não identificado"],
+                "Sistema Interligado Nacional": []
+            }
         },
         autoFillMap: {},
         validateRow: function(rowData) {
@@ -246,8 +243,9 @@ export const validationSchemas = {
             }
 
             const consumoVal = rowData.consumo;
-            if (!isFilled(consumoVal) || isNaN(parseFloat(consumoVal)) || parseFloat(consumoVal) <= 0) {
-                errors.consumo = `Entrada inválida ('${consumoVal}'). Insira um número decimal e positivo.`;
+            // Alterado de <= 0 para < 0 para permitir zero
+            if (!isFilled(consumoVal) || isNaN(parseFloat(consumoVal)) || parseFloat(consumoVal) < 0) {
+                errors.consumo = `Entrada inválida ('${consumoVal}'). Insira um número decimal positivo ou zero.`;
             }
 
             if (!this.validOptions.unidade_medida.includes(rowData.unidade_medida)) {
@@ -256,8 +254,18 @@ export const validationSchemas = {
 
             const isSIN = rowData.fonte_energia === 'Sistema Interligado Nacional';
             if (!isSIN) {
-                if (!this.validOptions.especificar_fonte.includes(rowData.especificar_fonte)) {
+                // Se não for SIN, deve especificar fonte, MAS devemos validar se a opção escolhida
+                // é válida para o tipo de fonte selecionado (usando a lógica do dependencyMap ou validOptions geral)
+                if (!isFilled(rowData.especificar_fonte)) {
                     errors.especificar_fonte = "Obrigatório selecionar uma especificação para esta fonte de energia.";
+                } else if (!this.validOptions.especificar_fonte.includes(rowData.especificar_fonte)) {
+                    errors.especificar_fonte = "Especificação inválida.";
+                } else {
+                    // Validação extra de dependência (opcional, mas boa para consistência)
+                    const allowedOptions = this.dependencyMap.data[rowData.fonte_energia];
+                    if (allowedOptions && !allowedOptions.includes(rowData.especificar_fonte)) {
+                        errors.especificar_fonte = `A opção '${rowData.especificar_fonte}' não é válida para '${rowData.fonte_energia}'.`;
+                    }
                 }
             } else {
                 if (isFilled(rowData.especificar_fonte)) {
@@ -328,7 +336,7 @@ export const validationSchemas = {
             }
             
             if (rowData.destinacao_final === 'Aterro') {
-                // Validação removida pois o campo agora é texto livre preenchido pelo cadastro
+                
             } else {
                 if (isFilled(rowData.informar_cidade_uf)) {
                     errors.informar_cidade_uf = "Este campo só deve ser preenchido se a destinação for 'Aterro'.";

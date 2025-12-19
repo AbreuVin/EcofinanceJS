@@ -18,10 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     if(downloadIntelligentBtn) downloadIntelligentBtn.textContent = 'Baixar Template';
 
-    // --- SPRINT 21: 'plantio' agora é texto, removido daqui ---
     const INTEGER_FIELDS = [ 'quantidade_vendida', 'num_trabalhadores', 'numero_viagens', 'num_funcionarios', 'dias_deslocados', 'idade_antepenultimo', 'idade_penultimo' ];
-    
-    // --- SPRINT 21: Adicionado 'area_inicio_ano', 'area_fim_ano' ---
     const DECIMAL_FIELDS = [ 'consumo', 'distancia_percorrida', 'quantidade_reposta', 'quantidade_kg', 'percentual_nitrogenio', 'percentual_carbonato', 'area_hectare', 'qtd_efluente_liquido_m3', 'qtd_componente_organico', 'qtd_nitrogenio_mg_l', 'componente_organico_removido_lodo', 'carga_horaria_media', 'quantidade_gerado', 'quantidade', 'valor_aquisicao', 'distancia_trecho', 'carga_transportada', 'distancia_km', 'total_geracao', 'area_antepenultimo', 'area_colhida_penultimo', 'area_atual', 'area_inicio_ano', 'area_fim_ano' ];
 
     let currentSchema = null;
@@ -30,6 +27,9 @@ document.addEventListener('DOMContentLoaded', () => {
     let maskInstances = {};
     let maskIdCounter = 0;
     let currentReportYear = null;
+    
+    // --- VARIÁVEL: Armazena a "Verdade" do Banco de Dados para cruzamento ---
+    let referenceData = []; 
 
     // --- UTILS ---
     function loadNavbar() {
@@ -86,7 +86,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- HELPER: Substituição Dinâmica de Ano ---
     function resolveDynamicHeader(displayName, reportYear) {
         if (!reportYear) return displayName;
         const yearInt = parseInt(reportYear);
@@ -112,10 +111,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const activeRowsData = [];
         
         document.querySelectorAll('#table-container tbody tr').forEach(row => {
-            const isLocked = row.querySelector('input:disabled, select:disabled');
-            if (!isLocked) {
-                activeRowsData.push(getRowDataFromDOM(row, headers));
-            }
+            activeRowsData.push(getRowDataFromDOM(row, headers));
         });
 
         if (activeRowsData.length > 0) {
@@ -127,7 +123,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function checkAndLoadDraft() {
         const key = getDraftKey();
-        if (!key) return;
+        if (key) return;
 
         const savedDraft = localStorage.getItem(key);
         if (savedDraft) {
@@ -149,7 +145,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (key) localStorage.removeItem(key);
     }
 
-    // --- LÓGICA DE REDIMENSIONAMENTO DE COLUNA (EXCEL-LIKE) ---
     function createResizableHeaders(table) {
         const cols = table.querySelectorAll('th');
         [].forEach.call(cols, function (col) {
@@ -157,7 +152,6 @@ document.addEventListener('DOMContentLoaded', () => {
             resizer.classList.add('resizer');
             resizer.style.height = `${table.offsetHeight}px`; 
             col.appendChild(resizer);
-            
             createResizableColumn(col, resizer);
         });
     }
@@ -206,10 +200,13 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        if (sourceType === 'emissoes_fugitivas' || sourceType === 'fertilizantes') {
-            cleanedRow['unidade'] = 'kg';
+        // --- LÓGICA ATUALIZADA PARA ELETRICIDADE ---
+        if (sourceType === 'electricity_purchase') {
+            if (cleanedRow.fonte_energia === 'Sistema Interligado Nacional') {
+                cleanedRow.especificar_fonte = ''; // Limpa se for SIN
+            }
         }
-        
+
         if (sourceType === 'combustao_movel' && cleanedRow.tipo_entrada) {
             if (cleanedRow.tipo_entrada === 'consumo') {
                 ['distancia_percorrida', 'unidade_distancia', 'tipo_veiculo'].forEach(k => cleanedRow[k] = '');
@@ -231,8 +228,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 cleanedRow.quantidade = '';
                 cleanedRow.unidade = '';
             }
-        } else if (sourceType === 'capital_goods') {
-            cleanedRow.unidade = 'Unidades';
         } else if (sourceType === 'upstream_transport' && cleanedRow.tipo_reporte) {
             if (cleanedRow.tipo_reporte === 'Consumo') {
                 ['classificacao_veiculo', 'distancia_trecho', 'unidade_distancia', 'carga_transportada', 'numero_viagens'].forEach(k => cleanedRow[k] = '');
@@ -252,7 +247,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 ['combustivel', 'consumo', 'unidade_consumo'].forEach(k => cleanedRow[k] = '');
             }
         } else if (sourceType === 'employee_commuting' && cleanedRow.tipo_reporte) {
-            // --- SPRINT 20: Lógica para Transporte de Funcionários ---
             if (cleanedRow.tipo_reporte === 'Consumo') {
                 ['distancia_km', 'endereco_funcionario', 'endereco_trabalho'].forEach(k => cleanedRow[k] = '');
             } else if (cleanedRow.tipo_reporte === 'Distância') {
@@ -261,21 +255,67 @@ document.addEventListener('DOMContentLoaded', () => {
                 ['tipo_combustivel', 'consumo', 'unidade_consumo', 'distancia_km'].forEach(k => cleanedRow[k] = '');
             }
         } else if (sourceType === 'conservation_area') {
-            // --- SPRINT 21: Lógica para Área de Conservação (Atualizado) ---
             if (cleanedRow.area_plantada === 'Não') {
-                cleanedRow.plantio = ''; // Limpa o campo plantio (texto)
+                cleanedRow.plantio = ''; 
             }
         }
         
         return cleanedRow;
     }
 
+    // --- FUNÇÃO: Merge com Fonte da Verdade (Cadastro) ---
+    function mergeUploadedDataWithReference(uploadedRows) {
+        if (!referenceData || referenceData.length === 0) return uploadedRows;
+        
+        const descriptionKeyMap = { 
+            combustao_estacionaria: 'descricao_da_fonte', 
+            combustao_movel: 'descricao_fonte', 
+            ippu_lubrificantes: 'fonte_emissao', 
+            emissoes_fugitivas: 'fonte_emissao', 
+            fertilizantes: 'tipo_fertilizante' 
+        };
+        const descKey = descriptionKeyMap[tableSelector.value];
+
+        return uploadedRows.map(row => {
+            let match = null;
+            
+            if (row.id_fonte) {
+                match = referenceData.find(ref => String(ref.id_fonte) === String(row.id_fonte));
+            }
+
+            if (!match && descKey && row.unidade_empresarial && row[descKey]) {
+                match = referenceData.find(ref => 
+                    ref.unidade_empresarial === row.unidade_empresarial &&
+                    ref[descKey] === row[descKey] &&
+                    ref.periodo === row.periodo 
+                );
+            }
+
+            if (match) {
+                if (!row.id_fonte) row.id_fonte = match.id_fonte;
+                if (match.controlado_empresa) row.controlado_empresa = match.controlado_empresa;
+                if (match.unidade) row.unidade = match.unidade;
+                if (match.unidade_consumo) row.unidade_consumo = match.unidade_consumo;
+                if (match.combustivel_estacionario) row.combustivel_estacionario = match.combustivel_estacionario;
+                if (match.tipo_gas) row.tipo_gas = match.tipo_gas;
+                if (match.tipo_lubrificante) row.tipo_lubrificante = match.tipo_lubrificante;
+            }
+            
+            return row;
+        });
+    }
+
     function generateTable(data, fromUpload = false) {
         if (!currentSchema) return;
         
+        let processedData = data;
+        if (fromUpload) {
+            processedData = mergeUploadedDataWithReference(data);
+        }
+
         let tbody = tableContainer.querySelector('tbody');
         if (!tbody) {
-             if (!fromUpload && data.length === 0) {
+             if (!fromUpload && processedData.length === 0) {
                 tableContainer.innerHTML = `<p style="text-align: center; margin: 2rem 0;">Nenhuma fonte cadastrada para o ano de ${currentReportYear}. Cadastre na aba "Cadastro de Fontes".</p>`;
                 return;
             }
@@ -285,7 +325,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const headers = Object.keys(currentSchema.headerDisplayNames);
 
-        data.forEach((originalRowData, index) => {
+        processedData.forEach((originalRowData, index) => {
             const cleanedData = fromUpload ? sanitizeAndPreprocessRow(originalRowData) : originalRowData;
             const validationResult = currentSchema.validateRow(cleanedData, managedOptionsCache);
             const rowElement = buildTableRow(cleanedData, headers, index);
@@ -323,7 +363,6 @@ document.addEventListener('DOMContentLoaded', () => {
         
         headers.forEach(headerKey => {
             const th = document.createElement('th');
-            // --- SPRINT 19: Lógica Dinâmica de Cabeçalho (ex: {ANO-1} -> 2023) ---
             const rawDisplayName = currentSchema.headerDisplayNames[headerKey] || headerKey;
             th.textContent = resolveDynamicHeader(rawDisplayName, currentReportYear);
             headerRow.appendChild(th);
@@ -345,22 +384,37 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function buildTableRow(rowData, headers, rowIndex) {
         const row = document.createElement('tr');
+        
+        if (rowData.id_fonte) {
+            row.dataset.idFonte = rowData.id_fonte;
+        }
+
         headers.forEach(header => {
             const cell = document.createElement('td');
             cell.dataset.header = header;
             const currentValue = rowData[header] || "";
             const isAutoFilledUnit = currentSchema.autoFillMap && Object.values(currentSchema.autoFillMap).some(rule => rule.targetColumn === header);
             
-            // --- SPRINT 21: Lógica Dinâmica para Dropdowns (ex: Bioma -> Fitofisionomia) ---
+            let forceDisabled = false;
+            // Regras de Bloqueio Visual (Fonte da Verdade)
+            if (header === 'controlado_empresa' && ['combustao_estacionaria', 'combustao_movel', 'ippu_lubrificantes', 'emissoes_fugitivas', 'fertilizantes'].includes(tableSelector.value)) {
+                forceDisabled = true;
+            }
+            if (header === 'unidade' && ['combustao_estacionaria', 'ippu_lubrificantes'].includes(tableSelector.value)) {
+                forceDisabled = true;
+            }
+            if (header === 'unidade_consumo' && tableSelector.value === 'combustao_movel') {
+                forceDisabled = true;
+            }
+
             let options = managedOptionsCache[header];
+            // --- LÓGICA DE DEPENDÊNCIA (Dropdown Dinâmico) ---
             if (currentSchema.dependencyMap && currentSchema.dependencyMap.targetField === header) {
-                // Se este campo é um alvo de dependência, busque as opções baseadas no gatilho
                 const triggerHeader = currentSchema.dependencyMap.triggerField;
                 const triggerValue = rowData[triggerHeader];
                 if (triggerValue && currentSchema.dependencyMap.data[triggerValue]) {
                     options = currentSchema.dependencyMap.data[triggerValue];
                 } else {
-                    // Se não houver gatilho selecionado, mostra lista vazia ou todas (vamos mostrar vazio para forçar seleção)
                     options = []; 
                 }
             }
@@ -388,6 +442,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
                 cell.appendChild(select);
                 select.value = currentValue;
+                
+                if (forceDisabled) {
+                    select.disabled = true;
+                    select.style.backgroundColor = '#f0f0f0'; 
+                    select.title = "Este dado é definido no Cadastro da Fonte.";
+                }
+
             } else if (DECIMAL_FIELDS.includes(header) || INTEGER_FIELDS.includes(header)) {
                 const input = document.createElement('input');
                 input.type = 'text';
@@ -416,8 +477,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 cell.appendChild(select);
                 select.value = currentValue;
             } else {
-                cell.setAttribute('contenteditable', 'true');
-                cell.textContent = currentValue;
+                if (forceDisabled) {
+                    cell.setAttribute('contenteditable', 'false');
+                    cell.textContent = currentValue;
+                    cell.style.backgroundColor = '#f0f0f0';
+                    cell.title = "Este dado é definido no Cadastro da Fonte.";
+                } else {
+                    cell.setAttribute('contenteditable', 'true');
+                    cell.textContent = currentValue;
+                }
             }
             row.appendChild(cell);
         });
@@ -440,6 +508,11 @@ document.addEventListener('DOMContentLoaded', () => {
     
     function getRowDataFromDOM(rowElement, headers) {
         const rowData = {};
+        
+        if (rowElement.dataset.idFonte) {
+            rowData.id_fonte = rowElement.dataset.idFonte;
+        }
+
         headers.forEach((header) => {
             const cell = rowElement.querySelector(`td[data-header="${header}"]`);
             if(cell) rowData[header] = getCellValue(cell);
@@ -462,6 +535,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 setFieldsState(rowElement, distanciaFields, true, false);
                 setFieldsState(rowElement, consumoFields, true, false);
             }
+        } else if (sourceType === 'electricity_purchase') {
+            // --- ATENÇÃO: Lógica Visual para Eletricidade (Show/Hide) ---
+            const especificarFonteField = ['especificar_fonte'];
+            const isSIN = sanitizedData.fonte_energia === 'Sistema Interligado Nacional';
+            setFieldsState(rowElement, especificarFonteField, isSIN, isSIN);
         } else if (sourceType === 'efluentes_controlados') {
             const tratamentoField = ['tipo_tratamento'];
             const destinoFinalField = ['tipo_destino_final'];
@@ -482,10 +560,6 @@ document.addEventListener('DOMContentLoaded', () => {
              } else {
                 setFieldsState(rowElement, vegNaturalFields, false, false);
              }
-        } else if (sourceType === 'electricity_purchase') {
-            const especificarFonteField = ['especificar_fonte'];
-            const isSIN = sanitizedData.fonte_energia === 'Sistema Interligado Nacional';
-            setFieldsState(rowElement, especificarFonteField, isSIN, isSIN);
         } else if (sourceType === 'purchased_goods_services') {
             const qtdUnidFields = ['quantidade', 'unidade'];
             if (sanitizedData.tipo_item === 'Serviço') {
@@ -510,8 +584,6 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (sourceType === 'business_travel_land') {
             const consumoFields = ['combustivel', 'consumo', 'unidade_consumo'];
             const distanciaFields = ['distancia_percorrida', 'unidade_distancia'];
-            // modal_viagem e km_reembolsado não entram aqui pois são sempre habilitados
-            
             if (sanitizedData.tipo_reporte === 'Consumo') {
                 setFieldsState(rowElement, distanciaFields, true, true);
                 setFieldsState(rowElement, consumoFields, false, false);
@@ -525,7 +597,6 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (sourceType === 'downstream_transport' || sourceType === 'waste_transport') {
             const consumoFields = ['combustivel', 'consumo', 'unidade_consumo'];
             const distanciaFields = ['classificacao_veiculo', 'distancia_trecho', 'unidade_distancia', 'carga_transportada', 'numero_viagens'];
-            
             if (sanitizedData.tipo_reporte === 'Consumo') {
                 setFieldsState(rowElement, distanciaFields, true, true);
                 setFieldsState(rowElement, consumoFields, false, false);
@@ -537,7 +608,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 setFieldsState(rowElement, distanciaFields, true, false);
             }
         } else if (sourceType === 'employee_commuting') {
-            // --- SPRINT 20: Lógica Visual para Transporte de Funcionários ---
             const consumoFields = ['tipo_combustivel', 'consumo', 'unidade_consumo'];
             const distanciaFields = ['distancia_km'];
             const enderecoFields = ['endereco_funcionario', 'endereco_trabalho'];
@@ -560,7 +630,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 setFieldsState(rowElement, enderecoFields, true, false);
             }
         } else if (sourceType === 'conservation_area') {
-            // --- SPRINT 21: Lógica para Área de Conservação (Atualizado) ---
             const plantioField = ['plantio'];
             if (sanitizedData.area_plantada === 'Sim') {
                 setFieldsState(rowElement, plantioField, false, false);
@@ -591,7 +660,9 @@ document.addEventListener('DOMContentLoaded', () => {
     function checkTableAndToggleSaveButton() {
         const hasAnyErrors = tableContainer.querySelector('.invalid-cell');
         const activeRows = Array.from(tableContainer.querySelectorAll('tbody tr')).filter(row => {
-            return !row.querySelector('input:disabled, select:disabled');
+            const allInputs = Array.from(row.querySelectorAll('input, select'));
+            const allDisabled = allInputs.length > 0 && allInputs.every(el => el.disabled);
+            return !allDisabled && !row.classList.contains('saved-row');
         });
         
         const hasActiveRows = activeRows.length > 0;
@@ -609,7 +680,7 @@ document.addEventListener('DOMContentLoaded', () => {
             feedbackDiv.textContent = 'Todos os dados são válidos! Você pode salvar.';
             feedbackDiv.style.color = 'green';
         } else if (!hasActiveRows && hasAnyRows) {
-            feedbackDiv.textContent = "Todos os dados exibidos já foram salvos.";
+            feedbackDiv.textContent = "Todos os dados exibidos já foram salvos ou estão travados.";
             feedbackDiv.style.color = 'green';
         } else {
             feedbackDiv.textContent = "";
@@ -647,7 +718,6 @@ document.addEventListener('DOMContentLoaded', () => {
                                 input.value = '';
                             }
                         } else {
-                            // Limpa texto puro se não houver input (ex: unidades auto-preenchidas)
                             cell.textContent = '';
                         }
                     }
@@ -655,7 +725,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (input) input.disabled = true;
                 } else {
                     const isAutoFilledUnit = currentSchema.autoFillMap && Object.values(currentSchema.autoFillMap).some(rule => rule.targetColumn === fieldName);
-                    if(!isAutoFilledUnit) {
+                    const isSystemLocked = (fieldName === 'controlado_empresa' && ['combustao_estacionaria', 'combustao_movel', 'ippu_lubrificantes', 'emissoes_fugitivas', 'fertilizantes'].includes(tableSelector.value)) 
+                                        || (fieldName === 'unidade' && ['combustao_estacionaria', 'ippu_lubrificantes'].includes(tableSelector.value))
+                                        || (fieldName === 'unidade_consumo' && tableSelector.value === 'combustao_movel');
+
+                    if(!isAutoFilledUnit && !isSystemLocked) {
                         cell.style.backgroundColor = '';
                         const rowIsLocked = row.querySelector('.delete-row-btn').disabled === true;
                         if (input && !rowIsLocked) input.disabled = false;
@@ -687,7 +761,7 @@ document.addEventListener('DOMContentLoaded', () => {
             rowData = getRowDataFromDOM(editedRow, headers);
         }
 
-        // 2. --- NOVO: Dependency Logic (Dropdowns Dinâmicos na Tabela) ---
+        // 2. Dependency Logic
         if (currentSchema.dependencyMap && currentSchema.dependencyMap.triggerField === headerOfEditedCell) {
             const triggerValue = getCellValue(cell);
             const targetHeader = currentSchema.dependencyMap.targetField;
@@ -707,11 +781,9 @@ document.addEventListener('DOMContentLoaded', () => {
                             targetSelect.appendChild(option);
                         });
                     }
-                    // Limpa o valor antigo, pois provavelmente é inválido para a nova lista
                     targetSelect.value = "";
                 }
             }
-            // Atualiza rowData com a nova informação (valor limpo)
             rowData = getRowDataFromDOM(editedRow, headers);
         }
         
@@ -733,6 +805,7 @@ document.addEventListener('DOMContentLoaded', () => {
         saveButton.style.display = 'none';
         exportButton.style.display = 'none';
         currentReportYear = null;
+        referenceData = []; 
 
         if (currentSchema) {
             const year = prompt("Por favor, digite o ano de reporte (ex: 2024):", new Date().getFullYear());
@@ -761,12 +834,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!response.ok) throw new Error('Falha ao carregar template de dados.');
                 
                 const data = await response.json();
+                referenceData = data; 
+
                 feedbackDiv.textContent = '';
                 generateTable(data, false);
                 
                 checkAndLoadDraft();
                 
-                // --- FORÇA SCROLL PARA BAIXO ---
                 setTimeout(() => {
                     uploadSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }, 100);
@@ -818,9 +892,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const friendlyData = dataToExport.map(row => {
             const newRow = {};
+            delete row.id_fonte; 
             for (const key in row) {
                 let displayName = currentSchema.headerDisplayNames[key] || key;
-                // --- SPRINT 19: Lógica Dinâmica na Exportação ---
                 displayName = resolveDynamicHeader(displayName, currentReportYear);
                 newRow[displayName] = row[key];
             }
@@ -845,7 +919,7 @@ document.addEventListener('DOMContentLoaded', () => {
             document.body.appendChild(a);
             a.click();
             window.URL.revokeObjectURL(url);
-            feedbackDiv.textContent = 'Dados exportados com sucesso! Você pode editar no Excel e fazer upload novamente.';
+            feedbackDiv.textContent = 'Dados exportados com sucesso!';
             feedbackDiv.style.color = 'green';
         } catch (error) {
             console.error("Erro na exportação:", error);
@@ -926,8 +1000,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const dataToSave = []; 
         
         document.querySelectorAll('#table-container tbody tr').forEach(row => { 
-            const isLocked = row.querySelector('input:disabled, select:disabled');
-            if (!isLocked) {
+            if (!row.classList.contains('saved-row')) {
                 dataToSave.push(getRowDataFromDOM(row, headers)); 
             }
         }); 
@@ -951,9 +1024,7 @@ document.addEventListener('DOMContentLoaded', () => {
             feedbackDiv.style.color = 'green'; 
             
             lockSavedRows();
-            
             clearDraft();
-            
             checkTableAndToggleSaveButton(); 
             
         } catch (error) { 

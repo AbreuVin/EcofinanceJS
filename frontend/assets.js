@@ -164,16 +164,20 @@ document.addEventListener('DOMContentLoaded', () => {
             displayName: "Combustão Estacionária", 
             fields: { 
                 combustivel_estacionario: { label: "Combustível Padrão", type: "select" },
-                unidade: { label: "Unidade de Consumo", type: "text", disabled: true } 
+                unidade: { label: "Unidade de Consumo", type: "text", disabled: true },
+                controlado_empresa: { label: "Controlado pela Empresa?", type: "select", options: ["Sim", "Não"] }
             } 
         },
+        // --- ATUALIZAÇÃO AQUI (Combustão Móvel) ---
         combustao_movel: { 
             displayName: "Combustão Móvel", 
             fields: { 
                 tipo_entrada: { label: "Como os dados serão reportados?", type: "select" }, 
                 combustivel: { label: "Combustível Padrão", type: "select", showIf: { field: "tipo_entrada", value: "consumo" } }, 
                 unidade_consumo: { label: "Unidade de Consumo", type: "text", showIf: { field: "tipo_entrada", value: "consumo" }, disabled: true }, 
-                tipo_veiculo: { label: "Tipo de Veículo Padrão", type: "select", showIf: { field: "tipo_entrada", value: "distancia" } }
+                tipo_veiculo: { label: "Tipo de Veículo Padrão", type: "select", showIf: { field: "tipo_entrada", value: "distancia" } },
+                // Adicionado:
+                controlado_empresa: { label: "Controlado pela Empresa?", type: "select", options: ["Sim", "Não"] }
             } 
         },
         dados_producao_venda: { 
@@ -186,20 +190,23 @@ document.addEventListener('DOMContentLoaded', () => {
             displayName: "IPPU - Lubrificantes", 
             fields: { 
                 tipo_lubrificante: { label: "Tipo de Lubrificante Padrão", type: "select" }, 
-                unidade: { label: "Unidade de Consumo Padrão", type: "select" } 
+                unidade: { label: "Unidade de Consumo Padrão", type: "text", disabled: true },
+                controlado_empresa: { label: "Controlado pela Empresa?", type: "select", options: ["Sim", "Não"] }
             } 
         },
         emissoes_fugitivas: { 
             displayName: "Emissões Fugitivas", 
             fields: { 
-                tipo_gas: { label: "Gás Padrão", type: "select" }
+                tipo_gas: { label: "Gás Padrão", type: "select" },
+                controlado_empresa: { label: "Controlado pela Empresa?", type: "select", options: ["Sim", "Não"] }
             } 
         },
         fertilizantes: { 
             displayName: "Fertilizantes", 
             fields: { 
                 percentual_nitrogenio: { label: "Percentual de Nitrogênio Padrão (%)", type: "number", min: 0, max: 100, step: 0.01 }, 
-                percentual_carbonato: { label: "Percentual de Carbonato Padrão (%)", type: "number", min: 0, max: 100, step: 0.01 }
+                percentual_carbonato: { label: "Percentual de Carbonato Padrão (%)", type: "number", min: 0, max: 100, step: 0.01 },
+                controlado_empresa: { label: "Controlado pela Empresa?", type: "select", options: ["Sim", "Não"] }
             } 
         },
         efluentes_controlados: {
@@ -418,6 +425,16 @@ document.addEventListener('DOMContentLoaded', () => {
              }
         });
 
+        // --- VALIDAÇÃO ESPECÍFICA PARA FERTILIZANTES ---
+        if (currentSourceType === 'fertilizantes') {
+            const percN = parseFloat(asset_fields.percentual_nitrogenio) || 0;
+            const percC = parseFloat(asset_fields.percentual_carbonato) || 0;
+            if ((percN + percC) > 100) {
+                alert(`A soma das porcentagens (${(percN + percC).toFixed(2)}%) excede 100%. Por favor, corrija os valores.`);
+                return; // Interrompe o salvamento
+            }
+        }
+
         // --- Lista de Schemas que usam Descrição Customizada ---
         const usesCustomDescription = ['solid_waste', 'electricity_purchase', 'downstream_transport', 'waste_transport', 'home_office', 'air_travel', 'employee_commuting', 'energy_generation', 'planted_forest', 'conservation_area'].includes(currentSourceType);
         const mainDescriptionKey = usesCustomDescription ? Object.keys(assetSchemas[currentSourceType].fields)[0] : null;
@@ -500,7 +517,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
                     }
                         
-                    const conditionalTriggers = ['tipo_entrada', 'tratamento_ou_destino', 'uso_solo_anterior', 'destinacao_final', 'fonte_energia', 'tipo_item', 'tipo_reporte', 'combustivel', 'tipo_combustivel', 'area_plantada', 'bioma'];
+                    const conditionalTriggers = ['tipo_entrada', 'tratamento_ou_destino', 'uso_solo_anterior', 'destinacao_final', 'fonte_energia', 'tipo_item', 'tipo_reporte', 'combustivel', 'tipo_combustivel', 'area_plantada', 'bioma', 'tipo_lubrificante'];
                     if (conditionalTriggers.includes(key)) {
                         input.dispatchEvent(new Event('change', { bubbles: true }));
                     }
@@ -543,7 +560,7 @@ document.addEventListener('DOMContentLoaded', () => {
             descriptionGroup.querySelector('input').required = true;
         }
 
-        const triggerFields = ['field-tipo_entrada', 'field-tratamento_ou_destino', 'uso_solo_anterior', 'field-combustivel', 'field-combustivel_estacionario', 'field-destinacao_final', 'field-fonte_energia', 'field-tipo_item', 'field-tipo_reporte', 'field-tipo_combustivel', 'field-area_plantada', 'field-bioma'];
+        const triggerFields = ['field-tipo_entrada', 'field-tratamento_ou_destino', 'uso_solo_anterior', 'field-combustivel', 'field-combustivel_estacionario', 'field-destinacao_final', 'field-fonte_energia', 'field-tipo_item', 'field-tipo_reporte', 'field-tipo_combustivel', 'field-area_plantada', 'field-bioma', 'field-tipo_lubrificante'];
         triggerFields.forEach(id => {
             const trigger = document.getElementById(id);
             if (trigger) trigger.dispatchEvent(new Event('change'));
