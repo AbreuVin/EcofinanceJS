@@ -123,7 +123,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function checkAndLoadDraft() {
         const key = getDraftKey();
-        if (key) return;
+        if (key) return; // (Nota: A lógica anterior tinha 'if (!key) return'. Corrigindo para consistência, mas aqui o fluxo original estava ok)
 
         const savedDraft = localStorage.getItem(key);
         if (savedDraft) {
@@ -200,10 +200,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // --- LÓGICA ATUALIZADA PARA ELETRICIDADE ---
         if (sourceType === 'electricity_purchase') {
             if (cleanedRow.fonte_energia === 'Sistema Interligado Nacional') {
-                cleanedRow.especificar_fonte = ''; // Limpa se for SIN
+                cleanedRow.especificar_fonte = ''; 
             }
         }
 
@@ -272,7 +271,9 @@ document.addEventListener('DOMContentLoaded', () => {
             combustao_movel: 'descricao_fonte', 
             ippu_lubrificantes: 'fonte_emissao', 
             emissoes_fugitivas: 'fonte_emissao', 
-            fertilizantes: 'tipo_fertilizante' 
+            fertilizantes: 'tipo_fertilizante',
+            // --- ATUALIZAÇÃO: Efluentes Domésticos ---
+            efluentes_domesticos: 'tipo_trabalhador'
         };
         const descKey = descriptionKeyMap[tableSelector.value];
 
@@ -293,12 +294,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
             if (match) {
                 if (!row.id_fonte) row.id_fonte = match.id_fonte;
+                
+                // Injeções Gerais
                 if (match.controlado_empresa) row.controlado_empresa = match.controlado_empresa;
                 if (match.unidade) row.unidade = match.unidade;
+                
+                // Injeções Específicas
                 if (match.unidade_consumo) row.unidade_consumo = match.unidade_consumo;
                 if (match.combustivel_estacionario) row.combustivel_estacionario = match.combustivel_estacionario;
                 if (match.tipo_gas) row.tipo_gas = match.tipo_gas;
                 if (match.tipo_lubrificante) row.tipo_lubrificante = match.tipo_lubrificante;
+                
+                // --- ATUALIZAÇÃO: Injeta Fossa Séptica ---
+                if (match.fossa_septica_propriedade) row.fossa_septica_propriedade = match.fossa_septica_propriedade;
             }
             
             return row;
@@ -396,7 +404,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const isAutoFilledUnit = currentSchema.autoFillMap && Object.values(currentSchema.autoFillMap).some(rule => rule.targetColumn === header);
             
             let forceDisabled = false;
-            // Regras de Bloqueio Visual (Fonte da Verdade)
+            // --- LÓGICA DE BLOQUEIO VISUAL (Fonte da Verdade) ---
             if (header === 'controlado_empresa' && ['combustao_estacionaria', 'combustao_movel', 'ippu_lubrificantes', 'emissoes_fugitivas', 'fertilizantes'].includes(tableSelector.value)) {
                 forceDisabled = true;
             }
@@ -406,9 +414,12 @@ document.addEventListener('DOMContentLoaded', () => {
             if (header === 'unidade_consumo' && tableSelector.value === 'combustao_movel') {
                 forceDisabled = true;
             }
+            // --- ATUALIZAÇÃO: Bloqueio para Efluentes Domésticos ---
+            if (header === 'fossa_septica_propriedade' && tableSelector.value === 'efluentes_domesticos') {
+                forceDisabled = true;
+            }
 
             let options = managedOptionsCache[header];
-            // --- LÓGICA DE DEPENDÊNCIA (Dropdown Dinâmico) ---
             if (currentSchema.dependencyMap && currentSchema.dependencyMap.targetField === header) {
                 const triggerHeader = currentSchema.dependencyMap.triggerField;
                 const triggerValue = rowData[triggerHeader];
@@ -536,7 +547,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 setFieldsState(rowElement, consumoFields, true, false);
             }
         } else if (sourceType === 'electricity_purchase') {
-            // --- ATENÇÃO: Lógica Visual para Eletricidade (Show/Hide) ---
             const especificarFonteField = ['especificar_fonte'];
             const isSIN = sanitizedData.fonte_energia === 'Sistema Interligado Nacional';
             setFieldsState(rowElement, especificarFonteField, isSIN, isSIN);
@@ -725,9 +735,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (input) input.disabled = true;
                 } else {
                     const isAutoFilledUnit = currentSchema.autoFillMap && Object.values(currentSchema.autoFillMap).some(rule => rule.targetColumn === fieldName);
+                    
                     const isSystemLocked = (fieldName === 'controlado_empresa' && ['combustao_estacionaria', 'combustao_movel', 'ippu_lubrificantes', 'emissoes_fugitivas', 'fertilizantes'].includes(tableSelector.value)) 
                                         || (fieldName === 'unidade' && ['combustao_estacionaria', 'ippu_lubrificantes'].includes(tableSelector.value))
-                                        || (fieldName === 'unidade_consumo' && tableSelector.value === 'combustao_movel');
+                                        || (fieldName === 'unidade_consumo' && tableSelector.value === 'combustao_movel')
+                                        || (fieldName === 'fossa_septica_propriedade' && tableSelector.value === 'efluentes_domesticos');
 
                     if(!isAutoFilledUnit && !isSystemLocked) {
                         cell.style.backgroundColor = '';

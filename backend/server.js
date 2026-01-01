@@ -585,6 +585,7 @@ app.get('/api/intelligent-template/:sourceType', (req, res) => {
     const schema = validationSchemas[sourceType];
     if (!schema) { return res.status(404).send('Tipo de fonte não encontrado.'); }
 
+    // --- ATUALIZADO: Mapeamento de descrições ---
     const descriptionKeyMap = { 
         combustao_estacionaria: 'descricao_da_fonte', 
         combustao_movel: 'descricao_fonte', 
@@ -607,7 +608,9 @@ app.get('/api/intelligent-template/:sourceType', (req, res) => {
         employee_commuting: 'descricao_identificadora',
         energy_generation: 'fonte_geracao',
         planted_forest: 'identificacao_area',
-        conservation_area: 'bioma' 
+        conservation_area: 'bioma',
+        // Adicionado Efluentes Domésticos
+        efluentes_domesticos: 'tipo_trabalhador'
     };
     
     const getTypologies = new Promise((resolve, reject) => {
@@ -652,6 +655,9 @@ app.get('/api/intelligent-template/:sourceType', (req, res) => {
                         row[mainDescriptionKey] = assetFields.fonte_geracao || typo.description;
                     } else if (sourceType === 'conservation_area') {
                         row[mainDescriptionKey] = assetFields.bioma || '';
+                    } else if (sourceType === 'efluentes_domesticos') {
+                        // Garante que o tipo de trabalhador seja o preenchido no cadastro
+                        row[mainDescriptionKey] = assetFields.tipo_trabalhador || '';
                     } else {
                         row[mainDescriptionKey] = typo.description;
                     }
@@ -716,6 +722,12 @@ app.get('/api/intelligent-template/:sourceType', (req, res) => {
             // Regra para Unidade de Consumo (Específica para Combustão Móvel)
             if (sourceType === 'combustao_movel') {
                 excludeColumns.push('unidade_consumo');
+            }
+
+            // --- NOVA REGRA: Efluentes Domésticos ---
+            if (sourceType === 'efluentes_domesticos') {
+                // Remove do Excel para evitar erros de digitação (Case Sensitive)
+                excludeColumns.push('fossa_septica_propriedade');
             }
 
             const dataWithHeaderNames = dataForExcel.map(row => {

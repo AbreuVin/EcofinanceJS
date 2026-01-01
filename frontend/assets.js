@@ -168,7 +168,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 controlado_empresa: { label: "Controlado pela Empresa?", type: "select", options: ["Sim", "Não"] }
             } 
         },
-        // --- ATUALIZAÇÃO AQUI (Combustão Móvel) ---
         combustao_movel: { 
             displayName: "Combustão Móvel", 
             fields: { 
@@ -176,7 +175,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 combustivel: { label: "Combustível Padrão", type: "select", showIf: { field: "tipo_entrada", value: "consumo" } }, 
                 unidade_consumo: { label: "Unidade de Consumo", type: "text", showIf: { field: "tipo_entrada", value: "consumo" }, disabled: true }, 
                 tipo_veiculo: { label: "Tipo de Veículo Padrão", type: "select", showIf: { field: "tipo_entrada", value: "distancia" } },
-                // Adicionado:
                 controlado_empresa: { label: "Controlado pela Empresa?", type: "select", options: ["Sim", "Não"] }
             } 
         },
@@ -218,10 +216,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 unidade_componente_organico: { label: "Unidade Padrão (Componente Orgânico)", type: "select" }
             }
         },
+        // --- ATUALIZADO AQUI (Efluentes Domésticos) ---
         efluentes_domesticos: {
             displayName: "Efluentes Domésticos",
             fields: {
-                fossa_septica_propriedade: { label: "Fossa Séptica na Propriedade (Padrão)?", type: "select" }
+                tipo_trabalhador: { label: "Tipo de Trabalhador (Descrição)", type: "select", options: ["Interno", "Terceiro"] },
+                fossa_septica_propriedade: { label: "Fossa séptica na propriedade da empresa?", type: "select", options: ["Sim", "Não"] },
+                responsible_contact_id: { label: "Responsável pela Informação", type: "select", isContact: true }
             }
         },
         mudanca_uso_solo: {
@@ -310,9 +311,9 @@ document.addEventListener('DOMContentLoaded', () => {
         assetsThead.innerHTML = ''; 
         const headerRow = document.createElement('tr'); 
         
-        // --- Lista de Schemas que usam Descrição Customizada ---
-        // Adicionado 'conservation_area'
-        const usesCustomDescription = ['solid_waste', 'electricity_purchase', 'downstream_transport', 'waste_transport', 'home_office', 'air_travel', 'employee_commuting', 'energy_generation', 'planted_forest', 'conservation_area'].includes(currentSourceType);
+        // --- Lista de Schemas que usam Descrição Customizada (ATUALIZADA) ---
+        // Adicionado 'efluentes_domesticos'
+        const usesCustomDescription = ['solid_waste', 'electricity_purchase', 'downstream_transport', 'waste_transport', 'home_office', 'air_travel', 'employee_commuting', 'energy_generation', 'planted_forest', 'conservation_area', 'efluentes_controlados', 'efluentes_domesticos'].includes(currentSourceType);
         const mainDescriptionKey = usesCustomDescription ? Object.keys(schema.fields)[0] : 'description';
         const mainDescriptionLabel = usesCustomDescription ? schema.fields[mainDescriptionKey].label : 'Descrição';
 
@@ -336,8 +337,8 @@ document.addEventListener('DOMContentLoaded', () => {
             typologies.forEach(typo => { 
                 const tr = document.createElement('tr'); 
                 
-                // --- Lista de Schemas que usam Descrição Customizada ---
-                const usesCustomDescription = ['solid_waste', 'electricity_purchase', 'downstream_transport', 'waste_transport', 'home_office', 'air_travel', 'employee_commuting', 'energy_generation', 'planted_forest', 'conservation_area'].includes(currentSourceType);
+                // --- Lista de Schemas que usam Descrição Customizada (ATUALIZADA) ---
+                const usesCustomDescription = ['solid_waste', 'electricity_purchase', 'downstream_transport', 'waste_transport', 'home_office', 'air_travel', 'employee_commuting', 'energy_generation', 'planted_forest', 'conservation_area', 'efluentes_controlados', 'efluentes_domesticos'].includes(currentSourceType);
                 const mainDescriptionKey = usesCustomDescription ? Object.keys(assetSchemas[currentSourceType].fields)[0] : 'description';
 
                 const mainDescription = usesCustomDescription 
@@ -435,8 +436,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        // --- Lista de Schemas que usam Descrição Customizada ---
-        const usesCustomDescription = ['solid_waste', 'electricity_purchase', 'downstream_transport', 'waste_transport', 'home_office', 'air_travel', 'employee_commuting', 'energy_generation', 'planted_forest', 'conservation_area'].includes(currentSourceType);
+        // --- Lista de Schemas que usam Descrição Customizada (ATUALIZADA) ---
+        const usesCustomDescription = ['solid_waste', 'electricity_purchase', 'downstream_transport', 'waste_transport', 'home_office', 'air_travel', 'employee_commuting', 'energy_generation', 'planted_forest', 'conservation_area', 'efluentes_controlados', 'efluentes_domesticos'].includes(currentSourceType);
         const mainDescriptionKey = usesCustomDescription ? Object.keys(assetSchemas[currentSourceType].fields)[0] : null;
 
         const descriptionValue = usesCustomDescription
@@ -488,8 +489,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (typoToEdit) {
                 assetIdInput.value = typoToEdit.id;
                 
-                // --- Lista de Schemas que usam Descrição Customizada ---
-                const usesCustomDescription = ['solid_waste', 'electricity_purchase', 'downstream_transport', 'waste_transport', 'home_office', 'air_travel', 'employee_commuting', 'energy_generation', 'planted_forest', 'conservation_area'].includes(currentSourceType);
+                // --- Lista de Schemas que usam Descrição Customizada (ATUALIZADA) ---
+                const usesCustomDescription = ['solid_waste', 'electricity_purchase', 'downstream_transport', 'waste_transport', 'home_office', 'air_travel', 'employee_commuting', 'energy_generation', 'planted_forest', 'conservation_area', 'efluentes_controlados', 'efluentes_domesticos'].includes(currentSourceType);
                 if (!usesCustomDescription) {
                     document.getElementById('asset-description').value = typoToEdit.description;
                 }
@@ -549,8 +550,8 @@ document.addEventListener('DOMContentLoaded', () => {
         cancelBtn.style.display = 'none';
 
         const descriptionGroup = document.getElementById('asset-description').parentElement;
-        // --- Lista de Schemas que usam Descrição Customizada ---
-        const usesCustomDescription = ['solid_waste', 'electricity_purchase', 'downstream_transport', 'waste_transport', 'home_office', 'air_travel', 'employee_commuting', 'energy_generation', 'planted_forest', 'conservation_area'].includes(currentSourceType);
+        // --- Lista de Schemas que usam Descrição Customizada (ATUALIZADA) ---
+        const usesCustomDescription = ['solid_waste', 'electricity_purchase', 'downstream_transport', 'waste_transport', 'home_office', 'air_travel', 'employee_commuting', 'energy_generation', 'planted_forest', 'conservation_area', 'efluentes_controlados', 'efluentes_domesticos'].includes(currentSourceType);
 
         if (usesCustomDescription) {
             descriptionGroup.style.display = 'none';
@@ -577,8 +578,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const fieldElements = {};
         const triggerFields = new Set();
         const autoFillTriggers = new Set();
-        // --- Lista de Schemas que usam Descrição Customizada ---
-        const usesCustomDescription = ['solid_waste', 'electricity_purchase', 'downstream_transport', 'waste_transport', 'home_office', 'air_travel', 'employee_commuting', 'energy_generation', 'planted_forest', 'conservation_area'].includes(currentSourceType);
+        // --- Lista de Schemas que usam Descrição Customizada (ATUALIZADA) ---
+        const usesCustomDescription = ['solid_waste', 'electricity_purchase', 'downstream_transport', 'waste_transport', 'home_office', 'air_travel', 'employee_commuting', 'energy_generation', 'planted_forest', 'conservation_area', 'efluentes_controlados', 'efluentes_domesticos'].includes(currentSourceType);
         
         const firstRowContainer = document.querySelector('#asset-form .form-row');
         const descriptionFieldGroup = document.getElementById('asset-description').parentElement;

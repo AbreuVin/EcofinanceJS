@@ -1654,6 +1654,460 @@ document.addEventListener('DOMContentLoaded', () => {
 </html>
 </file>
 
+<file path="backend/database.js">
+// arquivo: backend/database.js
+
+const sqlite3 = require('sqlite3').verbose();
+const path = require('path');
+
+const { validationSchemas } = require('../shared/validators.js');
+
+const dbPath = path.resolve(__dirname, 'ecofinance.db');
+
+const db = new sqlite3.Database(dbPath, (err) => {
+  if (err) {
+    console.error('Erro ao abrir o banco de dados', err.message);
+  } else {
+    console.log('Conectado ao banco de dados SQLite em:', dbPath);
+    
+    db.serialize(() => {
+        db.run(`CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT UNIQUE, password TEXT)`, (err) => { if (err) console.error('Erro tabela users:', err); else console.log('Tabela "users" pronta.'); });
+        
+        db.run(`CREATE TABLE IF NOT EXISTS contacts (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, unit_id INTEGER, email TEXT, phone TEXT, FOREIGN KEY (unit_id) REFERENCES units(id) ON DELETE SET NULL)`, (err) => { if (err) console.error('Erro tabela contacts:', err); else console.log('Tabela "contacts" pronta.'); });
+        
+        db.run(`CREATE TABLE IF NOT EXISTS units (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, cidade TEXT, estado TEXT, pais TEXT, numero_colaboradores INTEGER)`, (err) => { if (err) console.error('Erro tabela units:', err); else console.log('Tabela "units" pronta.'); });
+        db.run(`CREATE TABLE IF NOT EXISTS mobile_combustion_data (id INTEGER PRIMARY KEY AUTOINCREMENT, ano INTEGER, periodo TEXT, unidade_empresarial TEXT, descricao_fonte TEXT, controlado_empresa BOOLEAN, tipo_entrada TEXT, combustivel TEXT, consumo REAL, unidade_consumo TEXT, distancia_percorrida REAL, unidade_distancia TEXT, tipo_veiculo TEXT)`, (err) => { if (err) console.error('Erro tabela mobile_combustion_data:', err); else console.log('Tabela "mobile_combustion_data" pronta.'); });
+        
+        db.run(`CREATE TABLE IF NOT EXISTS stationary_combustion_data (id INTEGER PRIMARY KEY AUTOINCREMENT, ano INTEGER, periodo TEXT, unidade_empresarial TEXT, descricao_da_fonte TEXT, combustivel_estacionario TEXT, consumo REAL, unidade TEXT, controlado_empresa BOOLEAN)`, (err) => { if (err) console.error('Erro tabela stationary_combustion_data:', err); else console.log('Tabela "stationary_combustion_data" pronta.'); });
+
+        db.run(`CREATE TABLE IF NOT EXISTS production_sales_data (id INTEGER PRIMARY KEY AUTOINCREMENT, ano INTEGER NOT NULL, periodo TEXT, unidade_empresarial TEXT NOT NULL, produto TEXT NOT NULL, quantidade_vendida INTEGER CHECK(quantidade_vendida > 0), unidade_medida TEXT NOT NULL, comentarios TEXT)`, (err) => { if (err) console.error('Erro tabela production_sales_data:', err); else console.log('Tabela "production_sales_data" pronta.'); });
+        
+        db.run(`CREATE TABLE IF NOT EXISTS lubricants_ippu_data (id INTEGER PRIMARY KEY AUTOINCREMENT, ano INTEGER, periodo TEXT, unidade_empresarial TEXT, fonte_emissao TEXT, tipo_lubrificante TEXT, consumo REAL, unidade TEXT, controlado_empresa BOOLEAN)`, (err) => { if (err) console.error('Erro tabela lubricants_ippu_data:', err); else console.log('Tabela "lubricants_ippu_data" pronta.'); });
+        
+        db.run(`CREATE TABLE IF NOT EXISTS fugitive_emissions_data (id INTEGER PRIMARY KEY AUTOINCREMENT, ano INTEGER, periodo TEXT, unidade_empresarial TEXT, fonte_emissao TEXT, tipo_gas TEXT, quantidade_reposta REAL, unidade TEXT, controlado_empresa BOOLEAN, comentarios TEXT)`, (err) => { if (err) console.error('Erro tabela fugitive_emissions_data:', err); else console.log('Tabela "fugitive_emissions_data" pronta.'); });
+
+        db.run(`CREATE TABLE IF NOT EXISTS fertilizers_data (id INTEGER PRIMARY KEY AUTOINCREMENT, ano INTEGER, periodo TEXT, unidade_empresarial TEXT, tipo_fertilizante TEXT, quantidade_kg REAL, unidade TEXT, percentual_nitrogenio REAL, percentual_carbonato REAL, controlado_empresa BOOLEAN, comentarios TEXT)`, (err) => { if (err) console.error('Erro tabela fertilizers_data:', err); else console.log('Tabela "fertilizers_data" pronta.'); });
+        
+        db.run(`
+            CREATE TABLE IF NOT EXISTS effluents_controlled_data (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                ano INTEGER NOT NULL,
+                periodo TEXT NOT NULL,
+                unidade_empresarial TEXT NOT NULL,
+                tratamento_ou_destino TEXT NOT NULL,
+                tipo_tratamento TEXT,
+                tipo_destino_final TEXT,
+                qtd_efluente_liquido_m3 REAL NOT NULL,
+                unidade_efluente_liquido TEXT NOT NULL,
+                qtd_componente_organico REAL NOT NULL,
+                unidade_componente_organico TEXT NOT NULL,
+                qtd_nitrogenio_mg_l REAL NOT NULL,
+                unidade_nitrogenio TEXT NOT NULL,
+                componente_organico_removido_lodo REAL,
+                unidade_comp_organico_removido_lodo TEXT,
+                comentarios TEXT
+            )
+        `, (err) => { if (err) console.error('Erro tabela effluents_controlled_data:', err); else console.log('Tabela "effluents_controlled_data" pronta.'); });
+        
+        db.run(`DROP TABLE IF EXISTS domestic_effluents_data`);
+        
+        db.run(`
+            CREATE TABLE IF NOT EXISTS domestic_effluents_data (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                ano INTEGER NOT NULL,
+                periodo TEXT NOT NULL,
+                unidade_empresarial TEXT NOT NULL,
+                tipo_trabalhador TEXT NOT NULL,
+                num_trabalhadores INTEGER NOT NULL,
+                carga_horaria_media REAL NOT NULL,
+                fossa_septica_propriedade TEXT NOT NULL,
+                comentarios TEXT
+            )
+        `, (err) => { if (err) console.error('Erro tabela domestic_effluents_data:', err); else console.log('Tabela "domestic_effluents_data" recriada com a nova estrutura.'); });
+        
+        db.run(`
+            CREATE TABLE IF NOT EXISTS land_use_change_data (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                ano INTEGER NOT NULL,
+                periodo TEXT NOT NULL,
+                unidade_empresarial TEXT NOT NULL,
+                uso_solo_anterior TEXT NOT NULL,
+                bioma TEXT,
+                fitofisionomia TEXT,
+                tipo_area TEXT,
+                area_hectare REAL NOT NULL,
+                comentarios TEXT
+            )
+        `, (err) => { if (err) console.error('Erro tabela land_use_change_data:', err); else console.log('Tabela "land_use_change_data" pronta.'); });
+        
+        db.run(`
+            CREATE TABLE IF NOT EXISTS solid_waste_data (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                ano INTEGER,
+                periodo TEXT,
+                unidade_empresarial TEXT,
+                destinacao_final TEXT,
+                tipo_residuo TEXT,
+                quantidade_gerado REAL,
+                unidade TEXT,
+                informar_cidade_uf TEXT,
+                local_controlado_empresa TEXT,
+                responsavel TEXT,
+                area_responsavel TEXT,
+                email TEXT,
+                telefone TEXT,
+                rastreabilidade_interna TEXT,
+                comentarios TEXT
+            )
+        `, (err) => { if (err) console.error('Erro tabela solid_waste_data:', err); else console.log('Tabela "solid_waste_data" pronta.'); });
+
+        db.run(`
+            CREATE TABLE IF NOT EXISTS electricity_purchase_data (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                ano INTEGER,
+                periodo TEXT,
+                unidade_empresarial TEXT,
+                fonte_energia TEXT,
+                especificar_fonte TEXT,
+                consumo REAL,
+                unidade_medida TEXT,
+                responsavel TEXT,
+                area_responsavel TEXT,
+                email TEXT,
+                telefone TEXT,
+                rastreabilidade TEXT,
+                comentarios TEXT
+            )
+        `, (err) => { if (err) console.error('Erro tabela electricity_purchase_data:', err); else console.log('Tabela "electricity_purchase_data" pronta.'); });
+
+        db.run(`
+            CREATE TABLE IF NOT EXISTS purchased_goods_services_data (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                ano INTEGER,
+                periodo TEXT,
+                unidade_empresarial TEXT,
+                descricao_item TEXT,
+                tipo_item TEXT,
+                quantidade REAL,
+                unidade TEXT,
+                valor_aquisicao REAL,
+                bens_terceiros TEXT,
+                responsavel TEXT,
+                area_responsavel TEXT,
+                email TEXT,
+                telefone TEXT,
+                comentarios TEXT
+            )
+        `, (err) => { if (err) console.error('Erro tabela purchased_goods_services_data:', err); else console.log('Tabela "purchased_goods_services_data" pronta.'); });
+
+        db.run(`
+            CREATE TABLE IF NOT EXISTS capital_goods_data (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                ano INTEGER,
+                periodo TEXT,
+                unidade_empresarial TEXT,
+                bem_capital TEXT,
+                quantidade INTEGER,
+                unidade TEXT,
+                valor_aquisicao REAL,
+                responsavel TEXT,
+                area_responsavel TEXT,
+                email TEXT,
+                telefone TEXT,
+                comentarios TEXT
+            )
+        `, (err) => { if (err) console.error('Erro tabela capital_goods_data:', err); else console.log('Tabela "capital_goods_data" pronta.'); });
+
+        db.run(`
+            CREATE TABLE IF NOT EXISTS upstream_transport_data (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                ano INTEGER,
+                periodo TEXT,
+                unidade_empresarial TEXT,
+                insumo_transportado TEXT,
+                modal_transporte TEXT,
+                tipo_reporte TEXT,
+                combustivel TEXT,
+                consumo REAL,
+                unidade_consumo TEXT,
+                classificacao_veiculo TEXT,
+                distancia_trecho REAL,
+                unidade_distancia TEXT,
+                carga_transportada REAL,
+                numero_viagens INTEGER,
+                local_embarque TEXT,
+                local_destino TEXT,
+                responsavel TEXT,
+                area_responsavel TEXT,
+                email TEXT,
+                telefone TEXT,
+                comentarios TEXT
+            )
+        `, (err) => { if (err) console.error('Erro tabela upstream_transport_data:', err); else console.log('Tabela "upstream_transport_data" pronta.'); });
+
+        db.run(`
+            CREATE TABLE IF NOT EXISTS business_travel_land_data (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                ano INTEGER,
+                periodo TEXT,
+                unidade_empresarial TEXT,
+                descricao_viagem TEXT,
+                modal_viagem TEXT,
+                tipo_reporte TEXT,
+                combustivel TEXT,
+                consumo REAL,
+                unidade_consumo TEXT,
+                distancia_percorrida REAL,
+                unidade_distancia TEXT,
+                km_reembolsado TEXT,
+                responsavel TEXT,
+                area_responsavel TEXT,
+                email TEXT,
+                telefone TEXT,
+                comentarios TEXT
+            )
+        `, (err) => { if (err) console.error('Erro tabela business_travel_land_data:', err); else console.log('Tabela "business_travel_land_data" pronta.'); });
+
+        db.run(`
+            CREATE TABLE IF NOT EXISTS downstream_transport_data (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                ano INTEGER,
+                periodo TEXT,
+                unidade_empresarial TEXT,
+                insumo_transportado TEXT,
+                modal_transporte TEXT,
+                tipo_reporte TEXT,
+                combustivel TEXT,
+                consumo REAL,
+                unidade_consumo TEXT,
+                classificacao_veiculo TEXT,
+                distancia_trecho REAL,
+                unidade_distancia TEXT,
+                carga_transportada REAL,
+                numero_viagens INTEGER,
+                local_embarque TEXT,
+                local_destino TEXT,
+                responsavel TEXT,
+                area_responsavel TEXT,
+                email TEXT,
+                telefone TEXT,
+                comentarios TEXT
+            )
+        `, (err) => { if (err) console.error('Erro tabela downstream_transport_data:', err); else console.log('Tabela "downstream_transport_data" pronta.'); });
+
+        db.run(`
+            CREATE TABLE IF NOT EXISTS waste_transport_data (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                ano INTEGER,
+                periodo TEXT,
+                unidade_empresarial TEXT,
+                insumo_transportado TEXT,
+                tipo_reporte TEXT,
+                combustivel TEXT,
+                consumo REAL,
+                unidade_consumo TEXT,
+                classificacao_veiculo TEXT,
+                distancia_trecho REAL,
+                unidade_distancia TEXT,
+                carga_transportada REAL,
+                numero_viagens INTEGER,
+                responsavel TEXT,
+                area_responsavel TEXT,
+                email TEXT,
+                telefone TEXT,
+                comentarios TEXT
+            )
+        `, (err) => { if (err) console.error('Erro tabela waste_transport_data:', err); else console.log('Tabela "waste_transport_data" pronta.'); });
+
+        db.run(`
+            CREATE TABLE IF NOT EXISTS home_office_data (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                ano INTEGER,
+                periodo TEXT,
+                unidade_empresarial TEXT,
+                regime_trabalho TEXT,
+                num_funcionarios INTEGER,
+                responsavel TEXT,
+                area_responsavel TEXT,
+                email TEXT,
+                telefone TEXT,
+                comentarios TEXT
+            )
+        `, (err) => { if (err) console.error('Erro tabela home_office_data:', err); else console.log('Tabela "home_office_data" pronta.'); });
+
+        db.run(`
+            CREATE TABLE IF NOT EXISTS air_travel_data (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                ano INTEGER,
+                periodo TEXT,
+                unidade_empresarial TEXT,
+                descricao_viagem TEXT,
+                codigo_aeroporto_partida TEXT,
+                codigo_aeroporto_chegada TEXT,
+                numero_viagens INTEGER,
+                responsavel TEXT,
+                area_responsavel TEXT,
+                email TEXT,
+                telefone TEXT,
+                comentarios TEXT
+            )
+        `, (err) => { if (err) console.error('Erro tabela air_travel_data:', err); else console.log('Tabela "air_travel_data" pronta.'); });
+
+        db.run(`
+            CREATE TABLE IF NOT EXISTS employee_commuting_data (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                ano INTEGER,
+                periodo TEXT,
+                unidade_empresarial TEXT,
+                descricao_identificadora TEXT,
+                meio_utilizado TEXT,
+                tipo_reporte TEXT,
+                tipo_combustivel TEXT,
+                consumo REAL,
+                unidade_consumo TEXT,
+                distancia_km REAL,
+                endereco_funcionario TEXT,
+                endereco_trabalho TEXT,
+                dias_deslocados INTEGER,
+                responsavel TEXT,
+                area_responsavel TEXT,
+                email TEXT,
+                telefone TEXT,
+                comentarios TEXT
+            )
+        `, (err) => { if (err) console.error('Erro tabela employee_commuting_data:', err); else console.log('Tabela "employee_commuting_data" pronta.'); });
+
+        db.run(`
+            CREATE TABLE IF NOT EXISTS energy_generation_data (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                ano INTEGER,
+                periodo TEXT,
+                unidade_empresarial TEXT,
+                descricao_fonte TEXT,
+                fonte_geracao TEXT,
+                total_geracao REAL,
+                unidade_medida TEXT,
+                responsavel TEXT,
+                area_responsavel TEXT,
+                email TEXT,
+                telefone TEXT,
+                comentarios TEXT
+            )
+        `, (err) => { if (err) console.error('Erro tabela energy_generation_data:', err); else console.log('Tabela "energy_generation_data" pronta.'); });
+
+        // --- SPRINT 19: TABELA - Floresta Plantada ---
+        db.run(`
+            CREATE TABLE IF NOT EXISTS planted_forest_data (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                ano INTEGER,
+                periodo TEXT,
+                unidade_empresarial TEXT,
+                identificacao_area TEXT,
+                nome_especie TEXT,
+                area_antepenultimo REAL,
+                idade_antepenultimo INTEGER,
+                idade_penultimo INTEGER,
+                area_colhida_penultimo REAL,
+                area_atual REAL,
+                responsavel TEXT,
+                area_responsavel TEXT,
+                email TEXT,
+                telefone TEXT,
+                comentarios TEXT
+            )
+        `, (err) => { if (err) console.error('Erro tabela planted_forest_data:', err); else console.log('Tabela "planted_forest_data" pronta.'); });
+
+        // --- SPRINT 21: TABELA - Área de Conservação (ATUALIZADA) ---
+        db.run(`DROP TABLE IF EXISTS conservation_area_data`, (err) => {
+             // Drop para garantir a recriação correta com os novos campos
+             if(!err) {
+                db.run(`
+                    CREATE TABLE IF NOT EXISTS conservation_area_data (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        ano INTEGER,
+                        periodo TEXT,
+                        unidade_empresarial TEXT,
+                        descricao TEXT,
+                        bioma TEXT,
+                        fitofisionomia TEXT,
+                        area_plantada TEXT,
+                        plantio TEXT,
+                        area_inicio_ano REAL,
+                        area_fim_ano REAL,
+                        motivo_alteracao TEXT,
+                        responsavel TEXT,
+                        area_responsavel TEXT,
+                        email TEXT,
+                        telefone TEXT,
+                        comentarios TEXT
+                    )
+                `, (err) => { if (err) console.error('Erro tabela conservation_area_data:', err); else console.log('Tabela "conservation_area_data" atualizada e pronta.'); });
+             }
+        });
+
+
+        db.run(`CREATE TABLE IF NOT EXISTS asset_typologies (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, unit_id INTEGER NOT NULL, source_type TEXT NOT NULL, description TEXT NOT NULL, asset_fields TEXT, is_active BOOLEAN DEFAULT TRUE)`, (err) => { if (err) console.error('Erro tabela asset_typologies:', err); else console.log('Tabela "asset_typologies" pronta.'); });
+        
+        db.all("PRAGMA table_info(asset_typologies)", (err, columns) => {
+            if (err) {
+                console.error("Erro ao ler colunas de asset_typologies:", err);
+                return;
+            }
+
+            const hasResponsibleId = columns.some(col => col.name === 'responsible_contact_id');
+            if (!hasResponsibleId) {
+                db.run("ALTER TABLE asset_typologies ADD COLUMN responsible_contact_id INTEGER REFERENCES contacts(id) ON DELETE SET NULL", (err) => {
+                    if (err) console.error("Erro ao adicionar coluna 'responsible_contact_id':", err);
+                    else console.log("Coluna 'responsible_contact_id' adicionada a 'asset_typologies'.");
+                });
+            }
+
+            const hasFrequency = columns.some(col => col.name === 'reporting_frequency');
+            if (!hasFrequency) {
+                db.run("ALTER TABLE asset_typologies ADD COLUMN reporting_frequency TEXT DEFAULT 'anual' NOT NULL", (err) => {
+                    if (err) console.error("Erro ao adicionar coluna 'reporting_frequency':", err);
+                    else console.log("Coluna 'reporting_frequency' adicionada a 'asset_typologies'.");
+                });
+            }
+        });
+
+        db.run(`DROP TABLE IF EXISTS source_configurations`, (err) => { 
+            if (err) console.error('Erro ao remover tabela obsoleta source_configurations:', err); 
+            else console.log('Tabela obsoleta "source_configurations" verificada/removida.'); 
+        });
+
+        db.run(`CREATE TABLE IF NOT EXISTS managed_options (id INTEGER PRIMARY KEY AUTOINCREMENT, field_key TEXT NOT NULL, value TEXT NOT NULL, UNIQUE(field_key, value))`, (err) => { if (err) console.error('Erro tabela managed_options:', err); else console.log('Tabela "managed_options" pronta.'); });
+        db.run(`DROP TABLE IF EXISTS custom_options`, (err) => { if (err) console.error('Erro ao remover tabela antiga custom_options:', err); });
+        
+        db.run(`CREATE TABLE IF NOT EXISTS contact_source_associations (contact_id INTEGER NOT NULL, source_type TEXT NOT NULL, PRIMARY KEY (contact_id, source_type), FOREIGN KEY (contact_id) REFERENCES contacts (id) ON DELETE CASCADE)`, (err) => { if (err) console.error('Erro tabela contact_source_associations:', err); else console.log('Tabela "contact_source_associations" pronta.'); });
+
+        
+        console.log('Iniciando o seeding de opções padrão...');
+        const sql = `INSERT OR IGNORE INTO managed_options (field_key, value) VALUES (?, ?)`;
+        let totalOptions = 0;
+        
+        
+        for (const schemaKey in validationSchemas) {
+            const schema = validationSchemas[schemaKey];
+            const options = schema.validOptions || {};
+            
+            for (const fieldKey in options) {
+                const optionValues = Array.isArray(options[fieldKey]) ? options[fieldKey] : [];
+                optionValues.forEach(value => {
+                    db.run(sql, [fieldKey, value]);
+                    totalOptions++;
+                });
+            }
+        }
+        console.log(`Seeding de opções padrão concluído. ${totalOptions} opções verificadas.`);
+        
+    });
+  }
+});
+
+module.exports = db;
+</file>
+
 <file path="frontend/importer.js">
 // arquivo: frontend/importer.js
 
@@ -1675,10 +2129,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     if(downloadIntelligentBtn) downloadIntelligentBtn.textContent = 'Baixar Template';
 
-    // --- SPRINT 21: 'plantio' agora é texto, removido daqui ---
     const INTEGER_FIELDS = [ 'quantidade_vendida', 'num_trabalhadores', 'numero_viagens', 'num_funcionarios', 'dias_deslocados', 'idade_antepenultimo', 'idade_penultimo' ];
-    
-    // --- SPRINT 21: Adicionado 'area_inicio_ano', 'area_fim_ano' ---
     const DECIMAL_FIELDS = [ 'consumo', 'distancia_percorrida', 'quantidade_reposta', 'quantidade_kg', 'percentual_nitrogenio', 'percentual_carbonato', 'area_hectare', 'qtd_efluente_liquido_m3', 'qtd_componente_organico', 'qtd_nitrogenio_mg_l', 'componente_organico_removido_lodo', 'carga_horaria_media', 'quantidade_gerado', 'quantidade', 'valor_aquisicao', 'distancia_trecho', 'carga_transportada', 'distancia_km', 'total_geracao', 'area_antepenultimo', 'area_colhida_penultimo', 'area_atual', 'area_inicio_ano', 'area_fim_ano' ];
 
     let currentSchema = null;
@@ -1687,6 +2138,9 @@ document.addEventListener('DOMContentLoaded', () => {
     let maskInstances = {};
     let maskIdCounter = 0;
     let currentReportYear = null;
+    
+    // --- VARIÁVEL: Armazena a "Verdade" do Banco de Dados para cruzamento ---
+    let referenceData = []; 
 
     // --- UTILS ---
     function loadNavbar() {
@@ -1743,7 +2197,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // --- HELPER: Substituição Dinâmica de Ano ---
     function resolveDynamicHeader(displayName, reportYear) {
         if (!reportYear) return displayName;
         const yearInt = parseInt(reportYear);
@@ -1769,10 +2222,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const activeRowsData = [];
         
         document.querySelectorAll('#table-container tbody tr').forEach(row => {
-            const isLocked = row.querySelector('input:disabled, select:disabled');
-            if (!isLocked) {
-                activeRowsData.push(getRowDataFromDOM(row, headers));
-            }
+            activeRowsData.push(getRowDataFromDOM(row, headers));
         });
 
         if (activeRowsData.length > 0) {
@@ -1784,7 +2234,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function checkAndLoadDraft() {
         const key = getDraftKey();
-        if (!key) return;
+        if (key) return; // (Nota: A lógica anterior tinha 'if (!key) return'. Corrigindo para consistência, mas aqui o fluxo original estava ok)
 
         const savedDraft = localStorage.getItem(key);
         if (savedDraft) {
@@ -1806,7 +2256,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (key) localStorage.removeItem(key);
     }
 
-    // --- LÓGICA DE REDIMENSIONAMENTO DE COLUNA (EXCEL-LIKE) ---
     function createResizableHeaders(table) {
         const cols = table.querySelectorAll('th');
         [].forEach.call(cols, function (col) {
@@ -1814,7 +2263,6 @@ document.addEventListener('DOMContentLoaded', () => {
             resizer.classList.add('resizer');
             resizer.style.height = `${table.offsetHeight}px`; 
             col.appendChild(resizer);
-            
             createResizableColumn(col, resizer);
         });
     }
@@ -1863,10 +2311,12 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
-        if (sourceType === 'emissoes_fugitivas' || sourceType === 'fertilizantes') {
-            cleanedRow['unidade'] = 'kg';
+        if (sourceType === 'electricity_purchase') {
+            if (cleanedRow.fonte_energia === 'Sistema Interligado Nacional') {
+                cleanedRow.especificar_fonte = ''; 
+            }
         }
-        
+
         if (sourceType === 'combustao_movel' && cleanedRow.tipo_entrada) {
             if (cleanedRow.tipo_entrada === 'consumo') {
                 ['distancia_percorrida', 'unidade_distancia', 'tipo_veiculo'].forEach(k => cleanedRow[k] = '');
@@ -1888,8 +2338,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 cleanedRow.quantidade = '';
                 cleanedRow.unidade = '';
             }
-        } else if (sourceType === 'capital_goods') {
-            cleanedRow.unidade = 'Unidades';
         } else if (sourceType === 'upstream_transport' && cleanedRow.tipo_reporte) {
             if (cleanedRow.tipo_reporte === 'Consumo') {
                 ['classificacao_veiculo', 'distancia_trecho', 'unidade_distancia', 'carga_transportada', 'numero_viagens'].forEach(k => cleanedRow[k] = '');
@@ -1909,7 +2357,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 ['combustivel', 'consumo', 'unidade_consumo'].forEach(k => cleanedRow[k] = '');
             }
         } else if (sourceType === 'employee_commuting' && cleanedRow.tipo_reporte) {
-            // --- SPRINT 20: Lógica para Transporte de Funcionários ---
             if (cleanedRow.tipo_reporte === 'Consumo') {
                 ['distancia_km', 'endereco_funcionario', 'endereco_trabalho'].forEach(k => cleanedRow[k] = '');
             } else if (cleanedRow.tipo_reporte === 'Distância') {
@@ -1918,21 +2365,76 @@ document.addEventListener('DOMContentLoaded', () => {
                 ['tipo_combustivel', 'consumo', 'unidade_consumo', 'distancia_km'].forEach(k => cleanedRow[k] = '');
             }
         } else if (sourceType === 'conservation_area') {
-            // --- SPRINT 21: Lógica para Área de Conservação (Atualizado) ---
             if (cleanedRow.area_plantada === 'Não') {
-                cleanedRow.plantio = ''; // Limpa o campo plantio (texto)
+                cleanedRow.plantio = ''; 
             }
         }
         
         return cleanedRow;
     }
 
+    // --- FUNÇÃO: Merge com Fonte da Verdade (Cadastro) ---
+    function mergeUploadedDataWithReference(uploadedRows) {
+        if (!referenceData || referenceData.length === 0) return uploadedRows;
+        
+        const descriptionKeyMap = { 
+            combustao_estacionaria: 'descricao_da_fonte', 
+            combustao_movel: 'descricao_fonte', 
+            ippu_lubrificantes: 'fonte_emissao', 
+            emissoes_fugitivas: 'fonte_emissao', 
+            fertilizantes: 'tipo_fertilizante',
+            // --- ATUALIZAÇÃO: Efluentes Domésticos ---
+            efluentes_domesticos: 'tipo_trabalhador'
+        };
+        const descKey = descriptionKeyMap[tableSelector.value];
+
+        return uploadedRows.map(row => {
+            let match = null;
+            
+            if (row.id_fonte) {
+                match = referenceData.find(ref => String(ref.id_fonte) === String(row.id_fonte));
+            }
+
+            if (!match && descKey && row.unidade_empresarial && row[descKey]) {
+                match = referenceData.find(ref => 
+                    ref.unidade_empresarial === row.unidade_empresarial &&
+                    ref[descKey] === row[descKey] &&
+                    ref.periodo === row.periodo 
+                );
+            }
+
+            if (match) {
+                if (!row.id_fonte) row.id_fonte = match.id_fonte;
+                
+                // Injeções Gerais
+                if (match.controlado_empresa) row.controlado_empresa = match.controlado_empresa;
+                if (match.unidade) row.unidade = match.unidade;
+                
+                // Injeções Específicas
+                if (match.unidade_consumo) row.unidade_consumo = match.unidade_consumo;
+                if (match.combustivel_estacionario) row.combustivel_estacionario = match.combustivel_estacionario;
+                if (match.tipo_gas) row.tipo_gas = match.tipo_gas;
+                if (match.tipo_lubrificante) row.tipo_lubrificante = match.tipo_lubrificante;
+                
+                // --- ATUALIZAÇÃO: Injeta Fossa Séptica ---
+                if (match.fossa_septica_propriedade) row.fossa_septica_propriedade = match.fossa_septica_propriedade;
+            }
+            
+            return row;
+        });
+    }
+
     function generateTable(data, fromUpload = false) {
         if (!currentSchema) return;
         
+        let processedData = data;
+        if (fromUpload) {
+            processedData = mergeUploadedDataWithReference(data);
+        }
+
         let tbody = tableContainer.querySelector('tbody');
         if (!tbody) {
-             if (!fromUpload && data.length === 0) {
+             if (!fromUpload && processedData.length === 0) {
                 tableContainer.innerHTML = `<p style="text-align: center; margin: 2rem 0;">Nenhuma fonte cadastrada para o ano de ${currentReportYear}. Cadastre na aba "Cadastro de Fontes".</p>`;
                 return;
             }
@@ -1942,7 +2444,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const headers = Object.keys(currentSchema.headerDisplayNames);
 
-        data.forEach((originalRowData, index) => {
+        processedData.forEach((originalRowData, index) => {
             const cleanedData = fromUpload ? sanitizeAndPreprocessRow(originalRowData) : originalRowData;
             const validationResult = currentSchema.validateRow(cleanedData, managedOptionsCache);
             const rowElement = buildTableRow(cleanedData, headers, index);
@@ -1980,7 +2482,6 @@ document.addEventListener('DOMContentLoaded', () => {
         
         headers.forEach(headerKey => {
             const th = document.createElement('th');
-            // --- SPRINT 19: Lógica Dinâmica de Cabeçalho (ex: {ANO-1} -> 2023) ---
             const rawDisplayName = currentSchema.headerDisplayNames[headerKey] || headerKey;
             th.textContent = resolveDynamicHeader(rawDisplayName, currentReportYear);
             headerRow.appendChild(th);
@@ -2002,22 +2503,40 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function buildTableRow(rowData, headers, rowIndex) {
         const row = document.createElement('tr');
+        
+        if (rowData.id_fonte) {
+            row.dataset.idFonte = rowData.id_fonte;
+        }
+
         headers.forEach(header => {
             const cell = document.createElement('td');
             cell.dataset.header = header;
             const currentValue = rowData[header] || "";
             const isAutoFilledUnit = currentSchema.autoFillMap && Object.values(currentSchema.autoFillMap).some(rule => rule.targetColumn === header);
             
-            // --- SPRINT 21: Lógica Dinâmica para Dropdowns (ex: Bioma -> Fitofisionomia) ---
+            let forceDisabled = false;
+            // --- LÓGICA DE BLOQUEIO VISUAL (Fonte da Verdade) ---
+            if (header === 'controlado_empresa' && ['combustao_estacionaria', 'combustao_movel', 'ippu_lubrificantes', 'emissoes_fugitivas', 'fertilizantes'].includes(tableSelector.value)) {
+                forceDisabled = true;
+            }
+            if (header === 'unidade' && ['combustao_estacionaria', 'ippu_lubrificantes'].includes(tableSelector.value)) {
+                forceDisabled = true;
+            }
+            if (header === 'unidade_consumo' && tableSelector.value === 'combustao_movel') {
+                forceDisabled = true;
+            }
+            // --- ATUALIZAÇÃO: Bloqueio para Efluentes Domésticos ---
+            if (header === 'fossa_septica_propriedade' && tableSelector.value === 'efluentes_domesticos') {
+                forceDisabled = true;
+            }
+
             let options = managedOptionsCache[header];
             if (currentSchema.dependencyMap && currentSchema.dependencyMap.targetField === header) {
-                // Se este campo é um alvo de dependência, busque as opções baseadas no gatilho
                 const triggerHeader = currentSchema.dependencyMap.triggerField;
                 const triggerValue = rowData[triggerHeader];
                 if (triggerValue && currentSchema.dependencyMap.data[triggerValue]) {
                     options = currentSchema.dependencyMap.data[triggerValue];
                 } else {
-                    // Se não houver gatilho selecionado, mostra lista vazia ou todas (vamos mostrar vazio para forçar seleção)
                     options = []; 
                 }
             }
@@ -2045,6 +2564,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
                 cell.appendChild(select);
                 select.value = currentValue;
+                
+                if (forceDisabled) {
+                    select.disabled = true;
+                    select.style.backgroundColor = '#f0f0f0'; 
+                    select.title = "Este dado é definido no Cadastro da Fonte.";
+                }
+
             } else if (DECIMAL_FIELDS.includes(header) || INTEGER_FIELDS.includes(header)) {
                 const input = document.createElement('input');
                 input.type = 'text';
@@ -2073,8 +2599,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 cell.appendChild(select);
                 select.value = currentValue;
             } else {
-                cell.setAttribute('contenteditable', 'true');
-                cell.textContent = currentValue;
+                if (forceDisabled) {
+                    cell.setAttribute('contenteditable', 'false');
+                    cell.textContent = currentValue;
+                    cell.style.backgroundColor = '#f0f0f0';
+                    cell.title = "Este dado é definido no Cadastro da Fonte.";
+                } else {
+                    cell.setAttribute('contenteditable', 'true');
+                    cell.textContent = currentValue;
+                }
             }
             row.appendChild(cell);
         });
@@ -2097,6 +2630,11 @@ document.addEventListener('DOMContentLoaded', () => {
     
     function getRowDataFromDOM(rowElement, headers) {
         const rowData = {};
+        
+        if (rowElement.dataset.idFonte) {
+            rowData.id_fonte = rowElement.dataset.idFonte;
+        }
+
         headers.forEach((header) => {
             const cell = rowElement.querySelector(`td[data-header="${header}"]`);
             if(cell) rowData[header] = getCellValue(cell);
@@ -2119,6 +2657,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 setFieldsState(rowElement, distanciaFields, true, false);
                 setFieldsState(rowElement, consumoFields, true, false);
             }
+        } else if (sourceType === 'electricity_purchase') {
+            const especificarFonteField = ['especificar_fonte'];
+            const isSIN = sanitizedData.fonte_energia === 'Sistema Interligado Nacional';
+            setFieldsState(rowElement, especificarFonteField, isSIN, isSIN);
         } else if (sourceType === 'efluentes_controlados') {
             const tratamentoField = ['tipo_tratamento'];
             const destinoFinalField = ['tipo_destino_final'];
@@ -2139,10 +2681,6 @@ document.addEventListener('DOMContentLoaded', () => {
              } else {
                 setFieldsState(rowElement, vegNaturalFields, false, false);
              }
-        } else if (sourceType === 'electricity_purchase') {
-            const especificarFonteField = ['especificar_fonte'];
-            const isSIN = sanitizedData.fonte_energia === 'Sistema Interligado Nacional';
-            setFieldsState(rowElement, especificarFonteField, isSIN, isSIN);
         } else if (sourceType === 'purchased_goods_services') {
             const qtdUnidFields = ['quantidade', 'unidade'];
             if (sanitizedData.tipo_item === 'Serviço') {
@@ -2167,8 +2705,6 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (sourceType === 'business_travel_land') {
             const consumoFields = ['combustivel', 'consumo', 'unidade_consumo'];
             const distanciaFields = ['distancia_percorrida', 'unidade_distancia'];
-            // modal_viagem e km_reembolsado não entram aqui pois são sempre habilitados
-            
             if (sanitizedData.tipo_reporte === 'Consumo') {
                 setFieldsState(rowElement, distanciaFields, true, true);
                 setFieldsState(rowElement, consumoFields, false, false);
@@ -2182,7 +2718,6 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (sourceType === 'downstream_transport' || sourceType === 'waste_transport') {
             const consumoFields = ['combustivel', 'consumo', 'unidade_consumo'];
             const distanciaFields = ['classificacao_veiculo', 'distancia_trecho', 'unidade_distancia', 'carga_transportada', 'numero_viagens'];
-            
             if (sanitizedData.tipo_reporte === 'Consumo') {
                 setFieldsState(rowElement, distanciaFields, true, true);
                 setFieldsState(rowElement, consumoFields, false, false);
@@ -2194,7 +2729,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 setFieldsState(rowElement, distanciaFields, true, false);
             }
         } else if (sourceType === 'employee_commuting') {
-            // --- SPRINT 20: Lógica Visual para Transporte de Funcionários ---
             const consumoFields = ['tipo_combustivel', 'consumo', 'unidade_consumo'];
             const distanciaFields = ['distancia_km'];
             const enderecoFields = ['endereco_funcionario', 'endereco_trabalho'];
@@ -2217,7 +2751,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 setFieldsState(rowElement, enderecoFields, true, false);
             }
         } else if (sourceType === 'conservation_area') {
-            // --- SPRINT 21: Lógica para Área de Conservação (Atualizado) ---
             const plantioField = ['plantio'];
             if (sanitizedData.area_plantada === 'Sim') {
                 setFieldsState(rowElement, plantioField, false, false);
@@ -2248,7 +2781,9 @@ document.addEventListener('DOMContentLoaded', () => {
     function checkTableAndToggleSaveButton() {
         const hasAnyErrors = tableContainer.querySelector('.invalid-cell');
         const activeRows = Array.from(tableContainer.querySelectorAll('tbody tr')).filter(row => {
-            return !row.querySelector('input:disabled, select:disabled');
+            const allInputs = Array.from(row.querySelectorAll('input, select'));
+            const allDisabled = allInputs.length > 0 && allInputs.every(el => el.disabled);
+            return !allDisabled && !row.classList.contains('saved-row');
         });
         
         const hasActiveRows = activeRows.length > 0;
@@ -2266,7 +2801,7 @@ document.addEventListener('DOMContentLoaded', () => {
             feedbackDiv.textContent = 'Todos os dados são válidos! Você pode salvar.';
             feedbackDiv.style.color = 'green';
         } else if (!hasActiveRows && hasAnyRows) {
-            feedbackDiv.textContent = "Todos os dados exibidos já foram salvos.";
+            feedbackDiv.textContent = "Todos os dados exibidos já foram salvos ou estão travados.";
             feedbackDiv.style.color = 'green';
         } else {
             feedbackDiv.textContent = "";
@@ -2304,7 +2839,6 @@ document.addEventListener('DOMContentLoaded', () => {
                                 input.value = '';
                             }
                         } else {
-                            // Limpa texto puro se não houver input (ex: unidades auto-preenchidas)
                             cell.textContent = '';
                         }
                     }
@@ -2312,7 +2846,13 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (input) input.disabled = true;
                 } else {
                     const isAutoFilledUnit = currentSchema.autoFillMap && Object.values(currentSchema.autoFillMap).some(rule => rule.targetColumn === fieldName);
-                    if(!isAutoFilledUnit) {
+                    
+                    const isSystemLocked = (fieldName === 'controlado_empresa' && ['combustao_estacionaria', 'combustao_movel', 'ippu_lubrificantes', 'emissoes_fugitivas', 'fertilizantes'].includes(tableSelector.value)) 
+                                        || (fieldName === 'unidade' && ['combustao_estacionaria', 'ippu_lubrificantes'].includes(tableSelector.value))
+                                        || (fieldName === 'unidade_consumo' && tableSelector.value === 'combustao_movel')
+                                        || (fieldName === 'fossa_septica_propriedade' && tableSelector.value === 'efluentes_domesticos');
+
+                    if(!isAutoFilledUnit && !isSystemLocked) {
                         cell.style.backgroundColor = '';
                         const rowIsLocked = row.querySelector('.delete-row-btn').disabled === true;
                         if (input && !rowIsLocked) input.disabled = false;
@@ -2344,7 +2884,7 @@ document.addEventListener('DOMContentLoaded', () => {
             rowData = getRowDataFromDOM(editedRow, headers);
         }
 
-        // 2. --- NOVO: Dependency Logic (Dropdowns Dinâmicos na Tabela) ---
+        // 2. Dependency Logic
         if (currentSchema.dependencyMap && currentSchema.dependencyMap.triggerField === headerOfEditedCell) {
             const triggerValue = getCellValue(cell);
             const targetHeader = currentSchema.dependencyMap.targetField;
@@ -2364,11 +2904,9 @@ document.addEventListener('DOMContentLoaded', () => {
                             targetSelect.appendChild(option);
                         });
                     }
-                    // Limpa o valor antigo, pois provavelmente é inválido para a nova lista
                     targetSelect.value = "";
                 }
             }
-            // Atualiza rowData com a nova informação (valor limpo)
             rowData = getRowDataFromDOM(editedRow, headers);
         }
         
@@ -2390,6 +2928,7 @@ document.addEventListener('DOMContentLoaded', () => {
         saveButton.style.display = 'none';
         exportButton.style.display = 'none';
         currentReportYear = null;
+        referenceData = []; 
 
         if (currentSchema) {
             const year = prompt("Por favor, digite o ano de reporte (ex: 2024):", new Date().getFullYear());
@@ -2418,12 +2957,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (!response.ok) throw new Error('Falha ao carregar template de dados.');
                 
                 const data = await response.json();
+                referenceData = data; 
+
                 feedbackDiv.textContent = '';
                 generateTable(data, false);
                 
                 checkAndLoadDraft();
                 
-                // --- FORÇA SCROLL PARA BAIXO ---
                 setTimeout(() => {
                     uploadSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }, 100);
@@ -2475,9 +3015,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const friendlyData = dataToExport.map(row => {
             const newRow = {};
+            delete row.id_fonte; 
             for (const key in row) {
                 let displayName = currentSchema.headerDisplayNames[key] || key;
-                // --- SPRINT 19: Lógica Dinâmica na Exportação ---
                 displayName = resolveDynamicHeader(displayName, currentReportYear);
                 newRow[displayName] = row[key];
             }
@@ -2502,7 +3042,7 @@ document.addEventListener('DOMContentLoaded', () => {
             document.body.appendChild(a);
             a.click();
             window.URL.revokeObjectURL(url);
-            feedbackDiv.textContent = 'Dados exportados com sucesso! Você pode editar no Excel e fazer upload novamente.';
+            feedbackDiv.textContent = 'Dados exportados com sucesso!';
             feedbackDiv.style.color = 'green';
         } catch (error) {
             console.error("Erro na exportação:", error);
@@ -2583,8 +3123,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const dataToSave = []; 
         
         document.querySelectorAll('#table-container tbody tr').forEach(row => { 
-            const isLocked = row.querySelector('input:disabled, select:disabled');
-            if (!isLocked) {
+            if (!row.classList.contains('saved-row')) {
                 dataToSave.push(getRowDataFromDOM(row, headers)); 
             }
         }); 
@@ -2608,9 +3147,7 @@ document.addEventListener('DOMContentLoaded', () => {
             feedbackDiv.style.color = 'green'; 
             
             lockSavedRows();
-            
             clearDraft();
-            
             checkTableAndToggleSaveButton(); 
             
         } catch (error) { 
@@ -2739,11 +3276,9 @@ const BIOME_DATA = {
     ]
 };
 
-// Flatten para valid options no importer inicial
 const ALL_FITOFISIONOMIAS = [...new Set(Object.values(BIOME_DATA).flat())].sort();
 
 export const validationSchemas = {
-    // --- SPRINT 21: ÁREA DE CONSERVAÇÃO ---
     conservation_area: {
         displayName: "Área de Conservação",
         hasUnits: true,
@@ -2751,7 +3286,6 @@ export const validationSchemas = {
             ano: "Ano",
             periodo: "Período",
             unidade_empresarial: "Unidade Empresarial",
-            // DESCRIÇÃO REMOVIDA DAQUI - Outros campos identificam a fonte
             bioma: "Bioma",
             fitofisionomia: "Fitofisionomia",
             area_plantada: "Área de conservação plantada?",
@@ -2777,17 +3311,14 @@ export const validationSchemas = {
             const errors = {};
             const isFilled = (value) => value !== null && value !== undefined && value !== '';
 
-            // 1. Campos Padrão
             if (!rowData.ano || isNaN(parseInt(rowData.ano)) || String(rowData.ano).length !== 4) errors.ano = "Deve ser um ano com 4 dígitos.";
             if (!this.validOptions.periodo.includes(rowData.periodo)) errors.periodo = "Período inválido.";
             if (!rowData.unidade_empresarial) errors.unidade_empresarial = "Obrigatório.";
             
-            // 3. Bioma e Fitofisionomia (Dependência)
             if (!this.validOptions.bioma.includes(rowData.bioma)) {
                 errors.bioma = "Selecione um bioma válido.";
             }
             
-            // Valida se a fitofisionomia existe e se pertence ao bioma selecionado
             if (rowData.bioma) {
                 const validFitosForBiome = BIOME_DATA[rowData.bioma];
                 if (!validFitosForBiome) {
@@ -2803,7 +3334,6 @@ export const validationSchemas = {
                 errors.fitofisionomia = "Obrigatório.";
             }
 
-            // 4. Área Plantada e Plantio (Texto)
             const normalizedPlantada = normalizeString(rowData.area_plantada);
             if (['sim', 's'].includes(normalizedPlantada)) rowData.area_plantada = 'Sim';
             else if (['nao', 'n'].includes(normalizedPlantada)) rowData.area_plantada = 'Não';
@@ -2822,7 +3352,6 @@ export const validationSchemas = {
                 }
             }
 
-            // 5. Áreas (Floats)
             const areaInicioVal = rowData.area_inicio_ano;
             if (!isFilled(areaInicioVal) || isNaN(parseFloat(areaInicioVal)) || parseFloat(areaInicioVal) < 0) {
                 errors.area_inicio_ano = "Deve ser um número positivo ou zero.";
@@ -2831,13 +3360,6 @@ export const validationSchemas = {
             const areaFimVal = rowData.area_fim_ano;
             if (!isFilled(areaFimVal) || isNaN(parseFloat(areaFimVal)) || parseFloat(areaFimVal) < 0) {
                 errors.area_fim_ano = "Deve ser um número positivo ou zero.";
-            }
-
-            // 6. Motivo da Alteração
-            if (isFilled(areaInicioVal) && isFilled(areaFimVal)) {
-                const areaInicio = parseFloat(areaInicioVal);
-                const areaFim = parseFloat(areaFimVal);
-                // Validar motivo se necessário no futuro
             }
 
             return { isValid: Object.keys(errors).length === 0, errors: errors, sanitizedData: rowData };
@@ -2859,8 +3381,18 @@ export const validationSchemas = {
         validOptions: {
             periodo: ["Anual", "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"],
             fonte_energia: ["Sistema Interligado Nacional", "Mercado Livre Convencional", "Mercado Livre Incentivado", "Fonte Energética Específica"],
-            especificar_fonte: ["Solar", "Eólica", "Biomassa"],
+            especificar_fonte: ["Solar", "Eólica", "Biomassa", "Não identificado", "Outros tipos de fonte"],
             unidade_medida: ["kWh", "MWh"]
+        },
+        dependencyMap: {
+            triggerField: "fonte_energia",
+            targetField: "especificar_fonte",
+            data: {
+                "Mercado Livre Convencional": ["Solar", "Eólica", "Biomassa", "Não identificado", "Outros tipos de fonte"],
+                "Mercado Livre Incentivado": ["Solar", "Eólica", "Biomassa", "Não identificado"],
+                "Fonte Energética Específica": ["Solar", "Eólica", "Biomassa", "Não identificado"],
+                "Sistema Interligado Nacional": []
+            }
         },
         autoFillMap: {},
         validateRow: function(rowData) {
@@ -2876,8 +3408,8 @@ export const validationSchemas = {
             }
 
             const consumoVal = rowData.consumo;
-            if (!isFilled(consumoVal) || isNaN(parseFloat(consumoVal)) || parseFloat(consumoVal) <= 0) {
-                errors.consumo = `Entrada inválida ('${consumoVal}'). Insira um número decimal e positivo.`;
+            if (!isFilled(consumoVal) || isNaN(parseFloat(consumoVal)) || parseFloat(consumoVal) < 0) {
+                errors.consumo = `Entrada inválida ('${consumoVal}'). Insira um número decimal positivo ou zero.`;
             }
 
             if (!this.validOptions.unidade_medida.includes(rowData.unidade_medida)) {
@@ -2886,8 +3418,15 @@ export const validationSchemas = {
 
             const isSIN = rowData.fonte_energia === 'Sistema Interligado Nacional';
             if (!isSIN) {
-                if (!this.validOptions.especificar_fonte.includes(rowData.especificar_fonte)) {
+                if (!isFilled(rowData.especificar_fonte)) {
                     errors.especificar_fonte = "Obrigatório selecionar uma especificação para esta fonte de energia.";
+                } else if (!this.validOptions.especificar_fonte.includes(rowData.especificar_fonte)) {
+                    errors.especificar_fonte = "Especificação inválida.";
+                } else {
+                    const allowedOptions = this.dependencyMap.data[rowData.fonte_energia];
+                    if (allowedOptions && !allowedOptions.includes(rowData.especificar_fonte)) {
+                        errors.especificar_fonte = `A opção '${rowData.especificar_fonte}' não é válida para '${rowData.fonte_energia}'.`;
+                    }
                 }
             } else {
                 if (isFilled(rowData.especificar_fonte)) {
@@ -2955,14 +3494,6 @@ export const validationSchemas = {
 
             if (!this.validOptions.unidade.includes(rowData.unidade)) {
                 errors.unidade = "Selecione 'Toneladas' ou 'Quilogramas'.";
-            }
-            
-            if (rowData.destinacao_final === 'Aterro') {
-                // Validação removida pois o campo agora é texto livre preenchido pelo cadastro
-            } else {
-                if (isFilled(rowData.informar_cidade_uf)) {
-                    errors.informar_cidade_uf = "Este campo só deve ser preenchido se a destinação for 'Aterro'.";
-                }
             }
             
             const normalizedControlado = normalizeString(rowData.local_controlado_empresa);
@@ -3241,7 +3772,8 @@ export const validationSchemas = {
             tipo_destino_final: [ "Lançamento em corpos d'água (não especificado)", "Lançamento em corpos d'água (que não reservatórios, lagos e estuários)", "Lançamento em reservatórios, lagos e estuários", "Efluente parado a céu aberto", "Lançamento em reservatórios. lagos e estuários" ],
             unidade_componente_organico: [ "mgDQO/L (Demanda química de oxigênio)", "mgDBO/L (Demanda biológica de oxigênio)" ],
             unidade_comp_organico_removido_lodo: [ "mgDQO/L (Demanda química de oxigênio)", "mgDBO/L (Demanda biológica de oxigênio)" ],
-            unidade_efluente_liquido: ["m3/ano", "m3/mês"]
+            unidade_efluente_liquido: ["m3/ano", "m3/mês"],
+            unidade_nitrogenio: ["kgN/m3"]
         },
         autoFillMap: {},
         validateRow: function(rowData) {
@@ -3255,12 +3787,12 @@ export const validationSchemas = {
             const qtdCompOrgVal = rowData.qtd_componente_organico;
             if (isNaN(parseFloat(qtdCompOrgVal)) || parseFloat(qtdCompOrgVal) <= 0) { errors.qtd_componente_organico = `Entrada inválida ('${qtdCompOrgVal}'). Insira um número positivo.`; }
             const qtdNitroVal = rowData.qtd_nitrogenio_mg_l;
-            if (isNaN(parseFloat(qtdNitroVal)) || parseFloat(qtdNitroVal) < 0) { errors.qtd_nitrogenio_mg_l = `Entrada inválida ('${qtdNitroVal}'). Insira um número positivo ou zero.`; }
+            if (isFilled(qtdNitroVal) && (isNaN(parseFloat(qtdNitroVal)) || parseFloat(qtdNitroVal) < 0)) { errors.qtd_nitrogenio_mg_l = `Entrada inválida ('${qtdNitroVal}'). Insira um número positivo ou zero.`; }
+            if (isFilled(rowData.unidade_nitrogenio) && rowData.unidade_nitrogenio !== 'kgN/m3') { errors.unidade_nitrogenio = "Unidade deve ser 'kgN/m3'."; }
             const compOrgRemovidoVal = rowData.componente_organico_removido_lodo;
             if (isFilled(compOrgRemovidoVal) && (isNaN(parseFloat(compOrgRemovidoVal)) || parseFloat(compOrgRemovidoVal) < 0)) { errors.componente_organico_removido_lodo = `Entrada inválida ('${compOrgRemovidoVal}'). Insira um número positivo ou zero.`; }
             if (!this.validOptions.unidade_efluente_liquido.includes(rowData.unidade_efluente_liquido)) { errors.unidade_efluente_liquido = "Unidade deve ser 'm3/ano' ou 'm3/mês'."; }
             if (!this.validOptions.unidade_componente_organico.includes(rowData.unidade_componente_organico)) errors.unidade_componente_organico = "Unidade do componente inválida.";
-            if (rowData.unidade_nitrogenio !== 'kgN/m3') errors.unidade_nitrogenio = "Unidade deve ser 'kgN/m3'.";
             if (isFilled(compOrgRemovidoVal)) { if (!this.validOptions.unidade_comp_organico_removido_lodo.includes(rowData.unidade_comp_organico_removido_lodo)) errors.unidade_comp_organico_removido_lodo = "Unidade do componente removido inválida."; }
             if (rowData.unidade_comp_organico_removido_lodo && !isFilled(compOrgRemovidoVal)) { errors.componente_organico_removido_lodo = "Quantidade é obrigatória se a unidade for selecionada."; }
             if (!this.validOptions.tratamento_ou_destino.includes(rowData.tratamento_ou_destino)) { errors.tratamento_ou_destino = "Escolha entre 'Tratamento' e 'Destino Final'."; } else if (rowData.tratamento_ou_destino === 'Tratamento') {
@@ -3273,10 +3805,20 @@ export const validationSchemas = {
             return { isValid: Object.keys(errors).length === 0, errors: errors, sanitizedData: rowData };
         }
     },
+    // --- ALTERAÇÃO AQUI: Renomeado Cabeçalho ---
     efluentes_domesticos: {
         displayName: "Efluentes Domésticos",
         hasUnits: true,
-        headerDisplayNames: { ano: "Ano", periodo: "Período", unidade_empresarial: "Unidade Empresarial", tipo_trabalhador: "Tipo de Trabalhador", num_trabalhadores: "Nº de Trabalhadores", carga_horaria_media: "Carga Horária Média (h/dia)", fossa_septica_propriedade: "Fossa séptica na propriedade?", comentarios: "Comentários" },
+        headerDisplayNames: { 
+            ano: "Ano", 
+            periodo: "Período", 
+            unidade_empresarial: "Unidade Empresarial", 
+            tipo_trabalhador: "Tipo de Trabalhador", 
+            num_trabalhadores: "Nº de Trabalhadores", 
+            carga_horaria_media: "Carga Horária Média (h/dia)", 
+            fossa_septica_propriedade: "Fossa séptica na propriedade da empresa?", // Renomeado
+            comentarios: "Comentários" 
+        },
         validOptions: {
             periodo: ["Anual", "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"],
             tipo_trabalhador: ["Interno", "Terceiro"],
@@ -4162,460 +4704,6 @@ export const validationSchemas = {
 };
 </file>
 
-<file path="backend/database.js">
-// arquivo: backend/database.js
-
-const sqlite3 = require('sqlite3').verbose();
-const path = require('path');
-
-const { validationSchemas } = require('../shared/validators.js');
-
-const dbPath = path.resolve(__dirname, 'ecofinance.db');
-
-const db = new sqlite3.Database(dbPath, (err) => {
-  if (err) {
-    console.error('Erro ao abrir o banco de dados', err.message);
-  } else {
-    console.log('Conectado ao banco de dados SQLite em:', dbPath);
-    
-    db.serialize(() => {
-        db.run(`CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY AUTOINCREMENT, email TEXT UNIQUE, password TEXT)`, (err) => { if (err) console.error('Erro tabela users:', err); else console.log('Tabela "users" pronta.'); });
-        
-        db.run(`CREATE TABLE IF NOT EXISTS contacts (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, unit_id INTEGER, email TEXT, phone TEXT, FOREIGN KEY (unit_id) REFERENCES units(id) ON DELETE SET NULL)`, (err) => { if (err) console.error('Erro tabela contacts:', err); else console.log('Tabela "contacts" pronta.'); });
-        
-        db.run(`CREATE TABLE IF NOT EXISTS units (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEXT NOT NULL, cidade TEXT, estado TEXT, pais TEXT, numero_colaboradores INTEGER)`, (err) => { if (err) console.error('Erro tabela units:', err); else console.log('Tabela "units" pronta.'); });
-        db.run(`CREATE TABLE IF NOT EXISTS mobile_combustion_data (id INTEGER PRIMARY KEY AUTOINCREMENT, ano INTEGER, periodo TEXT, unidade_empresarial TEXT, descricao_fonte TEXT, controlado_empresa BOOLEAN, tipo_entrada TEXT, combustivel TEXT, consumo REAL, unidade_consumo TEXT, distancia_percorrida REAL, unidade_distancia TEXT, tipo_veiculo TEXT)`, (err) => { if (err) console.error('Erro tabela mobile_combustion_data:', err); else console.log('Tabela "mobile_combustion_data" pronta.'); });
-        
-        db.run(`CREATE TABLE IF NOT EXISTS stationary_combustion_data (id INTEGER PRIMARY KEY AUTOINCREMENT, ano INTEGER, periodo TEXT, unidade_empresarial TEXT, descricao_da_fonte TEXT, combustivel_estacionario TEXT, consumo REAL, unidade TEXT, controlado_empresa BOOLEAN)`, (err) => { if (err) console.error('Erro tabela stationary_combustion_data:', err); else console.log('Tabela "stationary_combustion_data" pronta.'); });
-
-        db.run(`CREATE TABLE IF NOT EXISTS production_sales_data (id INTEGER PRIMARY KEY AUTOINCREMENT, ano INTEGER NOT NULL, periodo TEXT, unidade_empresarial TEXT NOT NULL, produto TEXT NOT NULL, quantidade_vendida INTEGER CHECK(quantidade_vendida > 0), unidade_medida TEXT NOT NULL, comentarios TEXT)`, (err) => { if (err) console.error('Erro tabela production_sales_data:', err); else console.log('Tabela "production_sales_data" pronta.'); });
-        
-        db.run(`CREATE TABLE IF NOT EXISTS lubricants_ippu_data (id INTEGER PRIMARY KEY AUTOINCREMENT, ano INTEGER, periodo TEXT, unidade_empresarial TEXT, fonte_emissao TEXT, tipo_lubrificante TEXT, consumo REAL, unidade TEXT, controlado_empresa BOOLEAN)`, (err) => { if (err) console.error('Erro tabela lubricants_ippu_data:', err); else console.log('Tabela "lubricants_ippu_data" pronta.'); });
-        
-        db.run(`CREATE TABLE IF NOT EXISTS fugitive_emissions_data (id INTEGER PRIMARY KEY AUTOINCREMENT, ano INTEGER, periodo TEXT, unidade_empresarial TEXT, fonte_emissao TEXT, tipo_gas TEXT, quantidade_reposta REAL, unidade TEXT, controlado_empresa BOOLEAN, comentarios TEXT)`, (err) => { if (err) console.error('Erro tabela fugitive_emissions_data:', err); else console.log('Tabela "fugitive_emissions_data" pronta.'); });
-
-        db.run(`CREATE TABLE IF NOT EXISTS fertilizers_data (id INTEGER PRIMARY KEY AUTOINCREMENT, ano INTEGER, periodo TEXT, unidade_empresarial TEXT, tipo_fertilizante TEXT, quantidade_kg REAL, unidade TEXT, percentual_nitrogenio REAL, percentual_carbonato REAL, controlado_empresa BOOLEAN, comentarios TEXT)`, (err) => { if (err) console.error('Erro tabela fertilizers_data:', err); else console.log('Tabela "fertilizers_data" pronta.'); });
-        
-        db.run(`
-            CREATE TABLE IF NOT EXISTS effluents_controlled_data (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                ano INTEGER NOT NULL,
-                periodo TEXT NOT NULL,
-                unidade_empresarial TEXT NOT NULL,
-                tratamento_ou_destino TEXT NOT NULL,
-                tipo_tratamento TEXT,
-                tipo_destino_final TEXT,
-                qtd_efluente_liquido_m3 REAL NOT NULL,
-                unidade_efluente_liquido TEXT NOT NULL,
-                qtd_componente_organico REAL NOT NULL,
-                unidade_componente_organico TEXT NOT NULL,
-                qtd_nitrogenio_mg_l REAL NOT NULL,
-                unidade_nitrogenio TEXT NOT NULL,
-                componente_organico_removido_lodo REAL,
-                unidade_comp_organico_removido_lodo TEXT,
-                comentarios TEXT
-            )
-        `, (err) => { if (err) console.error('Erro tabela effluents_controlled_data:', err); else console.log('Tabela "effluents_controlled_data" pronta.'); });
-        
-        db.run(`DROP TABLE IF EXISTS domestic_effluents_data`);
-        
-        db.run(`
-            CREATE TABLE IF NOT EXISTS domestic_effluents_data (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                ano INTEGER NOT NULL,
-                periodo TEXT NOT NULL,
-                unidade_empresarial TEXT NOT NULL,
-                tipo_trabalhador TEXT NOT NULL,
-                num_trabalhadores INTEGER NOT NULL,
-                carga_horaria_media REAL NOT NULL,
-                fossa_septica_propriedade TEXT NOT NULL,
-                comentarios TEXT
-            )
-        `, (err) => { if (err) console.error('Erro tabela domestic_effluents_data:', err); else console.log('Tabela "domestic_effluents_data" recriada com a nova estrutura.'); });
-        
-        db.run(`
-            CREATE TABLE IF NOT EXISTS land_use_change_data (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                ano INTEGER NOT NULL,
-                periodo TEXT NOT NULL,
-                unidade_empresarial TEXT NOT NULL,
-                uso_solo_anterior TEXT NOT NULL,
-                bioma TEXT,
-                fitofisionomia TEXT,
-                tipo_area TEXT,
-                area_hectare REAL NOT NULL,
-                comentarios TEXT
-            )
-        `, (err) => { if (err) console.error('Erro tabela land_use_change_data:', err); else console.log('Tabela "land_use_change_data" pronta.'); });
-        
-        db.run(`
-            CREATE TABLE IF NOT EXISTS solid_waste_data (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                ano INTEGER,
-                periodo TEXT,
-                unidade_empresarial TEXT,
-                destinacao_final TEXT,
-                tipo_residuo TEXT,
-                quantidade_gerado REAL,
-                unidade TEXT,
-                informar_cidade_uf TEXT,
-                local_controlado_empresa TEXT,
-                responsavel TEXT,
-                area_responsavel TEXT,
-                email TEXT,
-                telefone TEXT,
-                rastreabilidade_interna TEXT,
-                comentarios TEXT
-            )
-        `, (err) => { if (err) console.error('Erro tabela solid_waste_data:', err); else console.log('Tabela "solid_waste_data" pronta.'); });
-
-        db.run(`
-            CREATE TABLE IF NOT EXISTS electricity_purchase_data (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                ano INTEGER,
-                periodo TEXT,
-                unidade_empresarial TEXT,
-                fonte_energia TEXT,
-                especificar_fonte TEXT,
-                consumo REAL,
-                unidade_medida TEXT,
-                responsavel TEXT,
-                area_responsavel TEXT,
-                email TEXT,
-                telefone TEXT,
-                rastreabilidade TEXT,
-                comentarios TEXT
-            )
-        `, (err) => { if (err) console.error('Erro tabela electricity_purchase_data:', err); else console.log('Tabela "electricity_purchase_data" pronta.'); });
-
-        db.run(`
-            CREATE TABLE IF NOT EXISTS purchased_goods_services_data (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                ano INTEGER,
-                periodo TEXT,
-                unidade_empresarial TEXT,
-                descricao_item TEXT,
-                tipo_item TEXT,
-                quantidade REAL,
-                unidade TEXT,
-                valor_aquisicao REAL,
-                bens_terceiros TEXT,
-                responsavel TEXT,
-                area_responsavel TEXT,
-                email TEXT,
-                telefone TEXT,
-                comentarios TEXT
-            )
-        `, (err) => { if (err) console.error('Erro tabela purchased_goods_services_data:', err); else console.log('Tabela "purchased_goods_services_data" pronta.'); });
-
-        db.run(`
-            CREATE TABLE IF NOT EXISTS capital_goods_data (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                ano INTEGER,
-                periodo TEXT,
-                unidade_empresarial TEXT,
-                bem_capital TEXT,
-                quantidade INTEGER,
-                unidade TEXT,
-                valor_aquisicao REAL,
-                responsavel TEXT,
-                area_responsavel TEXT,
-                email TEXT,
-                telefone TEXT,
-                comentarios TEXT
-            )
-        `, (err) => { if (err) console.error('Erro tabela capital_goods_data:', err); else console.log('Tabela "capital_goods_data" pronta.'); });
-
-        db.run(`
-            CREATE TABLE IF NOT EXISTS upstream_transport_data (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                ano INTEGER,
-                periodo TEXT,
-                unidade_empresarial TEXT,
-                insumo_transportado TEXT,
-                modal_transporte TEXT,
-                tipo_reporte TEXT,
-                combustivel TEXT,
-                consumo REAL,
-                unidade_consumo TEXT,
-                classificacao_veiculo TEXT,
-                distancia_trecho REAL,
-                unidade_distancia TEXT,
-                carga_transportada REAL,
-                numero_viagens INTEGER,
-                local_embarque TEXT,
-                local_destino TEXT,
-                responsavel TEXT,
-                area_responsavel TEXT,
-                email TEXT,
-                telefone TEXT,
-                comentarios TEXT
-            )
-        `, (err) => { if (err) console.error('Erro tabela upstream_transport_data:', err); else console.log('Tabela "upstream_transport_data" pronta.'); });
-
-        db.run(`
-            CREATE TABLE IF NOT EXISTS business_travel_land_data (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                ano INTEGER,
-                periodo TEXT,
-                unidade_empresarial TEXT,
-                descricao_viagem TEXT,
-                modal_viagem TEXT,
-                tipo_reporte TEXT,
-                combustivel TEXT,
-                consumo REAL,
-                unidade_consumo TEXT,
-                distancia_percorrida REAL,
-                unidade_distancia TEXT,
-                km_reembolsado TEXT,
-                responsavel TEXT,
-                area_responsavel TEXT,
-                email TEXT,
-                telefone TEXT,
-                comentarios TEXT
-            )
-        `, (err) => { if (err) console.error('Erro tabela business_travel_land_data:', err); else console.log('Tabela "business_travel_land_data" pronta.'); });
-
-        db.run(`
-            CREATE TABLE IF NOT EXISTS downstream_transport_data (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                ano INTEGER,
-                periodo TEXT,
-                unidade_empresarial TEXT,
-                insumo_transportado TEXT,
-                modal_transporte TEXT,
-                tipo_reporte TEXT,
-                combustivel TEXT,
-                consumo REAL,
-                unidade_consumo TEXT,
-                classificacao_veiculo TEXT,
-                distancia_trecho REAL,
-                unidade_distancia TEXT,
-                carga_transportada REAL,
-                numero_viagens INTEGER,
-                local_embarque TEXT,
-                local_destino TEXT,
-                responsavel TEXT,
-                area_responsavel TEXT,
-                email TEXT,
-                telefone TEXT,
-                comentarios TEXT
-            )
-        `, (err) => { if (err) console.error('Erro tabela downstream_transport_data:', err); else console.log('Tabela "downstream_transport_data" pronta.'); });
-
-        db.run(`
-            CREATE TABLE IF NOT EXISTS waste_transport_data (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                ano INTEGER,
-                periodo TEXT,
-                unidade_empresarial TEXT,
-                insumo_transportado TEXT,
-                tipo_reporte TEXT,
-                combustivel TEXT,
-                consumo REAL,
-                unidade_consumo TEXT,
-                classificacao_veiculo TEXT,
-                distancia_trecho REAL,
-                unidade_distancia TEXT,
-                carga_transportada REAL,
-                numero_viagens INTEGER,
-                responsavel TEXT,
-                area_responsavel TEXT,
-                email TEXT,
-                telefone TEXT,
-                comentarios TEXT
-            )
-        `, (err) => { if (err) console.error('Erro tabela waste_transport_data:', err); else console.log('Tabela "waste_transport_data" pronta.'); });
-
-        db.run(`
-            CREATE TABLE IF NOT EXISTS home_office_data (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                ano INTEGER,
-                periodo TEXT,
-                unidade_empresarial TEXT,
-                regime_trabalho TEXT,
-                num_funcionarios INTEGER,
-                responsavel TEXT,
-                area_responsavel TEXT,
-                email TEXT,
-                telefone TEXT,
-                comentarios TEXT
-            )
-        `, (err) => { if (err) console.error('Erro tabela home_office_data:', err); else console.log('Tabela "home_office_data" pronta.'); });
-
-        db.run(`
-            CREATE TABLE IF NOT EXISTS air_travel_data (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                ano INTEGER,
-                periodo TEXT,
-                unidade_empresarial TEXT,
-                descricao_viagem TEXT,
-                codigo_aeroporto_partida TEXT,
-                codigo_aeroporto_chegada TEXT,
-                numero_viagens INTEGER,
-                responsavel TEXT,
-                area_responsavel TEXT,
-                email TEXT,
-                telefone TEXT,
-                comentarios TEXT
-            )
-        `, (err) => { if (err) console.error('Erro tabela air_travel_data:', err); else console.log('Tabela "air_travel_data" pronta.'); });
-
-        db.run(`
-            CREATE TABLE IF NOT EXISTS employee_commuting_data (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                ano INTEGER,
-                periodo TEXT,
-                unidade_empresarial TEXT,
-                descricao_identificadora TEXT,
-                meio_utilizado TEXT,
-                tipo_reporte TEXT,
-                tipo_combustivel TEXT,
-                consumo REAL,
-                unidade_consumo TEXT,
-                distancia_km REAL,
-                endereco_funcionario TEXT,
-                endereco_trabalho TEXT,
-                dias_deslocados INTEGER,
-                responsavel TEXT,
-                area_responsavel TEXT,
-                email TEXT,
-                telefone TEXT,
-                comentarios TEXT
-            )
-        `, (err) => { if (err) console.error('Erro tabela employee_commuting_data:', err); else console.log('Tabela "employee_commuting_data" pronta.'); });
-
-        db.run(`
-            CREATE TABLE IF NOT EXISTS energy_generation_data (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                ano INTEGER,
-                periodo TEXT,
-                unidade_empresarial TEXT,
-                descricao_fonte TEXT,
-                fonte_geracao TEXT,
-                total_geracao REAL,
-                unidade_medida TEXT,
-                responsavel TEXT,
-                area_responsavel TEXT,
-                email TEXT,
-                telefone TEXT,
-                comentarios TEXT
-            )
-        `, (err) => { if (err) console.error('Erro tabela energy_generation_data:', err); else console.log('Tabela "energy_generation_data" pronta.'); });
-
-        // --- SPRINT 19: TABELA - Floresta Plantada ---
-        db.run(`
-            CREATE TABLE IF NOT EXISTS planted_forest_data (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                ano INTEGER,
-                periodo TEXT,
-                unidade_empresarial TEXT,
-                identificacao_area TEXT,
-                nome_especie TEXT,
-                area_antepenultimo REAL,
-                idade_antepenultimo INTEGER,
-                idade_penultimo INTEGER,
-                area_colhida_penultimo REAL,
-                area_atual REAL,
-                responsavel TEXT,
-                area_responsavel TEXT,
-                email TEXT,
-                telefone TEXT,
-                comentarios TEXT
-            )
-        `, (err) => { if (err) console.error('Erro tabela planted_forest_data:', err); else console.log('Tabela "planted_forest_data" pronta.'); });
-
-        // --- SPRINT 21: TABELA - Área de Conservação (ATUALIZADA) ---
-        db.run(`DROP TABLE IF EXISTS conservation_area_data`, (err) => {
-             // Drop para garantir a recriação correta com os novos campos
-             if(!err) {
-                db.run(`
-                    CREATE TABLE IF NOT EXISTS conservation_area_data (
-                        id INTEGER PRIMARY KEY AUTOINCREMENT,
-                        ano INTEGER,
-                        periodo TEXT,
-                        unidade_empresarial TEXT,
-                        descricao TEXT,
-                        bioma TEXT,
-                        fitofisionomia TEXT,
-                        area_plantada TEXT,
-                        plantio TEXT,
-                        area_inicio_ano REAL,
-                        area_fim_ano REAL,
-                        motivo_alteracao TEXT,
-                        responsavel TEXT,
-                        area_responsavel TEXT,
-                        email TEXT,
-                        telefone TEXT,
-                        comentarios TEXT
-                    )
-                `, (err) => { if (err) console.error('Erro tabela conservation_area_data:', err); else console.log('Tabela "conservation_area_data" atualizada e pronta.'); });
-             }
-        });
-
-
-        db.run(`CREATE TABLE IF NOT EXISTS asset_typologies (id INTEGER PRIMARY KEY AUTOINCREMENT, user_id INTEGER, unit_id INTEGER NOT NULL, source_type TEXT NOT NULL, description TEXT NOT NULL, asset_fields TEXT, is_active BOOLEAN DEFAULT TRUE)`, (err) => { if (err) console.error('Erro tabela asset_typologies:', err); else console.log('Tabela "asset_typologies" pronta.'); });
-        
-        db.all("PRAGMA table_info(asset_typologies)", (err, columns) => {
-            if (err) {
-                console.error("Erro ao ler colunas de asset_typologies:", err);
-                return;
-            }
-
-            const hasResponsibleId = columns.some(col => col.name === 'responsible_contact_id');
-            if (!hasResponsibleId) {
-                db.run("ALTER TABLE asset_typologies ADD COLUMN responsible_contact_id INTEGER REFERENCES contacts(id) ON DELETE SET NULL", (err) => {
-                    if (err) console.error("Erro ao adicionar coluna 'responsible_contact_id':", err);
-                    else console.log("Coluna 'responsible_contact_id' adicionada a 'asset_typologies'.");
-                });
-            }
-
-            const hasFrequency = columns.some(col => col.name === 'reporting_frequency');
-            if (!hasFrequency) {
-                db.run("ALTER TABLE asset_typologies ADD COLUMN reporting_frequency TEXT DEFAULT 'anual' NOT NULL", (err) => {
-                    if (err) console.error("Erro ao adicionar coluna 'reporting_frequency':", err);
-                    else console.log("Coluna 'reporting_frequency' adicionada a 'asset_typologies'.");
-                });
-            }
-        });
-
-        db.run(`DROP TABLE IF EXISTS source_configurations`, (err) => { 
-            if (err) console.error('Erro ao remover tabela obsoleta source_configurations:', err); 
-            else console.log('Tabela obsoleta "source_configurations" verificada/removida.'); 
-        });
-
-        db.run(`CREATE TABLE IF NOT EXISTS managed_options (id INTEGER PRIMARY KEY AUTOINCREMENT, field_key TEXT NOT NULL, value TEXT NOT NULL, UNIQUE(field_key, value))`, (err) => { if (err) console.error('Erro tabela managed_options:', err); else console.log('Tabela "managed_options" pronta.'); });
-        db.run(`DROP TABLE IF EXISTS custom_options`, (err) => { if (err) console.error('Erro ao remover tabela antiga custom_options:', err); });
-        
-        db.run(`CREATE TABLE IF NOT EXISTS contact_source_associations (contact_id INTEGER NOT NULL, source_type TEXT NOT NULL, PRIMARY KEY (contact_id, source_type), FOREIGN KEY (contact_id) REFERENCES contacts (id) ON DELETE CASCADE)`, (err) => { if (err) console.error('Erro tabela contact_source_associations:', err); else console.log('Tabela "contact_source_associations" pronta.'); });
-
-        
-        console.log('Iniciando o seeding de opções padrão...');
-        const sql = `INSERT OR IGNORE INTO managed_options (field_key, value) VALUES (?, ?)`;
-        let totalOptions = 0;
-        
-        
-        for (const schemaKey in validationSchemas) {
-            const schema = validationSchemas[schemaKey];
-            const options = schema.validOptions || {};
-            
-            for (const fieldKey in options) {
-                const optionValues = Array.isArray(options[fieldKey]) ? options[fieldKey] : [];
-                optionValues.forEach(value => {
-                    db.run(sql, [fieldKey, value]);
-                    totalOptions++;
-                });
-            }
-        }
-        console.log(`Seeding de opções padrão concluído. ${totalOptions} opções verificadas.`);
-        
-    });
-  }
-});
-
-module.exports = db;
-</file>
-
 <file path="frontend/assets.js">
 // arquivo: frontend/assets.js
 
@@ -4783,7 +4871,8 @@ document.addEventListener('DOMContentLoaded', () => {
             displayName: "Combustão Estacionária", 
             fields: { 
                 combustivel_estacionario: { label: "Combustível Padrão", type: "select" },
-                unidade: { label: "Unidade de Consumo", type: "text", disabled: true } 
+                unidade: { label: "Unidade de Consumo", type: "text", disabled: true },
+                controlado_empresa: { label: "Controlado pela Empresa?", type: "select", options: ["Sim", "Não"] }
             } 
         },
         combustao_movel: { 
@@ -4792,7 +4881,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 tipo_entrada: { label: "Como os dados serão reportados?", type: "select" }, 
                 combustivel: { label: "Combustível Padrão", type: "select", showIf: { field: "tipo_entrada", value: "consumo" } }, 
                 unidade_consumo: { label: "Unidade de Consumo", type: "text", showIf: { field: "tipo_entrada", value: "consumo" }, disabled: true }, 
-                tipo_veiculo: { label: "Tipo de Veículo Padrão", type: "select", showIf: { field: "tipo_entrada", value: "distancia" } }
+                tipo_veiculo: { label: "Tipo de Veículo Padrão", type: "select", showIf: { field: "tipo_entrada", value: "distancia" } },
+                controlado_empresa: { label: "Controlado pela Empresa?", type: "select", options: ["Sim", "Não"] }
             } 
         },
         dados_producao_venda: { 
@@ -4805,20 +4895,23 @@ document.addEventListener('DOMContentLoaded', () => {
             displayName: "IPPU - Lubrificantes", 
             fields: { 
                 tipo_lubrificante: { label: "Tipo de Lubrificante Padrão", type: "select" }, 
-                unidade: { label: "Unidade de Consumo Padrão", type: "select" } 
+                unidade: { label: "Unidade de Consumo Padrão", type: "text", disabled: true },
+                controlado_empresa: { label: "Controlado pela Empresa?", type: "select", options: ["Sim", "Não"] }
             } 
         },
         emissoes_fugitivas: { 
             displayName: "Emissões Fugitivas", 
             fields: { 
-                tipo_gas: { label: "Gás Padrão", type: "select" }
+                tipo_gas: { label: "Gás Padrão", type: "select" },
+                controlado_empresa: { label: "Controlado pela Empresa?", type: "select", options: ["Sim", "Não"] }
             } 
         },
         fertilizantes: { 
             displayName: "Fertilizantes", 
             fields: { 
                 percentual_nitrogenio: { label: "Percentual de Nitrogênio Padrão (%)", type: "number", min: 0, max: 100, step: 0.01 }, 
-                percentual_carbonato: { label: "Percentual de Carbonato Padrão (%)", type: "number", min: 0, max: 100, step: 0.01 }
+                percentual_carbonato: { label: "Percentual de Carbonato Padrão (%)", type: "number", min: 0, max: 100, step: 0.01 },
+                controlado_empresa: { label: "Controlado pela Empresa?", type: "select", options: ["Sim", "Não"] }
             } 
         },
         efluentes_controlados: {
@@ -4830,10 +4923,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 unidade_componente_organico: { label: "Unidade Padrão (Componente Orgânico)", type: "select" }
             }
         },
+        // --- ATUALIZADO AQUI (Efluentes Domésticos) ---
         efluentes_domesticos: {
             displayName: "Efluentes Domésticos",
             fields: {
-                fossa_septica_propriedade: { label: "Fossa Séptica na Propriedade (Padrão)?", type: "select" }
+                tipo_trabalhador: { label: "Tipo de Trabalhador (Descrição)", type: "select", options: ["Interno", "Terceiro"] },
+                fossa_septica_propriedade: { label: "Fossa séptica na propriedade da empresa?", type: "select", options: ["Sim", "Não"] },
+                responsible_contact_id: { label: "Responsável pela Informação", type: "select", isContact: true }
             }
         },
         mudanca_uso_solo: {
@@ -4922,9 +5018,9 @@ document.addEventListener('DOMContentLoaded', () => {
         assetsThead.innerHTML = ''; 
         const headerRow = document.createElement('tr'); 
         
-        // --- Lista de Schemas que usam Descrição Customizada ---
-        // Adicionado 'conservation_area'
-        const usesCustomDescription = ['solid_waste', 'electricity_purchase', 'downstream_transport', 'waste_transport', 'home_office', 'air_travel', 'employee_commuting', 'energy_generation', 'planted_forest', 'conservation_area'].includes(currentSourceType);
+        // --- Lista de Schemas que usam Descrição Customizada (ATUALIZADA) ---
+        // Adicionado 'efluentes_domesticos'
+        const usesCustomDescription = ['solid_waste', 'electricity_purchase', 'downstream_transport', 'waste_transport', 'home_office', 'air_travel', 'employee_commuting', 'energy_generation', 'planted_forest', 'conservation_area', 'efluentes_controlados', 'efluentes_domesticos'].includes(currentSourceType);
         const mainDescriptionKey = usesCustomDescription ? Object.keys(schema.fields)[0] : 'description';
         const mainDescriptionLabel = usesCustomDescription ? schema.fields[mainDescriptionKey].label : 'Descrição';
 
@@ -4948,8 +5044,8 @@ document.addEventListener('DOMContentLoaded', () => {
             typologies.forEach(typo => { 
                 const tr = document.createElement('tr'); 
                 
-                // --- Lista de Schemas que usam Descrição Customizada ---
-                const usesCustomDescription = ['solid_waste', 'electricity_purchase', 'downstream_transport', 'waste_transport', 'home_office', 'air_travel', 'employee_commuting', 'energy_generation', 'planted_forest', 'conservation_area'].includes(currentSourceType);
+                // --- Lista de Schemas que usam Descrição Customizada (ATUALIZADA) ---
+                const usesCustomDescription = ['solid_waste', 'electricity_purchase', 'downstream_transport', 'waste_transport', 'home_office', 'air_travel', 'employee_commuting', 'energy_generation', 'planted_forest', 'conservation_area', 'efluentes_controlados', 'efluentes_domesticos'].includes(currentSourceType);
                 const mainDescriptionKey = usesCustomDescription ? Object.keys(assetSchemas[currentSourceType].fields)[0] : 'description';
 
                 const mainDescription = usesCustomDescription 
@@ -5037,8 +5133,18 @@ document.addEventListener('DOMContentLoaded', () => {
              }
         });
 
-        // --- Lista de Schemas que usam Descrição Customizada ---
-        const usesCustomDescription = ['solid_waste', 'electricity_purchase', 'downstream_transport', 'waste_transport', 'home_office', 'air_travel', 'employee_commuting', 'energy_generation', 'planted_forest', 'conservation_area'].includes(currentSourceType);
+        // --- VALIDAÇÃO ESPECÍFICA PARA FERTILIZANTES ---
+        if (currentSourceType === 'fertilizantes') {
+            const percN = parseFloat(asset_fields.percentual_nitrogenio) || 0;
+            const percC = parseFloat(asset_fields.percentual_carbonato) || 0;
+            if ((percN + percC) > 100) {
+                alert(`A soma das porcentagens (${(percN + percC).toFixed(2)}%) excede 100%. Por favor, corrija os valores.`);
+                return; // Interrompe o salvamento
+            }
+        }
+
+        // --- Lista de Schemas que usam Descrição Customizada (ATUALIZADA) ---
+        const usesCustomDescription = ['solid_waste', 'electricity_purchase', 'downstream_transport', 'waste_transport', 'home_office', 'air_travel', 'employee_commuting', 'energy_generation', 'planted_forest', 'conservation_area', 'efluentes_controlados', 'efluentes_domesticos'].includes(currentSourceType);
         const mainDescriptionKey = usesCustomDescription ? Object.keys(assetSchemas[currentSourceType].fields)[0] : null;
 
         const descriptionValue = usesCustomDescription
@@ -5090,8 +5196,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (typoToEdit) {
                 assetIdInput.value = typoToEdit.id;
                 
-                // --- Lista de Schemas que usam Descrição Customizada ---
-                const usesCustomDescription = ['solid_waste', 'electricity_purchase', 'downstream_transport', 'waste_transport', 'home_office', 'air_travel', 'employee_commuting', 'energy_generation', 'planted_forest', 'conservation_area'].includes(currentSourceType);
+                // --- Lista de Schemas que usam Descrição Customizada (ATUALIZADA) ---
+                const usesCustomDescription = ['solid_waste', 'electricity_purchase', 'downstream_transport', 'waste_transport', 'home_office', 'air_travel', 'employee_commuting', 'energy_generation', 'planted_forest', 'conservation_area', 'efluentes_controlados', 'efluentes_domesticos'].includes(currentSourceType);
                 if (!usesCustomDescription) {
                     document.getElementById('asset-description').value = typoToEdit.description;
                 }
@@ -5119,7 +5225,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
                     }
                         
-                    const conditionalTriggers = ['tipo_entrada', 'tratamento_ou_destino', 'uso_solo_anterior', 'destinacao_final', 'fonte_energia', 'tipo_item', 'tipo_reporte', 'combustivel', 'tipo_combustivel', 'area_plantada', 'bioma'];
+                    const conditionalTriggers = ['tipo_entrada', 'tratamento_ou_destino', 'uso_solo_anterior', 'destinacao_final', 'fonte_energia', 'tipo_item', 'tipo_reporte', 'combustivel', 'tipo_combustivel', 'area_plantada', 'bioma', 'tipo_lubrificante'];
                     if (conditionalTriggers.includes(key)) {
                         input.dispatchEvent(new Event('change', { bubbles: true }));
                     }
@@ -5151,8 +5257,8 @@ document.addEventListener('DOMContentLoaded', () => {
         cancelBtn.style.display = 'none';
 
         const descriptionGroup = document.getElementById('asset-description').parentElement;
-        // --- Lista de Schemas que usam Descrição Customizada ---
-        const usesCustomDescription = ['solid_waste', 'electricity_purchase', 'downstream_transport', 'waste_transport', 'home_office', 'air_travel', 'employee_commuting', 'energy_generation', 'planted_forest', 'conservation_area'].includes(currentSourceType);
+        // --- Lista de Schemas que usam Descrição Customizada (ATUALIZADA) ---
+        const usesCustomDescription = ['solid_waste', 'electricity_purchase', 'downstream_transport', 'waste_transport', 'home_office', 'air_travel', 'employee_commuting', 'energy_generation', 'planted_forest', 'conservation_area', 'efluentes_controlados', 'efluentes_domesticos'].includes(currentSourceType);
 
         if (usesCustomDescription) {
             descriptionGroup.style.display = 'none';
@@ -5162,7 +5268,7 @@ document.addEventListener('DOMContentLoaded', () => {
             descriptionGroup.querySelector('input').required = true;
         }
 
-        const triggerFields = ['field-tipo_entrada', 'field-tratamento_ou_destino', 'uso_solo_anterior', 'field-combustivel', 'field-combustivel_estacionario', 'field-destinacao_final', 'field-fonte_energia', 'field-tipo_item', 'field-tipo_reporte', 'field-tipo_combustivel', 'field-area_plantada', 'field-bioma'];
+        const triggerFields = ['field-tipo_entrada', 'field-tratamento_ou_destino', 'uso_solo_anterior', 'field-combustivel', 'field-combustivel_estacionario', 'field-destinacao_final', 'field-fonte_energia', 'field-tipo_item', 'field-tipo_reporte', 'field-tipo_combustivel', 'field-area_plantada', 'field-bioma', 'field-tipo_lubrificante'];
         triggerFields.forEach(id => {
             const trigger = document.getElementById(id);
             if (trigger) trigger.dispatchEvent(new Event('change'));
@@ -5179,8 +5285,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const fieldElements = {};
         const triggerFields = new Set();
         const autoFillTriggers = new Set();
-        // --- Lista de Schemas que usam Descrição Customizada ---
-        const usesCustomDescription = ['solid_waste', 'electricity_purchase', 'downstream_transport', 'waste_transport', 'home_office', 'air_travel', 'employee_commuting', 'energy_generation', 'planted_forest', 'conservation_area'].includes(currentSourceType);
+        // --- Lista de Schemas que usam Descrição Customizada (ATUALIZADA) ---
+        const usesCustomDescription = ['solid_waste', 'electricity_purchase', 'downstream_transport', 'waste_transport', 'home_office', 'air_travel', 'employee_commuting', 'energy_generation', 'planted_forest', 'conservation_area', 'efluentes_controlados', 'efluentes_domesticos'].includes(currentSourceType);
         
         const firstRowContainer = document.querySelector('#asset-form .form-row');
         const descriptionFieldGroup = document.getElementById('asset-description').parentElement;
@@ -5675,6 +5781,9 @@ app.post('/api/upload', upload.single('file'), (req, res) => {
             headerMap[normalizeHeader(schema.headerDisplayNames[key])] = key;
         }
 
+        // Adiciona mapeamento para a chave oculta se ela existir no arquivo
+        headerMap['id_fonte'] = 'id_fonte';
+
         if (req.file.originalname.endsWith('.xlsx') || req.file.originalname.endsWith('.xls')) {
             const workbook = xlsx.readFile(filePath);
             const sheetName = workbook.SheetNames[0];
@@ -5753,7 +5862,7 @@ app.post('/api/export', (req, res) => {
         const buffer = xlsx.write(workbook, { bookType: 'xlsx', type: 'buffer' });
         const fileName = tableName ? `${tableName}_export.xlsx` : 'export.xlsx';
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        res.setHeader('Content-Disposition', `attachment; filename=${fileName}`);
+        res.setHeader('Content-Disposition', `attachment; filename=${fileName}_export.xlsx`);
         res.status(200).send(buffer);
     } catch (error) {
         console.error("Erro ao exportar para Excel:", error);
@@ -5832,6 +5941,9 @@ app.post('/api/save-data/:tableName', (req, res) => {
                 // Combina Bioma e Fitofisionomia para ter uma descrição útil no banco
                 row.descricao = `${row.bioma || ''} - ${row.fitofisionomia || ''}`;
             }
+            
+            // Remove a chave oculta antes de salvar
+            delete row.id_fonte;
 
             for (const key in row) {
                 if (row[key] !== '' && row[key] !== null && row[key] !== undefined) {
@@ -5983,6 +6095,7 @@ app.get('/api/intelligent-template/:sourceType', (req, res) => {
     const schema = validationSchemas[sourceType];
     if (!schema) { return res.status(404).send('Tipo de fonte não encontrado.'); }
 
+    // --- ATUALIZADO: Mapeamento de descrições ---
     const descriptionKeyMap = { 
         combustao_estacionaria: 'descricao_da_fonte', 
         combustao_movel: 'descricao_fonte', 
@@ -6005,7 +6118,9 @@ app.get('/api/intelligent-template/:sourceType', (req, res) => {
         employee_commuting: 'descricao_identificadora',
         energy_generation: 'fonte_geracao',
         planted_forest: 'identificacao_area',
-        conservation_area: 'bioma' // --- SPRINT 21: Mapeado 'bioma' como chave principal do template ---
+        conservation_area: 'bioma',
+        // Adicionado Efluentes Domésticos
+        efluentes_domesticos: 'tipo_trabalhador'
     };
     
     const getTypologies = new Promise((resolve, reject) => {
@@ -6041,6 +6156,7 @@ app.get('/api/intelligent-template/:sourceType', (req, res) => {
                 row['ano'] = reportYear;
                 row['periodo'] = period;
                 row['unidade_empresarial'] = typo.unit_name;
+                row['id_fonte'] = typo.id; // --- Chave Primária Oculta ---
                 
                 if (mainDescriptionKey) {
                     if (['solid_waste', 'electricity_purchase'].includes(sourceType)) {
@@ -6048,19 +6164,23 @@ app.get('/api/intelligent-template/:sourceType', (req, res) => {
                     } else if (sourceType === 'energy_generation') {
                         row[mainDescriptionKey] = assetFields.fonte_geracao || typo.description;
                     } else if (sourceType === 'conservation_area') {
-                        // SPRINT 21: Para conservation_area, usa 'bioma' da fonte como chave principal
                         row[mainDescriptionKey] = assetFields.bioma || '';
+                    } else if (sourceType === 'efluentes_domesticos') {
+                        // Garante que o tipo de trabalhador seja o preenchido no cadastro
+                        row[mainDescriptionKey] = assetFields.tipo_trabalhador || '';
                     } else {
                         row[mainDescriptionKey] = typo.description;
                     }
                 }
                 
+                // --- INSERÇÃO DE DADOS DO CADASTRO NO JSON (Para Front-end) ---
                 for (const assetKey in assetFields) { 
                     if (row.hasOwnProperty(assetKey)) { 
                         row[assetKey] = assetFields[assetKey]; 
                     } 
                 }
                 
+                // --- Preenchimentos Específicos ---
                 if (sourceType === 'solid_waste' && assetFields.destinacao_final === 'Aterro') {
                     row['informar_cidade_uf'] = assetFields.cidade_uf_destino || '';
                 }
@@ -6073,6 +6193,7 @@ app.get('/api/intelligent-template/:sourceType', (req, res) => {
                     row['unidade'] = 'Unidades';
                 }
                 
+                // --- AutoFill (Unidades baseadas em Combustível) ---
                 if (schema.autoFillMap) {
                     for (const triggerKey in schema.autoFillMap) {
                         const rule = schema.autoFillMap[triggerKey];
@@ -6095,9 +6216,36 @@ app.get('/api/intelligent-template/:sourceType', (req, res) => {
         }
         
         try {
+            // --- LÓGICA DE EXCLUSÃO DE COLUNAS DO EXCEL ---
+            const excludeColumns = [];
+            
+            // Regra para Controlado pela Empresa (Agora inclui combustao_movel)
+            if (['combustao_estacionaria', 'combustao_movel', 'ippu_lubrificantes', 'emissoes_fugitivas', 'fertilizantes'].includes(sourceType)) {
+                excludeColumns.push('controlado_empresa');
+            }
+            
+            // Regra para Unidade
+            if (['combustao_estacionaria', 'ippu_lubrificantes'].includes(sourceType)) {
+                 excludeColumns.push('unidade'); 
+            }
+            
+            // Regra para Unidade de Consumo (Específica para Combustão Móvel)
+            if (sourceType === 'combustao_movel') {
+                excludeColumns.push('unidade_consumo');
+            }
+
+            // --- NOVA REGRA: Efluentes Domésticos ---
+            if (sourceType === 'efluentes_domesticos') {
+                // Remove do Excel para evitar erros de digitação (Case Sensitive)
+                excludeColumns.push('fossa_septica_propriedade');
+            }
+
             const dataWithHeaderNames = dataForExcel.map(row => {
                 const newRow = {};
                 for (const key in row) {
+                    if (key === 'id_fonte') continue; // Remove ID oculto do Excel visual
+                    if (excludeColumns.includes(key)) continue; // Remove colunas proibidas
+
                     if (headers[key]) {
                         newRow[headers[key]] = row[key];
                     }
@@ -6105,8 +6253,13 @@ app.get('/api/intelligent-template/:sourceType', (req, res) => {
                 return newRow;
             });
 
-            const worksheet = xlsx.utils.json_to_sheet(dataWithHeaderNames, { header: Object.values(headers) });
-            worksheet['!cols'] = Object.values(headers).map(header => ({ wch: Math.max(header.length, 15) + 2 }));
+            // Filtra os cabeçalhos também
+            const finalHeaders = Object.keys(headers)
+                .filter(key => !excludeColumns.includes(key))
+                .map(key => headers[key]);
+
+            const worksheet = xlsx.utils.json_to_sheet(dataWithHeaderNames, { header: finalHeaders });
+            worksheet['!cols'] = finalHeaders.map(header => ({ wch: Math.max(header.length, 15) + 2 }));
             const workbook = xlsx.utils.book_new();
             const sheetName = schema.displayName.substring(0, 31);
             xlsx.utils.book_append_sheet(workbook, worksheet, sheetName);

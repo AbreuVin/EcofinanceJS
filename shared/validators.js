@@ -214,11 +214,9 @@ export const validationSchemas = {
         validOptions: {
             periodo: ["Anual", "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"],
             fonte_energia: ["Sistema Interligado Nacional", "Mercado Livre Convencional", "Mercado Livre Incentivado", "Fonte Energética Específica"],
-            // Atualizado com novas opções
             especificar_fonte: ["Solar", "Eólica", "Biomassa", "Não identificado", "Outros tipos de fonte"],
             unidade_medida: ["kWh", "MWh"]
         },
-        // Novo Dependency Map para Compra de Eletricidade
         dependencyMap: {
             triggerField: "fonte_energia",
             targetField: "especificar_fonte",
@@ -243,7 +241,6 @@ export const validationSchemas = {
             }
 
             const consumoVal = rowData.consumo;
-            // Alterado de <= 0 para < 0 para permitir zero
             if (!isFilled(consumoVal) || isNaN(parseFloat(consumoVal)) || parseFloat(consumoVal) < 0) {
                 errors.consumo = `Entrada inválida ('${consumoVal}'). Insira um número decimal positivo ou zero.`;
             }
@@ -254,14 +251,11 @@ export const validationSchemas = {
 
             const isSIN = rowData.fonte_energia === 'Sistema Interligado Nacional';
             if (!isSIN) {
-                // Se não for SIN, deve especificar fonte, MAS devemos validar se a opção escolhida
-                // é válida para o tipo de fonte selecionado (usando a lógica do dependencyMap ou validOptions geral)
                 if (!isFilled(rowData.especificar_fonte)) {
                     errors.especificar_fonte = "Obrigatório selecionar uma especificação para esta fonte de energia.";
                 } else if (!this.validOptions.especificar_fonte.includes(rowData.especificar_fonte)) {
                     errors.especificar_fonte = "Especificação inválida.";
                 } else {
-                    // Validação extra de dependência (opcional, mas boa para consistência)
                     const allowedOptions = this.dependencyMap.data[rowData.fonte_energia];
                     if (allowedOptions && !allowedOptions.includes(rowData.especificar_fonte)) {
                         errors.especificar_fonte = `A opção '${rowData.especificar_fonte}' não é válida para '${rowData.fonte_energia}'.`;
@@ -333,14 +327,6 @@ export const validationSchemas = {
 
             if (!this.validOptions.unidade.includes(rowData.unidade)) {
                 errors.unidade = "Selecione 'Toneladas' ou 'Quilogramas'.";
-            }
-            
-            if (rowData.destinacao_final === 'Aterro') {
-                
-            } else {
-                if (isFilled(rowData.informar_cidade_uf)) {
-                    errors.informar_cidade_uf = "Este campo só deve ser preenchido se a destinação for 'Aterro'.";
-                }
             }
             
             const normalizedControlado = normalizeString(rowData.local_controlado_empresa);
@@ -619,7 +605,8 @@ export const validationSchemas = {
             tipo_destino_final: [ "Lançamento em corpos d'água (não especificado)", "Lançamento em corpos d'água (que não reservatórios, lagos e estuários)", "Lançamento em reservatórios, lagos e estuários", "Efluente parado a céu aberto", "Lançamento em reservatórios. lagos e estuários" ],
             unidade_componente_organico: [ "mgDQO/L (Demanda química de oxigênio)", "mgDBO/L (Demanda biológica de oxigênio)" ],
             unidade_comp_organico_removido_lodo: [ "mgDQO/L (Demanda química de oxigênio)", "mgDBO/L (Demanda biológica de oxigênio)" ],
-            unidade_efluente_liquido: ["m3/ano", "m3/mês"]
+            unidade_efluente_liquido: ["m3/ano", "m3/mês"],
+            unidade_nitrogenio: ["kgN/m3"]
         },
         autoFillMap: {},
         validateRow: function(rowData) {
@@ -633,12 +620,12 @@ export const validationSchemas = {
             const qtdCompOrgVal = rowData.qtd_componente_organico;
             if (isNaN(parseFloat(qtdCompOrgVal)) || parseFloat(qtdCompOrgVal) <= 0) { errors.qtd_componente_organico = `Entrada inválida ('${qtdCompOrgVal}'). Insira um número positivo.`; }
             const qtdNitroVal = rowData.qtd_nitrogenio_mg_l;
-            if (isNaN(parseFloat(qtdNitroVal)) || parseFloat(qtdNitroVal) < 0) { errors.qtd_nitrogenio_mg_l = `Entrada inválida ('${qtdNitroVal}'). Insira um número positivo ou zero.`; }
+            if (isFilled(qtdNitroVal) && (isNaN(parseFloat(qtdNitroVal)) || parseFloat(qtdNitroVal) < 0)) { errors.qtd_nitrogenio_mg_l = `Entrada inválida ('${qtdNitroVal}'). Insira um número positivo ou zero.`; }
+            if (isFilled(rowData.unidade_nitrogenio) && rowData.unidade_nitrogenio !== 'kgN/m3') { errors.unidade_nitrogenio = "Unidade deve ser 'kgN/m3'."; }
             const compOrgRemovidoVal = rowData.componente_organico_removido_lodo;
             if (isFilled(compOrgRemovidoVal) && (isNaN(parseFloat(compOrgRemovidoVal)) || parseFloat(compOrgRemovidoVal) < 0)) { errors.componente_organico_removido_lodo = `Entrada inválida ('${compOrgRemovidoVal}'). Insira um número positivo ou zero.`; }
             if (!this.validOptions.unidade_efluente_liquido.includes(rowData.unidade_efluente_liquido)) { errors.unidade_efluente_liquido = "Unidade deve ser 'm3/ano' ou 'm3/mês'."; }
             if (!this.validOptions.unidade_componente_organico.includes(rowData.unidade_componente_organico)) errors.unidade_componente_organico = "Unidade do componente inválida.";
-            if (rowData.unidade_nitrogenio !== 'kgN/m3') errors.unidade_nitrogenio = "Unidade deve ser 'kgN/m3'.";
             if (isFilled(compOrgRemovidoVal)) { if (!this.validOptions.unidade_comp_organico_removido_lodo.includes(rowData.unidade_comp_organico_removido_lodo)) errors.unidade_comp_organico_removido_lodo = "Unidade do componente removido inválida."; }
             if (rowData.unidade_comp_organico_removido_lodo && !isFilled(compOrgRemovidoVal)) { errors.componente_organico_removido_lodo = "Quantidade é obrigatória se a unidade for selecionada."; }
             if (!this.validOptions.tratamento_ou_destino.includes(rowData.tratamento_ou_destino)) { errors.tratamento_ou_destino = "Escolha entre 'Tratamento' e 'Destino Final'."; } else if (rowData.tratamento_ou_destino === 'Tratamento') {
@@ -651,10 +638,20 @@ export const validationSchemas = {
             return { isValid: Object.keys(errors).length === 0, errors: errors, sanitizedData: rowData };
         }
     },
+    // --- ALTERAÇÃO AQUI: Renomeado Cabeçalho ---
     efluentes_domesticos: {
         displayName: "Efluentes Domésticos",
         hasUnits: true,
-        headerDisplayNames: { ano: "Ano", periodo: "Período", unidade_empresarial: "Unidade Empresarial", tipo_trabalhador: "Tipo de Trabalhador", num_trabalhadores: "Nº de Trabalhadores", carga_horaria_media: "Carga Horária Média (h/dia)", fossa_septica_propriedade: "Fossa séptica na propriedade?", comentarios: "Comentários" },
+        headerDisplayNames: { 
+            ano: "Ano", 
+            periodo: "Período", 
+            unidade_empresarial: "Unidade Empresarial", 
+            tipo_trabalhador: "Tipo de Trabalhador", 
+            num_trabalhadores: "Nº de Trabalhadores", 
+            carga_horaria_media: "Carga Horária Média (h/dia)", 
+            fossa_septica_propriedade: "Fossa séptica na propriedade da empresa?", // Renomeado
+            comentarios: "Comentários" 
+        },
         validOptions: {
             periodo: ["Anual", "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"],
             tipo_trabalhador: ["Interno", "Terceiro"],
