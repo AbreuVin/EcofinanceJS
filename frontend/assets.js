@@ -1,58 +1,241 @@
 // arquivo: frontend/assets.js
 
+
+import { validationSchemas } from '../shared/validators.js';
+
 document.addEventListener('DOMContentLoaded', () => {
     
-    // --- 1. SCHEMAS DE CONFIGURAÇÃO DOS ATIVOS ---
+    
     const assetSchemas = {
-        // --- ATENÇÃO: displayName ATUALIZADO COM ESCOPO ---
-        combustao_estacionaria: {
-            displayName: "Combustão Estacionária - Escopo 1",
+        electricity_purchase: {
+            displayName: "Compra de Eletricidade",
             fields: {
-                // O campo 'tipo_da_fonte' foi REMOVIDO daqui.
-                combustivel: { label: "Combustível", type: "select", isCustomizable: true, options: ["Gás Natural", "Óleo Diesel", "Gás Liquefeito de Petróleo", "Carvão Mineral", "Lenha", "Biogás"] }
+                fonte_energia: { label: "Fonte de Energia (Descrição)", type: "select" },
+                especificar_fonte: { label: "Especificar Fonte Padrão", type: "select", showIf: { field: "fonte_energia", value: ["Mercado Livre Convencional", "Mercado Livre Incentivado", "Fonte Energética Específica"] } },
+                unidade_medida: { label: "Unidade de Medida Padrão", type: "select" }
             }
         },
-        combustao_movel: {
-            displayName: "Combustão Móvel - Escopo 1",
+        solid_waste: {
+            displayName: "Resíduos Sólidos",
             fields: {
-                tipo_veiculo: { label: "Tipo de Veículo", type: "select", options: [ "Automóvel a gasolina", "Automóvel a etanol", "Automóvel flex a gasolina", "Automóvel flex a etanol", "Motocicleta a gasolina", "Motocicleta flex a gasolina", "Motocicleta flex a etanol", "Veículo comercial leve a gasolina", "Veículo comercial leve a etanol", "Veículo comercial leve flex a gasolina", "Veículo comercial leve flex a etanol", "Veículo comercial leve a diesel", "Micro-ônibus a diesel", "Ônibus rodoviário a diesel", "Ônibus urbano a diesel", "Caminhão - rígido (3,5 a 7,5 toneladas)", "Caminhão - rígido (7,5 a 17 toneladas)", "Caminhão - rígido (acima de 17 toneladas)", "Caminhão - rígido (média)", "Caminhão - articulado (3,5 a 33 toneladas)", "Caminhão - articulado (acima de 33 toneladas)", "Caminhão - articulado (média)", "Caminhão - caminhão (média)", "Caminhão refrigerado - rígido (3,5 a 7,5 toneladas)", "Caminhão refrigerado - rígido (7,5 a 17 toneladas)", "Caminhão refrigerado - rígido (acima de 17 toneladas)", "Caminhão refrigerado - rígido (média)", "Caminhão refrigerado - articulado (3,5 a 33 toneladas)", "Caminhão refrigerado - articulado (acima de 33 toneladas)", "Caminhão refrigerado - articulado (média)", "Caminhão refrigerado - caminhão (média)", "Automóvel a GNV" ] },
+                destinacao_final: { label: "Destinação Final (Descrição)", type: "select" },
+                tipo_residuo: { label: "Tipo de Resíduo Padrão", type: "select" },
+                unidade: { label: "Unidade Padrão", type: "select" },
+                cidade_uf_destino: { label: "Cidade/UF de Destino", type: "text", placeholder: "Ex: Porto Alegre/RS", showIf: { field: "destinacao_final", value: "Aterro" } },
+                local_controlado_empresa: { label: "Local Controlado pela Empresa?", type: "select" },
+                responsible_contact_id: { label: "Responsável pela Informação", type: "select", isContact: true }
+            }
+        },
+        purchased_goods_services: {
+            displayName: "Bens e Serviços Comprados",
+            fields: {
+                tipo_item: { label: "Tipo (Produto ou Serviço) Padrão", type: "select" },
+                unidade: { label: "Unidade de Medida Padrão", type: "select", showIf: { field: "tipo_item", value: "Produto" } },
+                bens_terceiros: { label: "Bens comprados por terceiros? (Padrão)", type: "select" },
+                responsible_contact_id: { label: "Responsável pela Informação", type: "select", isContact: true }
+            }
+        },
+        capital_goods: {
+            displayName: "Bens de Capital",
+            fields: {
+                responsible_contact_id: { label: "Responsável pela Informação", type: "select", isContact: true }
+            }
+        },
+        upstream_transport: {
+            displayName: "Logística de Insumo",
+            fields: {
+                modal_transporte: { label: "Modal de Transporte Padrão", type: "select" },
+                tipo_reporte: { label: "Forma de Reporte Padrão", type: "select" },
+                responsible_contact_id: { label: "Responsável pela Informação", type: "select", isContact: true }
+            }
+        },
+        downstream_transport: {
+            displayName: "Logística de Produto Final",
+            fields: {
+                insumo_transportado: { label: "Produto Transportado (Descrição)", type: "text" },
+                modal_transporte: { label: "Modal de Transporte Padrão", type: "select" },
+                tipo_reporte: { label: "Forma de Reporte Padrão", type: "select" },
+                
+                // Consumo
+                combustivel: { label: "Combustível Padrão", type: "select", showIf: { field: "tipo_reporte", value: "Consumo" } },
+                unidade_consumo: { label: "Unidade (Preenchimento Automático)", type: "text", showIf: { field: "tipo_reporte", value: "Consumo" }, disabled: true },
+                
+                // Distância
+                classificacao_veiculo: { label: "Classificação do Veículo Padrão", type: "select", showIf: { field: "tipo_reporte", value: "Distância" } },
+                unidade_distancia: { label: "Unidade de Distância Padrão", type: "select", showIf: { field: "tipo_reporte", value: "Distância" } },
+
+                responsible_contact_id: { label: "Responsável pela Informação", type: "select", isContact: true }
+            }
+        },
+        waste_transport: {
+            displayName: "Logística de Resíduos",
+            fields: {
+                insumo_transportado: { label: "Resíduo Transportado (Descrição)", type: "text" },
+                tipo_reporte: { label: "Forma de Reporte Padrão", type: "select" },
+                
+                // Consumo
+                combustivel: { label: "Combustível Padrão", type: "select", showIf: { field: "tipo_reporte", value: "Consumo" } },
+                unidade_consumo: { label: "Unidade (Preenchimento Automático)", type: "text", showIf: { field: "tipo_reporte", value: "Consumo" }, disabled: true },
+                
+                // Distância
+                classificacao_veiculo: { label: "Classificação do Veículo Padrão", type: "select", showIf: { field: "tipo_reporte", value: "Distância" } },
+                unidade_distancia: { label: "Unidade de Distância Padrão", type: "select", showIf: { field: "tipo_reporte", value: "Distância" } },
+
+                responsible_contact_id: { label: "Responsável pela Informação", type: "select", isContact: true }
+            }
+        },
+        home_office: {
+            displayName: "Home Office",
+            fields: {
+                regime_trabalho: { 
+                    label: "Dias da semana em Home Office (Regime)", 
+                    type: "checkbox-group", 
+                    options: ["Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado", "Domingo"]
+                },
+                responsible_contact_id: { label: "Responsável pela Informação", type: "select", isContact: true }
+            }
+        },
+        air_travel: {
+            displayName: "Viagens Aéreas",
+            fields: {
+                descricao_viagem: { label: "Descrição da Viagem (Grupo/Categoria)", type: "text", placeholder: "Ex: Viagens Comerciais, Diretoria..." },
+                responsible_contact_id: { label: "Responsável pela Informação", type: "select", isContact: true }
+            }
+        },
+        employee_commuting: {
+            displayName: "Transporte de Funcionários",
+            fields: {
+                meio_utilizado: { label: "Meio Utilizado (Descrição)", type: "select" },
+                tipo_reporte: { label: "Forma de Reporte Padrão", type: "select" },
+                
+                // Consumo
+                tipo_combustivel: { label: "Combustível Padrão", type: "select", showIf: { field: "tipo_reporte", value: "Consumo" } },
+                unidade_consumo: { label: "Unidade (Preenchimento Automático)", type: "text", showIf: { field: "tipo_reporte", value: "Consumo" }, disabled: true },
+
+                responsible_contact_id: { label: "Responsável pela Informação", type: "select", isContact: true }
+            }
+        },
+        energy_generation: {
+            displayName: "Geração de Energia",
+            fields: {
+                fonte_geracao: { label: "Tipo de Fonte Padrão", type: "select" },
+                unidade_medida: { label: "Unidade de Medida Padrão", type: "select" },
+                responsible_contact_id: { label: "Responsável pela Informação", type: "select", isContact: true }
+            }
+        },
+        // --- SPRINT 19: Floresta Plantada ---
+        planted_forest: {
+            displayName: "Área de Floresta Plantada",
+            fields: {
+                identificacao_area: { label: "Identificação da Área (Descrição)", type: "text", placeholder: "Ex: Talhão A - Fazenda Norte" },
+                nome_especie: { label: "Espécie Padrão", type: "select" },
+                responsible_contact_id: { label: "Responsável pela Informação", type: "select", isContact: true }
+            }
+        },
+        // --- SPRINT 21: Área de Conservação (SEM DESCRIÇÃO MANUAL) ---
+        conservation_area: {
+            displayName: "Área de Conservação",
+            fields: {
+                // Bioma agora atua como "Descrição" na lista
+                bioma: { label: "Bioma (Descrição)", type: "select" },
+                fitofisionomia: { label: "Fitofisionomia", type: "select" }, 
+                area_plantada: { label: "Área de conservação plantada?", type: "select" },
+                plantio: { label: "Plantio", type: "text", placeholder: "Ex: 2010 ou 'Nativo'", showIf: { field: "area_plantada", value: "Sim" } },
+                responsible_contact_id: { label: "Responsável pela Informação", type: "select", isContact: true }
+            }
+        },
+        business_travel_land: {
+            displayName: "Viagens a Negócios Terrestres",
+            fields: {
+                tipo_reporte: { label: "Forma de Reporte Padrão", type: "select" },
+                
+                // Campos GLOBAIS
+                modal_viagem: { label: "Modal de Viagem Padrão", type: "select" },
+                km_reembolsado: { label: "Reembolso de Km (Padrão)?", type: "select" },
+                
+                // Campos Específicos para Consumo
+                combustivel: { label: "Combustível Padrão", type: "select", showIf: { field: "tipo_reporte", value: "Consumo" } }, 
+                unidade_consumo: { label: "Unidade (Preenchimento Automático)", type: "text", showIf: { field: "tipo_reporte", value: "Consumo" }, disabled: true }, 
+
+                responsible_contact_id: { label: "Responsável pela Informação", type: "select", isContact: true }
+            }
+        },
+        combustao_estacionaria: { 
+            displayName: "Combustão Estacionária", 
+            fields: { 
+                combustivel_estacionario: { label: "Combustível Padrão", type: "select" },
+                unidade: { label: "Unidade de Consumo", type: "text", disabled: true },
                 controlado_empresa: { label: "Controlado pela Empresa?", type: "select", options: ["Sim", "Não"] }
+            } 
+        },
+        combustao_movel: { 
+            displayName: "Combustão Móvel", 
+            fields: { 
+                tipo_entrada: { label: "Como os dados serão reportados?", type: "select" }, 
+                combustivel: { label: "Combustível Padrão", type: "select", showIf: { field: "tipo_entrada", value: "consumo" } }, 
+                unidade_consumo: { label: "Unidade de Consumo", type: "text", showIf: { field: "tipo_entrada", value: "consumo" }, disabled: true }, 
+                tipo_veiculo: { label: "Tipo de Veículo Padrão", type: "select", showIf: { field: "tipo_entrada", value: "distancia" } },
+                controlado_empresa: { label: "Controlado pela Empresa?", type: "select", options: ["Sim", "Não"] }
+            } 
+        },
+        dados_producao_venda: { 
+            displayName: "Dados de Produção e Venda", 
+            fields: { 
+                unidade_medida: { label: "Unidade de Medida Padrão", type: "text" } 
+            } 
+        },
+        ippu_lubrificantes: { 
+            displayName: "IPPU - Lubrificantes", 
+            fields: { 
+                tipo_lubrificante: { label: "Tipo de Lubrificante Padrão", type: "select" }, 
+                unidade: { label: "Unidade de Consumo Padrão", type: "text", disabled: true },
+                controlado_empresa: { label: "Controlado pela Empresa?", type: "select", options: ["Sim", "Não"] }
+            } 
+        },
+        emissoes_fugitivas: { 
+            displayName: "Emissões Fugitivas", 
+            fields: { 
+                tipo_gas: { label: "Gás Padrão", type: "select" },
+                controlado_empresa: { label: "Controlado pela Empresa?", type: "select", options: ["Sim", "Não"] }
+            } 
+        },
+        fertilizantes: { 
+            displayName: "Fertilizantes", 
+            fields: { 
+                percentual_nitrogenio: { label: "Percentual de Nitrogênio Padrão (%)", type: "number", min: 0, max: 100, step: 0.01 }, 
+                percentual_carbonato: { label: "Percentual de Carbonato Padrão (%)", type: "number", min: 0, max: 100, step: 0.01 },
+                controlado_empresa: { label: "Controlado pela Empresa?", type: "select", options: ["Sim", "Não"] }
+            } 
+        },
+        efluentes_controlados: {
+            displayName: "Efluentes Controlados",
+            fields: {
+                tratamento_ou_destino: { label: "Tratamento ou Destino Final (Padrão)?", type: "select" },
+                tipo_tratamento: { label: "Tipo de Tratamento Padrão", type: "select", showIf: { field: "tratamento_ou_destino", value: "Tratamento" } },
+                tipo_destino_final: { label: "Tipo de Destino Final Padrão", type: "select", showIf: { field: "tratamento_ou_destino", value: "Destino Final" } },
+                unidade_componente_organico: { label: "Unidade Padrão (Componente Orgânico)", type: "select" }
             }
         },
-        dados_producao_venda: {
-            displayName: "Dados de Produção e Venda - Escopo 3",
+        // --- ATUALIZADO AQUI (Efluentes Domésticos) ---
+        efluentes_domesticos: {
+            displayName: "Efluentes Domésticos",
             fields: {
-                // O campo 'produto' foi removido daqui pois agora a 'description' principal o substitui.
-                unidade_medida: { label: "Unidade de Medida", type: "text", isCustomizable: true },
-                uso_final_produtos: { label: "Uso Final (Padrão)", type: "text" }
+                tipo_trabalhador: { label: "Tipo de Trabalhador (Descrição)", type: "select", options: ["Interno", "Terceiro"] },
+                fossa_septica_propriedade: { label: "Fossa séptica na propriedade da empresa?", type: "select", options: ["Sim", "Não"] },
+                responsible_contact_id: { label: "Responsável pela Informação", type: "select", isContact: true }
             }
         },
-        ippu_lubrificantes: {
-            displayName: "IPPU - Lubrificantes - Escopo 3",
+        mudanca_uso_solo: {
+            displayName: "Mudança do Uso do Solo",
             fields: {
-                tipo_lubrificante: { label: "Tipo de Lubrificante", type: "select", isCustomizable: true, options: ["Lubrificante", "Graxa"]},
-                unidade: { label: "Unidade de Consumo", type: "select", options: ["Litros", "kg"]},
-                utilizacao: { label: "Utilização Padrão", type: "text" }
-            }
-        },
-        emissoes_fugitivas: {
-            displayName: "Emissões Fugitivas - Escopo 1",
-            fields: {
-                tipo_gas: { label: "Tipo de Gás Padrão", type: "select", options: ["Dióxido de carbono (CO2)", "Metano (CH4)", "Óxido nitroso (N2O)", "HFC-134a", "HFC-404A", "HFC-410A", "HCFC-22", "HFC-32", "Outro (Gás Composto)"] }
-            }
-        },
-        fertilizantes: {
-            displayName: "Fertilizantes - Escopo 3",
-            fields: {
-                // 'tipo_fertilizante' removido pois a 'description' o substitui.
-                percentual_nitrogenio: { label: "Percentual de Nitrogênio (%)", type: "number", min: 0, max: 100, step: 0.01 },
-                percentual_carbonato: { label: "Percentual de Carbonato (%)", type: "number", min: 0, max: 100, step: 0.01 }
+                uso_solo_anterior: { label: "Uso do Solo Anterior (Padrão)", type: "select" },
+                bioma: { label: "Bioma Padrão", type: "select", showIf: { field: "uso_solo_anterior", value: "Vegetação natural" } },
+                fitofisionomia: { label: "Fitofisionomia Padrão", type: "text", showIf: { field: "uso_solo_anterior", value: "Vegetação natural" } },
+                tipo_area: { label: "Tipo de Área Padrão", type: "select", showIf: { field: "uso_solo_anterior", value: "Vegetação natural" } }
             }
         }
-        // --- FIM DAS MUDANÇAS NOS SCHEMAS ---
     };
-
-    // --- 2. REFERÊNCIAS DO DOM ---
+    
     const navPlaceholder = document.getElementById('nav-placeholder');
     const sourceSelector = document.getElementById('source-selector');
     const assetManagementSection = document.getElementById('asset-management-section');
@@ -65,181 +248,234 @@ document.addEventListener('DOMContentLoaded', () => {
     const tableTitle = document.getElementById('table-title');
     const cancelBtn = document.getElementById('cancel-btn');
     const unitSelect = document.getElementById('asset-unit');
-    const reportingFrequencySelect = document.getElementById('reporting-frequency');
-    const saveFrequencyBtn = document.getElementById('save-frequency-btn');
-    const frequencyFeedback = document.getElementById('frequency-feedback');
-    const customOptionFieldSelector = document.getElementById('custom-option-field-selector');
-    const customOptionManager = document.getElementById('custom-option-manager');
-    const newCustomOptionValueInput = document.getElementById('new-custom-option-value');
-    const addCustomOptionBtn = document.getElementById('add-custom-option-btn');
-    const customOptionsListContainer = document.getElementById('custom-options-list-container');
-    const customOptionFeedback = document.getElementById('custom-option-feedback');
-
     let currentSourceType = null;
-    let allConfigs = []; 
+    let contactsList = [];
 
-    // --- 3. FUNÇÕES PRINCIPAIS ---
-
-    async function initializePage() {
-        if (navPlaceholder) { fetch('nav.html').then(response => response.text()).then(data => { navPlaceholder.innerHTML = data; }); }
-        
-        const customizableFields = {};
-        for (const sourceType in assetSchemas) {
+    async function initializePage() { 
+        if (navPlaceholder) { 
+            fetch('nav.html').then(response => response.text()).then(data => { navPlaceholder.innerHTML = data; }); 
+        } 
+        const sortedSourceTypes = Object.keys(assetSchemas).sort((a, b) => 
+            assetSchemas[a].displayName.localeCompare(assetSchemas[b].displayName)
+        );
+        sortedSourceTypes.forEach(sourceType => {
             const option = document.createElement('option');
             option.value = sourceType;
             option.textContent = assetSchemas[sourceType].displayName;
             sourceSelector.appendChild(option);
-
-            for (const fieldKey in assetSchemas[sourceType].fields) {
-                if (assetSchemas[sourceType].fields[fieldKey].isCustomizable) {
-                    if (!customizableFields[fieldKey]) {
-                        customizableFields[fieldKey] = assetSchemas[sourceType].fields[fieldKey].label;
-                    }
-                }
-            }
-        }
-        
-        for (const key in customizableFields) {
-            const option = document.createElement('option');
-            option.value = key;
-            option.textContent = customizableFields[key];
-            customOptionFieldSelector.appendChild(option);
-        }
-
-        try {
-            const [unitsResponse, configsResponse] = await Promise.all([ fetch('/api/units'), fetch('/api/source-configurations') ]);
-            const unitsList = await unitsResponse.json();
-            allConfigs = await configsResponse.json();
-            unitSelect.innerHTML = '<option value="">-- Selecione --</option>';
-
-            // --- ATENÇÃO: Adicionando a opção "Todas as Unidades" ---
-            if (unitsList.length > 1) { // Só mostra se houver mais de uma unidade
-                const allUnitsOption = document.createElement('option');
-                allUnitsOption.value = 'all';
-                allUnitsOption.textContent = '*** TODAS AS UNIDADES ***';
-                unitSelect.appendChild(allUnitsOption);
-            }
-            // --- FIM DA MUDANÇA ---
-            
-            unitsList.forEach(unit => {
-                const option = document.createElement('option');
-                option.value = unit.id;
-                option.textContent = unit.name;
-                unitSelect.appendChild(option);
-            });
-        } catch (error) { console.error("Erro na inicialização da página:", error); }
-    }
-
-    async function handleSourceSelection() {
-        currentSourceType = sourceSelector.value;
-        resetForm();
-        frequencyFeedback.textContent = '';
-        if (!currentSourceType) {
-            assetManagementSection.style.display = 'none';
-            return;
-        }
-
-        const schema = assetSchemas[currentSourceType];
-        formTitle.textContent = `Adicionar Nova Fonte`;
-        tableTitle.textContent = `Fontes de ${schema.displayName} Cadastradas`;
-        
-        const currentConfig = allConfigs.find(c => c.source_type === currentSourceType);
-        reportingFrequencySelect.value = currentConfig ? currentConfig.reporting_frequency : 'anual';
-
-        await buildDynamicForm(schema);
-        buildDynamicTableHeaders(schema);
-        loadAssetTypologies();
-        
-        assetManagementSection.style.display = 'block';
-    }
-
-    function buildDynamicTableHeaders(schema) {
-        assetsThead.innerHTML = '';
-        const headerRow = document.createElement('tr');
-        let headers = '<th>Descrição</th><th>Unidade</th>';
-        for (const key in schema.fields) {
-            headers += `<th>${schema.fields[key].label}</th>`;
-        }
-        headers += '<th>Ações</th>';
-        headerRow.innerHTML = headers;
-        assetsThead.appendChild(headerRow);
-    }
-
-    async function loadAssetTypologies() {
-        if (!currentSourceType) return;
-        try {
-            const response = await fetch(`/api/asset-typologies?source_type=${currentSourceType}`);
-            const typologies = await response.json();
-            assetsTbody.innerHTML = '';
-
-            typologies.forEach(typo => {
-                const tr = document.createElement('tr');
-                let rowHtml = `<td>${typo.description}</td><td>${typo.unit_name}</td>`;
-                
-                const schema = assetSchemas[currentSourceType];
-                for (const key in schema.fields) {
-                    rowHtml += `<td>${typo.asset_fields[key] || ''}</td>`;
-                }
-
-                rowHtml += `<td>
-                    <button class="action-btn edit-btn" data-id="${typo.id}">Editar</button>
-                    <button class="action-btn delete-btn" data-id="${typo.id}">Deletar</button>
-                </td>`;
-                tr.innerHTML = rowHtml;
-                assetsTbody.appendChild(tr);
-            });
-        } catch (error) {
-            console.error("Erro ao carregar tipologias:", error);
-        }
-    }
-
-    async function handleFormSubmit(e) {
-        e.preventDefault();
-        const id = assetIdInput.value;
-        
-        const asset_fields = {};
-        specificFieldsContainer.querySelectorAll('input, select').forEach(input => {
-            asset_fields[input.dataset.key] = input.value;
         });
         
-        const unitValue = document.getElementById('asset-unit').value;
-
-        // Se "Todas as unidades" for selecionado, precisamos tratar isso no back-end
-        // Por enquanto, vamos enviar um identificador especial. A lógica completa será no server.js
-        if (unitValue === 'all') {
-            alert("A funcionalidade 'Todas as Unidades' será implementada em breve no backend. Por favor, selecione uma unidade específica por enquanto.");
-            // NOTA: Em um passo futuro, aqui nós faríamos um loop e várias chamadas à API, ou uma chamada especial que o backend entenderia.
-            // Por agora, vamos apenas impedir o envio para evitar erros.
-            return; 
-        }
-
-        const data = {
-            description: document.getElementById('asset-description').value,
-            unit_id: unitValue,
-            source_type: currentSourceType,
-            asset_fields: asset_fields
-        };
-
-        const method = id ? 'PUT' : 'POST';
-        const url = id ? `/api/asset-typologies/${id}` : '/api/asset-typologies';
-
-        try {
-            const response = await fetch(url, {
-                method: method,
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            });
-            if (!response.ok) throw new Error('Falha ao salvar a fonte.');
-
-            resetForm();
-            loadAssetTypologies();
-
-        } catch (error) {
-            console.error("Erro ao salvar:", error);
-            alert('Ocorreu um erro ao salvar. Verifique o console para mais detalhes.');
-        }
+        try { 
+            const [unitsResponse, contactsResponse] = await Promise.all([ 
+                fetch('/api/units'), 
+                fetch('/api/contacts') 
+            ]); 
+            const unitsList = await unitsResponse.json(); 
+            contactsList = await contactsResponse.json();
+            
+            unitSelect.innerHTML = '<option value="">-- Selecione --</option>'; 
+            if (unitsList.length > 1) { 
+                const allUnitsOption = document.createElement('option'); 
+                allUnitsOption.value = 'all'; 
+                allUnitsOption.textContent = '*** TODAS AS UNIDADES ***'; 
+                unitSelect.appendChild(allUnitsOption); 
+            } 
+            unitsList.forEach(unit => { 
+                const option = document.createElement('option'); 
+                option.value = unit.id; 
+                option.textContent = unit.name; 
+                unitSelect.appendChild(option); 
+            }); 
+        } catch (error) { 
+            console.error("Erro na inicialização da página:", error); 
+        } 
     }
+    
+    async function handleSourceSelection() { 
+        currentSourceType = sourceSelector.value; 
+        resetForm(); 
+        if (!currentSourceType) { 
+            assetManagementSection.style.display = 'none'; 
+            return; 
+        } 
+        const schema = assetSchemas[currentSourceType]; 
+        formTitle.textContent = `Adicionar Nova Fonte`; 
+        tableTitle.textContent = `Fontes de ${schema.displayName} Cadastradas`; 
+        await buildDynamicForm(schema); 
+        buildDynamicTableHeaders(schema); 
+        loadAssetTypologies(); 
+        assetManagementSection.style.display = 'block'; 
+    }
+    
+    function buildDynamicTableHeaders(schema) { 
+        assetsThead.innerHTML = ''; 
+        const headerRow = document.createElement('tr'); 
+        
+        // --- Lista de Schemas que usam Descrição Customizada (ATUALIZADA) ---
+        // Adicionado 'efluentes_domesticos'
+        const usesCustomDescription = ['solid_waste', 'electricity_purchase', 'downstream_transport', 'waste_transport', 'home_office', 'air_travel', 'employee_commuting', 'energy_generation', 'planted_forest', 'conservation_area', 'efluentes_controlados', 'efluentes_domesticos'].includes(currentSourceType);
+        const mainDescriptionKey = usesCustomDescription ? Object.keys(schema.fields)[0] : 'description';
+        const mainDescriptionLabel = usesCustomDescription ? schema.fields[mainDescriptionKey].label : 'Descrição';
 
+        let headers = `<th>${mainDescriptionLabel}</th><th>Unidade</th><th>Frequência</th>`; 
+        
+        for (const key in schema.fields) { 
+            if (usesCustomDescription && key === mainDescriptionKey) continue;
+            headers += `<th>${schema.fields[key].label}</th>`; 
+        } 
+        headers += '<th>Ações</th>'; 
+        headerRow.innerHTML = headers; 
+        assetsThead.appendChild(headerRow); 
+    }
+    
+    async function loadAssetTypologies() { 
+        if (!currentSourceType) return; 
+        try { 
+            const response = await fetch(`/api/asset-typologies?source_type=${currentSourceType}`); 
+            const typologies = await response.json(); 
+            assetsTbody.innerHTML = ''; 
+            typologies.forEach(typo => { 
+                const tr = document.createElement('tr'); 
+                
+                // --- Lista de Schemas que usam Descrição Customizada (ATUALIZADA) ---
+                const usesCustomDescription = ['solid_waste', 'electricity_purchase', 'downstream_transport', 'waste_transport', 'home_office', 'air_travel', 'employee_commuting', 'energy_generation', 'planted_forest', 'conservation_area', 'efluentes_controlados', 'efluentes_domesticos'].includes(currentSourceType);
+                const mainDescriptionKey = usesCustomDescription ? Object.keys(assetSchemas[currentSourceType].fields)[0] : 'description';
+
+                const mainDescription = usesCustomDescription 
+                    ? (typo.asset_fields[mainDescriptionKey] || typo.description) 
+                    : typo.description;
+                
+                // Lógica de limpeza de dados para exibição
+                const displayFields = { ...typo.asset_fields };
+                if (currentSourceType === 'combustao_movel') {
+                    const tipoEntrada = displayFields.tipo_entrada;
+                    if (tipoEntrada === 'consumo') {
+                        displayFields.tipo_veiculo = ''; 
+                    } else if (tipoEntrada === 'distancia') {
+                        displayFields.combustivel = ''; 
+                        displayFields.unidade_consumo = '';
+                    }
+                } else if (currentSourceType === 'business_travel_land') {
+                     const tipoReporte = displayFields.tipo_reporte;
+                     if (tipoReporte === 'Consumo') {
+                         // modal e reembolso são globais
+                     } else if (tipoReporte === 'Distância') {
+                         displayFields.combustivel = '';
+                         displayFields.unidade_consumo = '';
+                     }
+                } else if (currentSourceType === 'downstream_transport' || currentSourceType === 'waste_transport') {
+                     const tipoReporte = displayFields.tipo_reporte;
+                     if (tipoReporte === 'Consumo') {
+                         displayFields.classificacao_veiculo = '';
+                         displayFields.unidade_distancia = '';
+                     } else if (tipoReporte === 'Distância') {
+                         displayFields.combustivel = '';
+                         displayFields.unidade_consumo = '';
+                     }
+                } else if (currentSourceType === 'employee_commuting') {
+                     const tipoReporte = displayFields.tipo_reporte;
+                     if (tipoReporte === 'Consumo') {
+                         // Mantém combustível
+                     } else if (tipoReporte === 'Distância') {
+                         displayFields.tipo_combustivel = '';
+                         displayFields.unidade_consumo = '';
+                     } else if (tipoReporte === 'Endereço') {
+                         displayFields.tipo_combustivel = '';
+                         displayFields.unidade_consumo = '';
+                     }
+                }
+                
+                const frequencyText = typo.reporting_frequency === 'mensal' ? 'Mensal' : 'Anual';
+                let rowHtml = `<td>${mainDescription}</td><td>${typo.unit_name}</td><td>${frequencyText}</td>`; 
+                const schema = assetSchemas[currentSourceType]; 
+                
+                for (const key in schema.fields) { 
+                    if (usesCustomDescription && key === mainDescriptionKey) continue;
+                    if (key === 'responsible_contact_id') {
+                        rowHtml += `<td>${typo.responsible_contact_name || ''}</td>`;
+                    } else {
+                        rowHtml += `<td>${displayFields[key] || ''}</td>`; 
+                    }
+                } 
+                rowHtml += `<td> <button class="action-btn edit-btn" data-id="${typo.id}">Editar</button> <button class="action-btn delete-btn" data-id="${typo.id}">Deletar</button> </td>`; 
+                tr.innerHTML = rowHtml; 
+                assetsTbody.appendChild(tr); 
+            }); 
+        } catch (error) { 
+            console.error("Erro ao carregar tipologias:", error); 
+        } 
+    }
+    
+    async function handleFormSubmit(e) { 
+        e.preventDefault(); 
+        const id = assetIdInput.value; 
+        const asset_fields = {}; 
+        
+        let responsibleContactId = null;
+        let reportingFrequency = document.getElementById('reporting-frequency').value;
+
+        form.querySelectorAll('[data-key]').forEach(input => {
+             const fieldWrapper = input.closest('.form-group');
+             if (fieldWrapper && fieldWrapper.style.display !== 'none') {
+                 const key = input.dataset.key;
+                 if (key === 'responsible_contact_id') {
+                     responsibleContactId = input.value;
+                 } else if (key !== 'reporting_frequency') {
+                     asset_fields[key] = input.value;
+                 }
+             }
+        });
+
+        // --- VALIDAÇÃO ESPECÍFICA PARA FERTILIZANTES ---
+        if (currentSourceType === 'fertilizantes') {
+            const percN = parseFloat(asset_fields.percentual_nitrogenio) || 0;
+            const percC = parseFloat(asset_fields.percentual_carbonato) || 0;
+            if ((percN + percC) > 100) {
+                alert(`A soma das porcentagens (${(percN + percC).toFixed(2)}%) excede 100%. Por favor, corrija os valores.`);
+                return; // Interrompe o salvamento
+            }
+        }
+
+        // --- Lista de Schemas que usam Descrição Customizada (ATUALIZADA) ---
+        const usesCustomDescription = ['solid_waste', 'electricity_purchase', 'downstream_transport', 'waste_transport', 'home_office', 'air_travel', 'employee_commuting', 'energy_generation', 'planted_forest', 'conservation_area', 'efluentes_controlados', 'efluentes_domesticos'].includes(currentSourceType);
+        const mainDescriptionKey = usesCustomDescription ? Object.keys(assetSchemas[currentSourceType].fields)[0] : null;
+
+        const descriptionValue = usesCustomDescription
+            ? asset_fields[mainDescriptionKey]
+            : document.getElementById('asset-description').value;
+        
+        const unitValue = document.getElementById('asset-unit').value; 
+        const data = { 
+            description: descriptionValue, 
+            unit_id: unitValue, 
+            source_type: currentSourceType, 
+            asset_fields: asset_fields,
+            responsible_contact_id: responsibleContactId,
+            reporting_frequency: reportingFrequency
+        }; 
+        
+        const method = id ? 'PUT' : 'POST'; 
+        const url = id ? `/api/asset-typologies/${id}` : '/api/asset-typologies'; 
+        try { 
+            const response = await fetch(url, { method: method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) }); 
+            if (!response.ok) { 
+                const errorData = await response.json(); 
+                throw new Error(errorData.error || 'Falha ao salvar a fonte.'); 
+            } 
+            
+            if (id) {
+                resetForm();
+            } else {
+                assetIdInput.value = '';
+            }
+            
+            loadAssetTypologies(); 
+        } catch (error) { 
+            console.error("Erro ao salvar:", error); 
+            alert(`Ocorreu um erro ao salvar: ${error.message}`); 
+        } 
+    }
+    
     async function handleTableClick(e) {
         const target = e.target;
         const id = target.dataset.id;
@@ -252,12 +488,40 @@ document.addEventListener('DOMContentLoaded', () => {
             
             if (typoToEdit) {
                 assetIdInput.value = typoToEdit.id;
-                document.getElementById('asset-description').value = typoToEdit.description;
+                
+                // --- Lista de Schemas que usam Descrição Customizada (ATUALIZADA) ---
+                const usesCustomDescription = ['solid_waste', 'electricity_purchase', 'downstream_transport', 'waste_transport', 'home_office', 'air_travel', 'employee_commuting', 'energy_generation', 'planted_forest', 'conservation_area', 'efluentes_controlados', 'efluentes_domesticos'].includes(currentSourceType);
+                if (!usesCustomDescription) {
+                    document.getElementById('asset-description').value = typoToEdit.description;
+                }
+                
                 document.getElementById('asset-unit').value = typoToEdit.unit_id;
                 
                 await buildDynamicForm(assetSchemas[currentSourceType]); 
-                specificFieldsContainer.querySelectorAll('input, select').forEach(input => {
-                    input.value = typoToEdit.asset_fields[input.dataset.key] || '';
+                
+                document.getElementById('reporting-frequency').value = typoToEdit.reporting_frequency;
+
+                form.querySelectorAll('[data-key]').forEach(input => {
+                    const key = input.dataset.key;
+                    if (key === 'responsible_contact_id') {
+                        input.value = typoToEdit.responsible_contact_id || '';
+                    } else if (typoToEdit.asset_fields[key] !== undefined) {
+                        input.value = typoToEdit.asset_fields[key];
+                        
+                        // Lógica especial para checkbox-group
+                        if (assetSchemas[currentSourceType].fields[key].type === 'checkbox-group') {
+                            const selectedValues = (typoToEdit.asset_fields[key] || '').split(', ');
+                            const container = input.closest('.form-group');
+                            container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+                                cb.checked = selectedValues.includes(cb.value);
+                            });
+                        }
+                    }
+                        
+                    const conditionalTriggers = ['tipo_entrada', 'tratamento_ou_destino', 'uso_solo_anterior', 'destinacao_final', 'fonte_energia', 'tipo_item', 'tipo_reporte', 'combustivel', 'tipo_combustivel', 'area_plantada', 'bioma', 'tipo_lubrificante'];
+                    if (conditionalTriggers.includes(key)) {
+                        input.dispatchEvent(new Event('change', { bubbles: true }));
+                    }
                 });
 
                 formTitle.textContent = `Editando Fonte: ${typoToEdit.description}`;
@@ -284,19 +548,253 @@ document.addEventListener('DOMContentLoaded', () => {
             formTitle.textContent = `Adicionar Nova Fonte`;
         }
         cancelBtn.style.display = 'none';
+
+        const descriptionGroup = document.getElementById('asset-description').parentElement;
+        // --- Lista de Schemas que usam Descrição Customizada (ATUALIZADA) ---
+        const usesCustomDescription = ['solid_waste', 'electricity_purchase', 'downstream_transport', 'waste_transport', 'home_office', 'air_travel', 'employee_commuting', 'energy_generation', 'planted_forest', 'conservation_area', 'efluentes_controlados', 'efluentes_domesticos'].includes(currentSourceType);
+
+        if (usesCustomDescription) {
+            descriptionGroup.style.display = 'none';
+            descriptionGroup.querySelector('input').required = false;
+        } else {
+            descriptionGroup.style.display = '';
+            descriptionGroup.querySelector('input').required = true;
+        }
+
+        const triggerFields = ['field-tipo_entrada', 'field-tratamento_ou_destino', 'uso_solo_anterior', 'field-combustivel', 'field-combustivel_estacionario', 'field-destinacao_final', 'field-fonte_energia', 'field-tipo_item', 'field-tipo_reporte', 'field-tipo_combustivel', 'field-area_plantada', 'field-bioma', 'field-tipo_lubrificante'];
+        triggerFields.forEach(id => {
+            const trigger = document.getElementById(id);
+            if (trigger) trigger.dispatchEvent(new Event('change'));
+        });
+        
+        // Resetar checkboxes
+        form.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
     }
-    async function buildDynamicForm(schema) { specificFieldsContainer.innerHTML = ''; for (const key in schema.fields) { const field = schema.fields[key]; const formRow = document.createElement('div'); formRow.className = 'form-row'; const formGroup = document.createElement('div'); formGroup.className = 'form-group'; const label = document.createElement('label'); label.setAttribute('for', `field-${key}`); label.textContent = field.label; let input; if (field.type === 'select') { input = document.createElement('select'); input.innerHTML = '<option value="">-- Selecione --</option>'; let options = field.options || []; if (field.isCustomizable) { try { const response = await fetch(`/api/custom-options?field_key=${key}`); const customOptions = await response.json(); const allOptions = [...new Set([...(field.options || []), ...customOptions.map(opt => opt.value)])]; options = allOptions; } catch (error) { console.error(`Erro ao buscar opções para ${key}:`, error); } } options.forEach(opt => { input.innerHTML += `<option value="${opt}">${opt}</option>`; }); } else { input = document.createElement('input'); input.type = field.type || 'text'; if (field.type === 'number') { if (field.min !== undefined) input.min = field.min; if (field.max !== undefined) input.max = field.max; if (field.step !== undefined) input.step = field.step; } } input.id = `field-${key}`; input.dataset.key = key; input.required = true; formGroup.appendChild(label); formGroup.appendChild(input); formRow.appendChild(formGroup); specificFieldsContainer.appendChild(formRow); } }
-    async function handleSaveFrequency() { if (!currentSourceType) return; frequencyFeedback.textContent = 'Salvando...'; frequencyFeedback.style.color = 'blue'; try { const response = await fetch('/api/source-configurations', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ source_type: currentSourceType, reporting_frequency: reportingFrequencySelect.value }) }); if (!response.ok) throw new Error('Falha ao salvar configuração.'); const existingConfig = allConfigs.find(c => c.source_type === currentSourceType); if (existingConfig) { existingConfig.reporting_frequency = reportingFrequencySelect.value; } else { allConfigs.push({ source_type: currentSourceType, reporting_frequency: reportingFrequencySelect.value }); } frequencyFeedback.textContent = 'Frequência salva com sucesso!'; frequencyFeedback.style.color = 'green'; } catch (error) { console.error('Erro ao salvar frequência:', error); frequencyFeedback.textContent = 'Erro ao salvar.'; frequencyFeedback.style.color = 'red'; } }
-    async function handleCustomFieldSelection() { const fieldKey = customOptionFieldSelector.value; if (!fieldKey) { customOptionManager.style.display = 'none'; return; } await loadCustomOptions(fieldKey); customOptionManager.style.display = 'block'; }
-    async function loadCustomOptions(fieldKey) { customOptionsListContainer.innerHTML = '<li>Carregando...</li>'; try { const response = await fetch(`/api/custom-options?field_key=${fieldKey}`); const options = await response.json(); customOptionsListContainer.innerHTML = ''; if (options.length === 0) { customOptionsListContainer.innerHTML = '<li>Nenhuma opção cadastrada.</li>'; } options.forEach(opt => { const li = document.createElement('li'); li.textContent = opt.value; const deleteBtn = document.createElement('button'); deleteBtn.textContent = 'X'; deleteBtn.dataset.id = opt.id; deleteBtn.onclick = () => handleDeleteCustomOption(opt.id); li.appendChild(deleteBtn); customOptionsListContainer.appendChild(li); }); } catch (error) { console.error('Erro ao carregar opções:', error); customOptionsListContainer.innerHTML = '<li>Erro ao carregar opções.</li>'; } }
-    async function handleAddCustomOption() { const fieldKey = customOptionFieldSelector.value; const value = newCustomOptionValueInput.value.trim(); if (!fieldKey || !value) { customOptionFeedback.textContent = 'Selecione um campo e digite um valor.'; customOptionFeedback.style.color = 'red'; return; } try { await fetch('/api/custom-options', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ field_key: fieldKey, value: value }) }); newCustomOptionValueInput.value = ''; customOptionFeedback.textContent = ''; await loadCustomOptions(fieldKey); if (currentSourceType && assetSchemas[currentSourceType].fields[fieldKey]) { await buildDynamicForm(assetSchemas[currentSourceType]); } } catch (error) { console.error('Erro ao adicionar opção:', error); } }
-    async function handleDeleteCustomOption(optionId) { if (!confirm('Tem certeza que deseja deletar esta opção?')) return; try { await fetch(`/api/custom-options/${optionId}`, { method: 'DELETE' }); const fieldKey = customOptionFieldSelector.value; await loadCustomOptions(fieldKey); if (currentSourceType && assetSchemas[currentSourceType].fields[fieldKey]) { await buildDynamicForm(assetSchemas[currentSourceType]); } } catch (error) { console.error('Erro ao deletar opção:', error); } }
+
+    async function buildDynamicForm(schema) { 
+        specificFieldsContainer.innerHTML = '';
+        form.querySelectorAll('.dynamic-field').forEach(el => el.remove()); 
+        
+        const fieldElements = {};
+        const triggerFields = new Set();
+        const autoFillTriggers = new Set();
+        // --- Lista de Schemas que usam Descrição Customizada (ATUALIZADA) ---
+        const usesCustomDescription = ['solid_waste', 'electricity_purchase', 'downstream_transport', 'waste_transport', 'home_office', 'air_travel', 'employee_commuting', 'energy_generation', 'planted_forest', 'conservation_area', 'efluentes_controlados', 'efluentes_domesticos'].includes(currentSourceType);
+        
+        const firstRowContainer = document.querySelector('#asset-form .form-row');
+        const descriptionFieldGroup = document.getElementById('asset-description').parentElement;
+
+        const validationSchema = validationSchemas[currentSourceType];
+        
+        if (validationSchema && validationSchema.autoFillMap) {
+            Object.keys(validationSchema.autoFillMap).forEach(key => autoFillTriggers.add(key));
+        }
+
+        let dependencyConfig = null;
+        if (validationSchema && validationSchema.dependencyMap) {
+            dependencyConfig = validationSchema.dependencyMap;
+            triggerFields.add(dependencyConfig.triggerField);
+        }
+
+        for (const key in schema.fields) {
+            if (schema.fields[key].showIf) {
+                triggerFields.add(schema.fields[key].showIf.field);
+            }
+        }
+        
+        const frequencyWrapper = document.createElement('div');
+        frequencyWrapper.className = 'form-row dynamic-field';
+        frequencyWrapper.innerHTML = `
+            <div class="form-group">
+                <label for="reporting-frequency">Frequência de Reporte</label>
+                <select id="reporting-frequency" data-key="reporting_frequency">
+                    <option value="anual">Anual</option>
+                    <option value="mensal">Mensal</option>
+                </select>
+            </div>
+        `;
+        specificFieldsContainer.appendChild(frequencyWrapper);
+
+
+        for (const key in schema.fields) { 
+            const field = schema.fields[key]; 
+            const wrapper = document.createElement('div');
+            wrapper.className = 'form-group dynamic-field';
+            wrapper.id = `row-${key}`; 
+            
+            const label = document.createElement('label'); 
+            label.setAttribute('for', `field-${key}`); 
+            label.textContent = field.label; 
+            
+            let input; 
+            
+            if (field.type === 'select') {
+                input = document.createElement('select');
+            } else if (field.type === 'checkbox-group') {
+                input = document.createElement('input');
+                input.type = 'hidden'; 
+                
+                const checkboxContainer = document.createElement('div');
+                checkboxContainer.style.display = 'flex';
+                checkboxContainer.style.flexWrap = 'wrap';
+                checkboxContainer.style.gap = '10px';
+                checkboxContainer.style.marginTop = '5px';
+
+                field.options.forEach(opt => {
+                    const cbWrapper = document.createElement('div');
+                    cbWrapper.style.display = 'flex';
+                    cbWrapper.style.alignItems = 'center';
+                    
+                    const cb = document.createElement('input');
+                    cb.type = 'checkbox';
+                    cb.value = opt;
+                    cb.id = `cb-${key}-${opt}`;
+                    cb.style.marginRight = '5px';
+                    
+                    const cbLabel = document.createElement('label');
+                    cbLabel.htmlFor = `cb-${key}-${opt}`;
+                    cbLabel.textContent = opt;
+                    cbLabel.style.fontWeight = 'normal';
+                    cbLabel.style.marginBottom = '0';
+
+                    cb.addEventListener('change', () => {
+                        const checkedOptions = Array.from(checkboxContainer.querySelectorAll('input[type="checkbox"]:checked'))
+                                                    .map(c => c.value);
+                        input.value = checkedOptions.join(', ');
+                    });
+
+                    cbWrapper.appendChild(cb);
+                    cbWrapper.appendChild(cbLabel);
+                    checkboxContainer.appendChild(cbWrapper);
+                });
+                
+                wrapper.appendChild(label);
+                wrapper.appendChild(checkboxContainer);
+            } else { 
+                input = document.createElement('input'); 
+                input.type = field.type || 'text';
+                if(field.placeholder) input.placeholder = field.placeholder;
+            }
+            
+            input.id = `field-${key}`; 
+            input.dataset.key = key; 
+            input.required = !field.showIf && field.type !== 'checkbox-group'; 
+            if (field.disabled) input.disabled = true;
+
+            if (field.type === 'select') {
+                input.innerHTML = '<option value="">-- Selecione --</option>';
+
+                if (field.isContact) {
+                    contactsList.forEach(contact => {
+                        const option = document.createElement('option');
+                        option.value = contact.id;
+                        option.textContent = `${contact.name} (${contact.unit_name || 'N/A'})`;
+                        input.appendChild(option);
+                    });
+                } else {
+                    const displayMap = validationSchema.displayValueMap?.[key];
+                    const options = validationSchema.validOptions?.[key] || field.options || [];
+
+                    options.forEach(opt => {
+                        const option = document.createElement('option');
+                        option.value = opt;
+                        option.textContent = (displayMap && displayMap[opt]) ? displayMap[opt] : opt;
+                        input.appendChild(option);
+                    });
+                }
+            }
+            
+            fieldElements[key] = { row: wrapper, input: input, config: field };
+
+            if (field.type !== 'checkbox-group') {
+                wrapper.appendChild(label); 
+                wrapper.appendChild(input); 
+            } else {
+                wrapper.appendChild(input); 
+            }
+
+            const mainDescriptionKey = usesCustomDescription ? Object.keys(schema.fields)[0] : null;
+
+            if (usesCustomDescription && key === mainDescriptionKey) {
+                firstRowContainer.insertBefore(wrapper, descriptionFieldGroup);
+            } else {
+                let targetRow = Array.from(specificFieldsContainer.querySelectorAll('.form-row.dynamic-field')).pop();
+                if (!targetRow || targetRow.children.length >= 2) {
+                    targetRow = document.createElement('div');
+                    targetRow.className = 'form-row dynamic-field';
+                    specificFieldsContainer.appendChild(targetRow);
+                }
+                wrapper.className = 'form-group dynamic-field';
+                targetRow.appendChild(wrapper);
+            }
+
+
+            if (triggerFields.has(key) || autoFillTriggers.has(key)) {
+                input.addEventListener('change', () => {
+                    const selectedValue = input.value;
+                    
+                    // Lógica ShowIf
+                    for (const fieldKey in fieldElements) {
+                        const element = fieldElements[fieldKey];
+                        const showIfConfig = element.config.showIf;
+                        
+                        if (showIfConfig && showIfConfig.field === key) {
+                            const conditionValues = Array.isArray(showIfConfig.value) ? showIfConfig.value : [showIfConfig.value];
+                            const isVisible = conditionValues.includes(selectedValue);
+                            
+                            element.row.style.display = isVisible ? '' : 'none';
+                            element.input.required = isVisible;
+                        }
+                    }
+
+                    // Lógica AutoFill
+                    if (autoFillTriggers.has(key)) {
+                        const rule = validationSchema.autoFillMap[key];
+                        const targetValue = rule.map[selectedValue];
+                        const targetField = fieldElements[rule.targetColumn];
+                        if (targetField && targetValue !== undefined) {
+                            targetField.input.value = targetValue;
+                        } else if (targetField) {
+                            targetField.input.value = '';
+                        }
+                    }
+
+                    // Lógica de Dependência (Dropdown Dinâmico)
+                    if (dependencyConfig && dependencyConfig.triggerField === key) {
+                        const targetFieldKey = dependencyConfig.targetField;
+                        const targetElement = fieldElements[targetFieldKey];
+                        
+                        if (targetElement && targetElement.input.tagName === 'SELECT') {
+                            targetElement.input.innerHTML = '<option value="">-- Selecione --</option>';
+                            const dependentOptions = dependencyConfig.data[selectedValue];
+                            if (dependentOptions && Array.isArray(dependentOptions)) {
+                                dependentOptions.forEach(opt => {
+                                    const option = document.createElement('option');
+                                    option.value = opt;
+                                    option.textContent = opt;
+                                    targetElement.input.appendChild(option);
+                                });
+                            }
+                        }
+                    }
+                });
+            }
+        }
+        
+        new Set([...triggerFields, ...autoFillTriggers]).forEach(triggerKey => {
+            const triggerElement = fieldElements[triggerKey];
+            if (triggerElement) {
+                triggerElement.input.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+        });
+        
+        resetForm();
+    }
+    
     sourceSelector.addEventListener('change', handleSourceSelection);
-    saveFrequencyBtn.addEventListener('click', handleSaveFrequency);
-    customOptionFieldSelector.addEventListener('change', handleCustomFieldSelection);
-    addCustomOptionBtn.addEventListener('click', handleAddCustomOption);
     form.addEventListener('submit', handleFormSubmit);
     assetsTbody.addEventListener('click', handleTableClick);
     cancelBtn.addEventListener('click', resetForm);
+    
     initializePage();
 });

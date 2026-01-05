@@ -9,12 +9,12 @@ const csv = require('csv-parser');
 const xlsx = require('xlsx');
 const fs = require('fs');
 const bcrypt = require('bcrypt');
-const db = require('./database.js');
+const db = require('./database.js'); 
 const { validationSchemas } = require('../shared/validators.js');
 
 // --- 2. CONFIGURAÇÕES ---
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8080;
 const saltRounds = 10;
 const upload = multer({ dest: path.join(__dirname, 'uploads/') });
 
@@ -38,42 +38,65 @@ app.get('/', (req, res) => {
 
 // --- 5. ROTAS DA API ---
 
-// Rota de Registro
+// Rotas de Autenticação
 app.post('/api/register', async (req, res) => {
+    const { email, password } = req.body;
+    if (!email || !password) {
+        return res.status(400).json({ message: "Email e senha são obrigatórios." });
+    }
     try {
-        const { email, password } = req.body;
-        if (!email || !password) return res.status(400).json({ message: 'E-mail e senha são obrigatórios.' });
         const hashedPassword = await bcrypt.hash(password, saltRounds);
-        db.run('INSERT INTO users (email, password) VALUES (?, ?)', [email, hashedPassword], function(err) {
-            if (err) return res.status(409).json({ message: 'Este e-mail já está em uso.' });
-            res.status(201).json({ message: 'Usuário criado com sucesso!', userId: this.lastID });
+        const sql = "INSERT INTO users (email, password) VALUES (?, ?)";
+        db.run(sql, [email, hashedPassword], function(err) {
+            if (err) {
+                if (err.message.includes('UNIQUE constraint failed')) {
+                    return res.status(409).json({ message: "E-mail já cadastrado." });
+                }
+                return res.status(500).json({ message: "Erro ao registrar usuário.", error: err.message });
+            }
+            res.status(201).json({ message: "Usuário registrado com sucesso!", userId: this.lastID });
         });
     } catch (error) {
-        res.status(500).json({ message: 'Erro interno no servidor.' });
+        res.status(500).json({ message: "Erro interno no servidor.", error: error.message });
     }
 });
 
-// Rota de Login
 app.post('/api/login', (req, res) => {
     const { email, password } = req.body;
-    if (!email || !password) return res.status(400).json({ message: 'E-mail e senha são obrigatórios.' });
-    db.get('SELECT * FROM users WHERE email = ?', [email], async (err, user) => {
-        if (err) return res.status(500).json({ message: 'Erro interno no servidor.' });
-        if (!user) return res.status(401).json({ message: 'Credenciais inválidas.' });
-        const match = await bcrypt.compare(password, user.password);
-        if (match) {
-            res.status(200).json({ message: 'Login bem-sucedido!' });
-        } else {
-            res.status(401).json({ message: 'Credenciais inválidas.' });
+    if (!email || !password) {
+        return res.status(400).json({ message: "Email e senha são obrigatórios." });
+    }
+    const sql = "SELECT * FROM users WHERE email = ?";
+    db.get(sql, [email], (err, user) => {
+        if (err) {
+            return res.status(500).json({ message: "Erro no servidor.", error: err.message });
         }
+        if (!user) {
+            return res.status(404).json({ message: "Usuário não encontrado." });
+        }
+        bcrypt.compare(password, user.password, (err, result) => {
+            if (err) {
+                return res.status(500).json({ message: "Erro ao verificar senha.", error: err.message });
+            }
+            if (result) {
+                res.status(200).json({ message: "Login bem-sucedido!" });
+            } else {
+                res.status(401).json({ message: "Senha incorreta." });
+            }
+        });
     });
 });
 
-// --- ATENÇÃO: ROTAS DE RESPONSÁVEIS (CONTACTS) ATUALIZADAS ---
-
-// GET: Lista todos os contatos e suas fontes associadas
+// Rotas de Contatos (Responsáveis)
 app.get('/api/contacts', (req, res) => {
-    const sqlContacts = "SELECT * FROM contacts ORDER BY name";
+    const sqlContacts = `
+        SELECT 
+            c.id, c.name, c.unit_id, c.email, c.phone,
+            u.name as unit_name 
+        FROM contacts c
+        LEFT JOIN units u ON c.unit_id = u.id
+        ORDER BY c.name
+    `;
     db.all(sqlContacts, [], (err, contacts) => {
         if (err) return res.status(500).json({ "error": err.message });
 
@@ -81,7 +104,6 @@ app.get('/api/contacts', (req, res) => {
         db.all(sqlAssociations, [], (err, associations) => {
             if (err) return res.status(500).json({ "error": err.message });
             
-            // Mapeia as associações para cada contato
             const contactsWithSources = contacts.map(contact => {
                 const associatedSources = associations
                     .filter(assoc => assoc.contact_id === contact.id)
@@ -93,13 +115,11 @@ app.get('/api/contacts', (req, res) => {
         });
     });
 });
-
-// POST: Cria um novo contato e suas associações
 app.post('/api/contacts', (req, res) => {
-    const { name, area, email, phone, sources = [] } = req.body;
+    const { name, unit_id, email, phone, sources = [] } = req.body;
     if (!name) return res.status(400).json({ "error": "O nome é obrigatório." });
 
-    db.run("INSERT INTO contacts (name, area, email, phone) VALUES (?, ?, ?, ?)", [name, area, email, phone], function(err) {
+    db.run("INSERT INTO contacts (name, unit_id, email, phone) VALUES (?, ?, ?, ?)", [name, unit_id, email, phone], function(err) {
         if (err) return res.status(500).json({ "error": err.message });
         
         const contactId = this.lastID;
@@ -121,22 +141,15 @@ app.post('/api/contacts', (req, res) => {
         });
     });
 });
-
-// PUT: Atualiza um contato e suas associações
 app.put('/api/contacts/:id', (req, res) => {
     const contactId = req.params.id;
-    const { name, area, email, phone, sources = [] } = req.body;
+    const { name, unit_id, email, phone, sources = [] } = req.body;
 
     db.serialize(() => {
         db.run("BEGIN TRANSACTION");
-
-        // 1. Atualiza os dados do contato
-        db.run("UPDATE contacts SET name = ?, area = ?, email = ?, phone = ? WHERE id = ?", [name, area, email, phone, contactId]);
-
-        // 2. Deleta as associações antigas
+        db.run("UPDATE contacts SET name = ?, unit_id = ?, email = ?, phone = ? WHERE id = ?", [name, unit_id, email, phone, contactId]);
         db.run("DELETE FROM contact_source_associations WHERE contact_id = ?", [contactId]);
 
-        // 3. Insere as novas associações (se houver)
         if (sources.length > 0) {
             const placeholders = sources.map(() => '(?, ?)').join(',');
             const sql = `INSERT INTO contact_source_associations (contact_id, source_type) VALUES ${placeholders}`;
@@ -150,31 +163,29 @@ app.put('/api/contacts/:id', (req, res) => {
                 db.run("ROLLBACK");
                 return res.status(500).json({ "error": `Erro na transação: ${err.message}` });
             }
-            res.status(200).json({ changes: 1 }); // Retorna 1 para indicar sucesso
+            res.status(200).json({ changes: 1 });
         });
     });
 });
-
-// DELETE: Deleta o contato (as associações são deletadas em cascata pelo DB)
 app.delete('/api/contacts/:id', (req, res) => {
     db.run("DELETE FROM contacts WHERE id = ?", [req.params.id], function(err) {
         if (err) return res.status(500).json({ "error": err.message });
         res.status(200).json({ deleted: this.changes });
     });
 });
-// --- FIM DAS ATUALIZAÇÕES NAS ROTAS DE CONTATOS ---
 
-// Rotas de Unidades Empresariais
+// --- ROTAS DE UNIDADES ---
 app.get('/api/units', (req, res) => {
     db.all("SELECT * FROM units ORDER BY name", [], (err, rows) => {
         if (err) { res.status(500).json({ "error": err.message }); return; }
         res.json(rows);
     });
 });
-
 app.post('/api/units', (req, res) => {
     const { name, cidade, estado, pais, numero_colaboradores } = req.body;
-    if (!name) { return res.status(400).json({ "error": "O nome da unidade é obrigatório." }); }
+    if (!name || !cidade || !estado || !pais || !numero_colaboradores) { 
+        return res.status(400).json({ "error": "Todos os campos são obrigatórios." }); 
+    }
     const sql = "INSERT INTO units (name, cidade, estado, pais, numero_colaboradores) VALUES (?, ?, ?, ?, ?)";
     const params = [name, cidade, estado, pais, numero_colaboradores];
     db.run(sql, params, function(err) {
@@ -182,9 +193,11 @@ app.post('/api/units', (req, res) => {
         res.status(201).json({ "id": this.lastID });
     });
 });
-
 app.put('/api/units/:id', (req, res) => {
     const { name, cidade, estado, pais, numero_colaboradores } = req.body;
+    if (!name || !cidade || !estado || !pais || !numero_colaboradores) { 
+        return res.status(400).json({ "error": "Todos os campos são obrigatórios." }); 
+    }
     const sql = "UPDATE units SET name = ?, cidade = ?, estado = ?, pais = ?, numero_colaboradores = ? WHERE id = ?";
     const params = [name, cidade, estado, pais, numero_colaboradores, req.params.id];
     db.run(sql, params, function(err) {
@@ -192,7 +205,6 @@ app.put('/api/units/:id', (req, res) => {
         res.status(200).json({ changes: this.changes });
     });
 });
-
 app.delete('/api/units/:id', (req, res) => {
     db.run("DELETE FROM units WHERE id = ?", [req.params.id], function(err) {
         if (err) { res.status(500).json({ "error": err.message }); return; }
@@ -200,7 +212,7 @@ app.delete('/api/units/:id', (req, res) => {
     });
 });
 
-// Rota de Upload de Arquivo
+// Rotas de Upload e Template
 app.post('/api/upload', upload.single('file'), (req, res) => {
     try {
         if (!req.file) {
@@ -224,8 +236,22 @@ app.post('/api/upload', upload.single('file'), (req, res) => {
                 const newRow = {};
                 for (const key in row) {
                     let value = row[key];
+
+                    if (source_type === 'combustao_movel' && key === 'tipo_entrada' && typeof value === 'string') {
+                         const normalizedInput = value
+                            .toLowerCase()
+                            .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+                            .trim();
+                        
+                        if (normalizedInput === 'por consumo') {
+                            value = 'consumo';
+                        } else if (normalizedInput === 'por distancia') {
+                            value = 'distancia';
+                        }
+                    }
+
                     if (typeof value === 'string') {
-                        value = value.replace(/\.(?=.*\d{3},)/g, '').replace(',', '.');
+                        value = value.trim();
                     }
                     newRow[key] = value;
                 }
@@ -245,12 +271,15 @@ app.post('/api/upload', upload.single('file'), (req, res) => {
             headerMap[normalizeHeader(schema.headerDisplayNames[key])] = key;
         }
 
+        // Adiciona mapeamento para a chave oculta se ela existir no arquivo
+        headerMap['id_fonte'] = 'id_fonte';
+
         if (req.file.originalname.endsWith('.xlsx') || req.file.originalname.endsWith('.xls')) {
             const workbook = xlsx.readFile(filePath);
             const sheetName = workbook.SheetNames[0];
             const worksheet = workbook.Sheets[sheetName];
             
-            const jsonData = xlsx.utils.sheet_to_json(worksheet, { defval: "", raw: false });
+            const jsonData = xlsx.utils.sheet_to_json(worksheet, { defval: "", raw: true });
 
             const results = jsonData.map(row => {
                 const newRow = {};
@@ -258,7 +287,7 @@ app.post('/api/upload', upload.single('file'), (req, res) => {
                     const normalized = normalizeHeader(excelHeader);
                     const schemaKey = headerMap[normalized];
                     if (schemaKey) {
-                        newRow[schemaKey] = row[excelHeader];
+                        newRow[schemaKey] = row[excelHeader] !== null && row[excelHeader] !== undefined ? String(row[excelHeader]) : "";
                     }
                 }
                 return newRow;
@@ -284,9 +313,6 @@ app.post('/api/upload', upload.single('file'), (req, res) => {
         res.status(500).json({ message: 'Erro interno ao processar o arquivo.' });
     }
 });
-
-
-// Rota de Download de Template
 app.get('/api/template/:tableName', (req, res) => {
     const { tableName } = req.params;
     const { format = 'csv' } = req.query;
@@ -308,8 +334,6 @@ app.get('/api/template/:tableName', (req, res) => {
         res.status(200).send(csvContent);
     }
 });
-
-// Rota de Exportação de Dados da Tela
 app.post('/api/export', (req, res) => {
     const { data, tableName } = req.body;
     if (!Array.isArray(data) || data.length === 0) { return res.status(400).send('Nenhum dado fornecido para exportação.'); }
@@ -328,35 +352,107 @@ app.post('/api/export', (req, res) => {
         const buffer = xlsx.write(workbook, { bookType: 'xlsx', type: 'buffer' });
         const fileName = tableName ? `${tableName}_export.xlsx` : 'export.xlsx';
         res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        res.setHeader('Content-Disposition', `attachment; filename=${fileName}`);
+        res.setHeader('Content-Disposition', `attachment; filename=${fileName}_export.xlsx`);
         res.status(200).send(buffer);
     } catch (error) {
         console.error("Erro ao exportar para Excel:", error);
         res.status(500).json({ message: "Erro interno ao gerar o arquivo Excel." });
     }
 });
-
-// Rota para Salvar Dados das Fontes
 app.post('/api/save-data/:tableName', (req, res) => {
     const { tableName } = req.params;
     const dataRows = req.body;
-    const allowedTables = { combustao_movel: 'mobile_combustion_data', combustao_estacionaria: 'stationary_combustion_data', dados_producao_venda: 'production_sales_data', ippu_lubrificantes: 'lubricants_ippu_data', emissoes_fugitivas: 'fugitive_emissions_data', fertilizantes: 'fertilizers_data' };
+    
+    // --- SPRINT 21: Mapeamento de tabelas ---
+    const allowedTables = { 
+        combustao_movel: 'mobile_combustion_data', 
+        combustao_estacionaria: 'stationary_combustion_data', 
+        dados_producao_venda: 'production_sales_data', 
+        ippu_lubrificantes: 'lubricants_ippu_data', 
+        emissoes_fugitivas: 'fugitive_emissions_data', 
+        fertilizantes: 'fertilizers_data',
+        efluentes_controlados: 'effluents_controlled_data',
+        efluentes_domesticos: 'domestic_effluents_data',
+        mudanca_uso_solo: 'land_use_change_data',
+        solid_waste: 'solid_waste_data',
+        electricity_purchase: 'electricity_purchase_data',
+        purchased_goods_services: 'purchased_goods_services_data',
+        capital_goods: 'capital_goods_data',
+        upstream_transport: 'upstream_transport_data',
+        business_travel_land: 'business_travel_land_data',
+        downstream_transport: 'downstream_transport_data',
+        waste_transport: 'waste_transport_data',
+        home_office: 'home_office_data',
+        air_travel: 'air_travel_data',
+        employee_commuting: 'employee_commuting_data',
+        energy_generation: 'energy_generation_data',
+        planted_forest: 'planted_forest_data',
+        conservation_area: 'conservation_area_data'
+    };
+
     if (!allowedTables[tableName]) { return res.status(400).json({ message: "Tipo de tabela inválido." }); }
     if (!dataRows || dataRows.length === 0) { return res.status(400).json({ message: "Nenhum dado para salvar." }); }
+    
     const dbTableName = allowedTables[tableName];
-    const columns = Object.keys(dataRows[0]);
-    const placeholders = columns.map(() => '?').join(', ');
-    const sql = `INSERT INTO ${dbTableName} (${columns.join(', ')}) VALUES (${placeholders})`;
+    
     db.serialize(() => {
         db.run("BEGIN TRANSACTION");
         let errorOccurred = false;
+        
         dataRows.forEach(row => {
             if (errorOccurred) return;
-            const values = columns.map(col => row[col]);
+
+            const booleanFields = {
+                'controlado_empresa': 'controlado_empresa',
+                'fossa_septica_propriedade': 'fossa_septica_propriedade',
+                'local_controlado_empresa': 'local_controlado_empresa',
+                'informar_cidade_uf': 'informar_cidade_uf',
+                'bens_terceiros': 'bens_terceiros',
+                'km_reembolsado': 'km_reembolsado',
+                'area_plantada': 'area_plantada'
+            };
+            
+            for (const frontEndKey in booleanFields) {
+                if (row.hasOwnProperty(frontEndKey)) {
+                    let val = row[frontEndKey];
+                    if (val && typeof val === 'string') {
+                         val = val.trim();
+                         if(['sim', 's', 'Sim'].includes(val)) val = 'Sim';
+                         else if(['nao', 'n', 'não', 'Não'].includes(val)) val = 'Não';
+                    }
+                    row[booleanFields[frontEndKey]] = val;
+                }
+            }
+
+            const sanitizedRow = {};
+            
+            // --- SPRINT 21: Auto-preencher Descrição para Conservation Area ---
+            if (tableName === 'conservation_area') {
+                // Combina Bioma e Fitofisionomia para ter uma descrição útil no banco
+                row.descricao = `${row.bioma || ''} - ${row.fitofisionomia || ''}`;
+            }
+            
+            // Remove a chave oculta antes de salvar
+            delete row.id_fonte;
+
+            for (const key in row) {
+                if (row[key] !== '' && row[key] !== null && row[key] !== undefined) {
+                    sanitizedRow[key] = row[key];
+                }
+            }
+            
+            if (Object.keys(sanitizedRow).length === 0) return;
+            
+            const columns = Object.keys(sanitizedRow);
+            const placeholders = columns.map(() => '?').join(', ');
+            const sql = `INSERT INTO ${dbTableName} (${columns.join(', ')}) VALUES (${placeholders})`;
+            const values = Object.values(sanitizedRow);
+
             db.run(sql, values, (err) => {
-                if (err) { console.error("Erro ao inserir linha:", err); errorOccurred = true; }
+                if (err) { console.error("Erro ao inserir linha:", err, "SQL:", sql, "Valores:", values); errorOccurred = true; }
             });
         });
+
         const operation = errorOccurred ? "ROLLBACK" : "COMMIT";
         db.run(operation, (err) => {
             if (err) { return res.status(500).json({ message: `Erro crítico durante a transação (${operation}).` }); }
@@ -366,47 +462,57 @@ app.post('/api/save-data/:tableName', (req, res) => {
     });
 });
 
-// Rotas de Tipologias de Fontes (Assets)
+// --- ROTAS DE CADASTRO DE FONTES ---
 app.get('/api/asset-typologies', (req, res) => {
     const { source_type } = req.query;
-    let sql = "SELECT T.*, U.name as unit_name FROM asset_typologies T JOIN units U ON T.unit_id = U.id";
+    let sql = `
+        SELECT 
+            T.*, 
+            U.name as unit_name,
+            C.name as responsible_contact_name 
+        FROM asset_typologies T 
+        JOIN units U ON T.unit_id = U.id
+        LEFT JOIN contacts C ON T.responsible_contact_id = C.id
+    `;
     const params = [];
     if (source_type) {
         sql += " WHERE T.source_type = ?";
         params.push(source_type);
     }
     sql += " ORDER BY U.name, T.description";
+    
     db.all(sql, params, (err, rows) => {
-        if (err) { res.status(500).json({ "error": err.message }); return; }
+        if (err) {
+            res.status(500).json({ "error": err.message });
+            return;
+        }
+        
         const results = rows.map(row => {
-            try {
-                return { ...row, asset_fields: JSON.parse(row.asset_fields) };
-            } catch (e) {
-                console.error(`Invalid JSON in asset_fields for typology id ${row.id}:`, row.asset_fields);
-                return row;
-            }
+            const fields = JSON.parse(row.asset_fields || '{}');
+            return { ...row, asset_fields: fields };
         });
+        
         res.json(results);
     });
 });
-
 app.post('/api/asset-typologies', (req, res) => {
-    const { unit_id, source_type, description, asset_fields } = req.body;
-    if (!unit_id || !source_type || !description || !asset_fields) { return res.status(400).json({ "error": "Campos obrigatórios faltando." }); }
+    const { unit_id, source_type, description, asset_fields, responsible_contact_id, reporting_frequency } = req.body;
+    if (!unit_id || !source_type || !description || !asset_fields || !reporting_frequency) { return res.status(400).json({ "error": "Campos obrigatórios faltando." }); }
     const assetFieldsStr = JSON.stringify(asset_fields);
+    const contactId = responsible_contact_id || null;
 
     if (unit_id === 'all') {
         db.all("SELECT id FROM units", [], (err, units) => {
             if (err) return res.status(500).json({ "error": `Erro ao buscar unidades: ${err.message}` });
             if (!units || units.length === 0) return res.status(404).json({ "error": "Nenhuma unidade cadastrada para aplicar a regra." });
 
-            const sql = `INSERT INTO asset_typologies (unit_id, source_type, description, asset_fields) VALUES (?, ?, ?, ?)`;
+            const sql = `INSERT INTO asset_typologies (unit_id, source_type, description, asset_fields, responsible_contact_id, reporting_frequency) VALUES (?, ?, ?, ?, ?, ?)`;
             db.serialize(() => {
                 db.run("BEGIN TRANSACTION");
                 let errorOccurred = false;
                 units.forEach(unit => {
                     if (errorOccurred) return;
-                    db.run(sql, [unit.id, source_type, description, assetFieldsStr], function(err) {
+                    db.run(sql, [unit.id, source_type, description, assetFieldsStr, contactId, reporting_frequency], function(err) {
                         if (err) { console.error("Erro ao inserir tipologia para unidade " + unit.id, err); errorOccurred = true; }
                     });
                 });
@@ -419,19 +525,18 @@ app.post('/api/asset-typologies', (req, res) => {
             });
         });
     } else {
-        const sql = `INSERT INTO asset_typologies (unit_id, source_type, description, asset_fields) VALUES (?, ?, ?, ?)`;
-        db.run(sql, [unit_id, source_type, description, assetFieldsStr], function(err) {
+        const sql = `INSERT INTO asset_typologies (unit_id, source_type, description, asset_fields, responsible_contact_id, reporting_frequency) VALUES (?, ?, ?, ?, ?, ?)`;
+        db.run(sql, [unit_id, source_type, description, assetFieldsStr, contactId, reporting_frequency], function(err) {
             if (err) { return res.status(500).json({ "error": err.message }); }
             res.status(201).json({ "id": this.lastID });
         });
     }
 });
-
 app.put('/api/asset-typologies/:id', (req, res) => {
-    const { unit_id, source_type, description, asset_fields } = req.body;
-    if (!unit_id || !source_type || !description || !asset_fields) { return res.status(400).json({ "error": "Campos obrigatórios faltando." }); }
-    const sql = `UPDATE asset_typologies SET unit_id = ?, source_type = ?, description = ?, asset_fields = ? WHERE id = ?`;
-    const params = [unit_id, source_type, description, JSON.stringify(asset_fields), req.params.id];
+    const { unit_id, source_type, description, asset_fields, responsible_contact_id, reporting_frequency } = req.body;
+    if (!unit_id || !source_type || !description || !asset_fields || !reporting_frequency) { return res.status(400).json({ "error": "Campos obrigatórios faltando." }); }
+    const sql = `UPDATE asset_typologies SET unit_id = ?, source_type = ?, description = ?, asset_fields = ?, responsible_contact_id = ?, reporting_frequency = ? WHERE id = ?`;
+    const params = [unit_id, source_type, description, JSON.stringify(asset_fields), responsible_contact_id || null, reporting_frequency, req.params.id];
     db.run(sql, params, function(err) {
         if (err) { res.status(500).json({ "error": err.message }); return; }
         res.status(200).json({ changes: this.changes });
@@ -445,101 +550,148 @@ app.delete('/api/asset-typologies/:id', (req, res) => {
     });
 });
 
-// Rotas de Opções Customizáveis
-app.get('/api/custom-options', (req, res) => {
+app.get('/api/options', (req, res) => {
     const { field_key } = req.query;
     if (!field_key) { return res.status(400).json({ "error": "O parâmetro 'field_key' é obrigatório." }); }
-    db.all("SELECT * FROM custom_options WHERE field_key = ? ORDER BY value", [field_key], (err, rows) => {
+    
+    db.all("SELECT * FROM managed_options WHERE field_key = ? ORDER BY value", [field_key], (err, rows) => {
         if (err) { res.status(500).json({ "error": err.message }); return; }
         res.json(rows);
     });
 });
-
-app.post('/api/custom-options', (req, res) => {
+app.post('/api/options', (req, res) => {
     const { field_key, value } = req.body;
     if (!field_key || !value) { return res.status(400).json({ "error": "Campos 'field_key' e 'value' são obrigatórios." }); }
-    db.run("INSERT INTO custom_options (field_key, value) VALUES (?, ?)", [field_key, value], function(err) {
-        if (err) { res.status(500).json({ "error": err.message }); return; }
+    
+    db.run("INSERT INTO managed_options (field_key, value) VALUES (?, ?)", [field_key, value], function(err) {
+        if (err) { 
+            console.error("Erro ao inserir em managed_options:", err.message);
+            res.status(500).json({ "error": err.message }); 
+            return;
+        }
         res.status(201).json({ "id": this.lastID });
     });
 });
-
-app.delete('/api/custom-options/:id', (req, res) => {
-    db.run("DELETE FROM custom_options WHERE id = ?", [req.params.id], function(err) {
+app.delete('/api/options/:id', (req, res) => {
+    db.run("DELETE FROM managed_options WHERE id = ?", [req.params.id], function(err) {
         if (err) { res.status(500).json({ "error": err.message }); return; }
         res.status(200).json({ deleted: this.changes });
     });
 });
 
-// Rota de Configuração de Fontes
-app.get('/api/source-configurations', (req, res) => {
-    db.all("SELECT * FROM source_configurations", [], (err, rows) => {
-        if (err) { res.status(500).json({ "error": err.message }); return; }
-        res.json(rows);
-    });
-});
-
-app.post('/api/source-configurations', (req, res) => {
-    const { source_type, reporting_frequency } = req.body;
-    if (!source_type || !reporting_frequency) { return res.status(400).json({ "error": "Campos 'source_type' e 'reporting_frequency' são obrigatórios." }); }
-    db.run(`UPDATE source_configurations SET reporting_frequency = ? WHERE source_type = ?`, [reporting_frequency, source_type], function (err) {
-        if (err) { return res.status(500).json({ "error": err.message }); }
-        if (this.changes === 0) {
-            db.run(`INSERT INTO source_configurations (source_type, reporting_frequency) VALUES (?, ?)`, [source_type, reporting_frequency], function (err) {
-                if (err) { return res.status(500).json({ "error": err.message }); }
-                res.status(201).json({ message: "Configuração criada com sucesso." });
-            });
-        } else {
-            res.status(200).json({ message: "Configuração atualizada com sucesso." });
-        }
-    });
-});
-
-// Rota de Template Inteligente
 app.get('/api/intelligent-template/:sourceType', (req, res) => {
     const { sourceType } = req.params;
-    const { unitId, year } = req.query;
+    const { unitId, year, format } = req.query;
     const schema = validationSchemas[sourceType];
     if (!schema) { return res.status(404).send('Tipo de fonte não encontrado.'); }
 
-    const descriptionKeyMap = { combustao_estacionaria: 'descricao_da_fonte', combustao_movel: 'descricao_fonte', dados_producao_venda: 'produto', ippu_lubrificantes: 'fonte_emissao', emissoes_fugitivas: 'fonte_emissao', fertilizantes: 'especificacoes_insumo' };
-    
-    const getFrequency = new Promise((resolve, reject) => { db.get("SELECT reporting_frequency FROM source_configurations WHERE source_type = ?", [sourceType], (err, row) => { if (err) return reject(err); resolve(row ? row.reporting_frequency : 'anual'); }); });
+    // --- ATUALIZADO: Mapeamento de descrições ---
+    const descriptionKeyMap = { 
+        combustao_estacionaria: 'descricao_da_fonte', 
+        combustao_movel: 'descricao_fonte', 
+        dados_producao_venda: 'produto', 
+        ippu_lubrificantes: 'fonte_emissao', 
+        emissoes_fugitivas: 'fonte_emissao', 
+        fertilizantes: 'tipo_fertilizante',
+        efluentes_controlados: 'tratamento_ou_destino',
+        mudanca_uso_solo: 'uso_solo_anterior',
+        solid_waste: 'destinacao_final',
+        electricity_purchase: 'fonte_energia',
+        purchased_goods_services: 'descricao_item',
+        capital_goods: 'bem_capital',
+        upstream_transport: 'insumo_transportado',
+        business_travel_land: 'descricao_viagem',
+        downstream_transport: 'insumo_transportado',
+        waste_transport: 'insumo_transportado',
+        home_office: 'regime_trabalho',
+        air_travel: 'descricao_viagem',
+        employee_commuting: 'descricao_identificadora',
+        energy_generation: 'fonte_geracao',
+        planted_forest: 'identificacao_area',
+        conservation_area: 'bioma',
+        // Adicionado Efluentes Domésticos
+        efluentes_domesticos: 'tipo_trabalhador'
+    };
     
     const getTypologies = new Promise((resolve, reject) => {
-        let sql = "SELECT T.*, U.name as unit_name FROM asset_typologies T JOIN units U ON T.unit_id = U.id WHERE T.source_type = ?";
+        let sql = `
+            SELECT 
+                T.*, 
+                U.name as unit_name
+            FROM asset_typologies T 
+            JOIN units U ON T.unit_id = U.id
+            WHERE T.source_type = ?
+        `;
         const params = [sourceType];
         if (unitId && unitId !== 'all') { sql += " AND T.unit_id = ?"; params.push(unitId); }
         db.all(sql, params, (err, rows) => { if (err) return reject(err); resolve(rows); });
     });
 
-    Promise.all([getFrequency, getTypologies]).then(([frequency, typologies]) => {
+    getTypologies.then((typologies) => {
         const dataForExcel = [];
         const headers = schema.headerDisplayNames;
         const headerKeys = Object.keys(headers);
         const reportYear = year || new Date().getFullYear();
         const mainDescriptionKey = descriptionKeyMap[sourceType];
-        const periods = frequency === 'mensal' ? ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"] : ["Anual"];
 
         typologies.forEach(typo => {
+            const frequency = typo.reporting_frequency || 'anual';
+            const periods = frequency === 'mensal' ? ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"] : ["Anual"];
             const assetFields = JSON.parse(typo.asset_fields || '{}');
+            
             periods.forEach(period => {
                 const row = {};
-                headerKeys.forEach(key => { row[headers[key]] = ''; });
-                row[headers['ano']] = reportYear;
-                row[headers['periodo']] = period;
-                row[headers['unidade_empresarial']] = typo.unit_name;
-                if (mainDescriptionKey && headers[mainDescriptionKey]) { row[headers[mainDescriptionKey]] = typo.description; }
-                for (const assetKey in assetFields) { if (headers.hasOwnProperty(assetKey)) { row[headers[assetKey]] = assetFields[assetKey]; } }
+                headerKeys.forEach(key => { row[key] = ''; });
+
+                row['ano'] = reportYear;
+                row['periodo'] = period;
+                row['unidade_empresarial'] = typo.unit_name;
+                row['id_fonte'] = typo.id; // --- Chave Primária Oculta ---
                 
+                if (mainDescriptionKey) {
+                    if (['solid_waste', 'electricity_purchase'].includes(sourceType)) {
+                        row[mainDescriptionKey] = assetFields[mainDescriptionKey] || '';
+                    } else if (sourceType === 'energy_generation') {
+                        row[mainDescriptionKey] = assetFields.fonte_geracao || typo.description;
+                    } else if (sourceType === 'conservation_area') {
+                        row[mainDescriptionKey] = assetFields.bioma || '';
+                    } else if (sourceType === 'efluentes_domesticos') {
+                        // Garante que o tipo de trabalhador seja o preenchido no cadastro
+                        row[mainDescriptionKey] = assetFields.tipo_trabalhador || '';
+                    } else {
+                        row[mainDescriptionKey] = typo.description;
+                    }
+                }
+                
+                // --- INSERÇÃO DE DADOS DO CADASTRO NO JSON (Para Front-end) ---
+                for (const assetKey in assetFields) { 
+                    if (row.hasOwnProperty(assetKey)) { 
+                        row[assetKey] = assetFields[assetKey]; 
+                    } 
+                }
+                
+                // --- Preenchimentos Específicos ---
+                if (sourceType === 'solid_waste' && assetFields.destinacao_final === 'Aterro') {
+                    row['informar_cidade_uf'] = assetFields.cidade_uf_destino || '';
+                }
+                if (sourceType === 'efluentes_controlados') {
+                    row['unidade_efluente_liquido'] = frequency === 'mensal' ? 'm3/mês' : 'm3/ano';
+                    row['unidade_nitrogenio'] = 'kgN/m3';
+                } else if (sourceType === 'emissoes_fugitivas' || sourceType === 'fertilizantes') {
+                    row['unidade'] = 'kg';
+                } else if (sourceType === 'capital_goods') {
+                    row['unidade'] = 'Unidades';
+                }
+                
+                // --- AutoFill (Unidades baseadas em Combustível) ---
                 if (schema.autoFillMap) {
                     for (const triggerKey in schema.autoFillMap) {
                         const rule = schema.autoFillMap[triggerKey];
-                        const triggerValue = row[headers[triggerKey]];
+                        const triggerValue = row[triggerKey];
                         if (triggerValue) {
                             const targetValue = rule.map[triggerValue];
                             if (targetValue !== undefined) {
-                                row[headers[rule.targetColumn]] = targetValue;
+                                row[rule.targetColumn] = targetValue;
                             }
                         }
                     }
@@ -548,17 +700,63 @@ app.get('/api/intelligent-template/:sourceType', (req, res) => {
                 dataForExcel.push(row);
             });
         });
+
+        if (format === 'json') {
+            return res.json(dataForExcel);
+        }
         
         try {
-            const worksheet = xlsx.utils.json_to_sheet(dataForExcel, { header: Object.values(headers) });
-            worksheet['!cols'] = Object.values(headers).map(header => ({ wch: Math.max(header.length, 15) + 2 }));
+            // --- LÓGICA DE EXCLUSÃO DE COLUNAS DO EXCEL ---
+            const excludeColumns = [];
+            
+            // Regra para Controlado pela Empresa (Agora inclui combustao_movel)
+            if (['combustao_estacionaria', 'combustao_movel', 'ippu_lubrificantes', 'emissoes_fugitivas', 'fertilizantes'].includes(sourceType)) {
+                excludeColumns.push('controlado_empresa');
+            }
+            
+            // Regra para Unidade
+            if (['combustao_estacionaria', 'ippu_lubrificantes'].includes(sourceType)) {
+                 excludeColumns.push('unidade'); 
+            }
+            
+            // Regra para Unidade de Consumo (Específica para Combustão Móvel)
+            if (sourceType === 'combustao_movel') {
+                excludeColumns.push('unidade_consumo');
+            }
+
+            // --- NOVA REGRA: Efluentes Domésticos ---
+            if (sourceType === 'efluentes_domesticos') {
+                // Remove do Excel para evitar erros de digitação (Case Sensitive)
+                excludeColumns.push('fossa_septica_propriedade');
+            }
+
+            const dataWithHeaderNames = dataForExcel.map(row => {
+                const newRow = {};
+                for (const key in row) {
+                    if (key === 'id_fonte') continue; // Remove ID oculto do Excel visual
+                    if (excludeColumns.includes(key)) continue; // Remove colunas proibidas
+
+                    if (headers[key]) {
+                        newRow[headers[key]] = row[key];
+                    }
+                }
+                return newRow;
+            });
+
+            // Filtra os cabeçalhos também
+            const finalHeaders = Object.keys(headers)
+                .filter(key => !excludeColumns.includes(key))
+                .map(key => headers[key]);
+
+            const worksheet = xlsx.utils.json_to_sheet(dataWithHeaderNames, { header: finalHeaders });
+            worksheet['!cols'] = finalHeaders.map(header => ({ wch: Math.max(header.length, 15) + 2 }));
             const workbook = xlsx.utils.book_new();
             const sheetName = schema.displayName.substring(0, 31);
             xlsx.utils.book_append_sheet(workbook, worksheet, sheetName);
             const buffer = xlsx.write(workbook, { bookType: 'xlsx', type: 'buffer' });
-            const fileName = `${sourceType}_template_preenchido_${reportYear}.xlsx`;
+            const fileName = `${sourceType}_template_preenchido_${year}.xlsx`;
             res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-            res.setHeader('Content-Disposition', `attachment; filename=${fileName}`);
+            res.setHeader('Content-Disposition', `attachment; filename=${fileName}_template.xlsx`);
             res.status(200).send(buffer);
         } catch (error) {
             console.error("Erro ao gerar o template inteligente:", error);
@@ -570,7 +768,6 @@ app.get('/api/intelligent-template/:sourceType', (req, res) => {
     });
 });
 
-// --- 6. INICIALIZAÇÃO DO SERVIDOR ---
 app.listen(PORT, () => {
     console.log(`Servidor iniciado com sucesso na porta ${PORT}`);
 });

@@ -1,0 +1,61 @@
+<!-- arquivo: frontend/admin.html -->
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Administração - Ecofinance</title>
+    
+    <link rel="stylesheet" href="main.css">
+    <link rel="stylesheet" href="dashboard.css">
+    
+    <style>
+        .custom-options-list { list-style: none; padding: 0; }
+        .custom-options-list li { display: flex; justify-content: space-between; align-items: center; padding: 8px; border-bottom: 1px solid #eee; }
+        .custom-options-list button { background-color: #dc3545; color: white; border: none; padding: 4px 8px; border-radius: 4px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    
+    <div id="nav-placeholder"></div>
+
+    <div class="container">
+        <h1>Painel de Administração</h1>
+
+        
+        <div id="admin-content-area">
+            <div class="form-container">
+                <h2 style="font-size: 1.2rem; margin-bottom: 1rem;">Gerenciar Opções Customizáveis</h2>
+                <p>Adicione ou remova opções para os campos de seleção que aparecerão nos formulários de cadastro de fontes e importação de dados.</p>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="custom-option-field-selector">Selecione o Campo para Customizar</label>
+                        <select id="custom-option-field-selector">
+                            <option value="">-- Selecione --</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div id="custom-option-manager" style="display: none;">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="new-custom-option-value">Nova Opção</label>
+                            <input type="text" id="new-custom-option-value" placeholder="">
+                        </div>
+                        <div class="form-group" style="justify-content: flex-end;">
+                             <button type="button" id="add-custom-option-btn" class="action-btn edit-btn" style="width: auto; padding: 0.75rem 1.5rem;">Adicionar</button>
+                        </div>
+                    </div>
+                    <div id="custom-option-feedback" class="feedback-area" style="text-align: left; margin-top: 0;"></div>
+                    
+                    <h3>Opções Atuais:</h3>
+                    <ul id="custom-options-list-container" class="custom-options-list"></ul>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+
+    
+    <script type="module" src="admin.js"></script>
+</body>
+</html>

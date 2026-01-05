@@ -1,55 +1,224 @@
 /* arquivo: frontend/import.css */
 
-body { font-family: sans-serif; background-color: #f4f7f6; margin: 20px; }
-.container { max-width: 1200px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-h1 { text-align: center; color: #333; }
-.form-group { margin-bottom: 20px; }
-form { margin-bottom: 20px; padding: 20px; border: 1px solid #ddd; border-radius: 5px; display: flex; align-items: center; gap: 20px; }
-input[type="file"] { border: 1px solid #ccc; padding: 10px; border-radius: 4px; }
-select { padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 16px; }
-button { padding: 12px 20px; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 16px; }
-#upload-form button { background-color: #007bff; }
-#save-data-btn { background-color: #007bff; }
-
-/* --- NOVO (SPRINT 12) --- */
-.add-btn {
-    background-color: #28a745; /* Cor verde para "adicionar" */
-}
-.add-btn:hover {
-    background-color: #218838;
-}
-/* --- BOTÃO EXPORTAR CORRIGIDO --- */
-.export-btn {
-    background-color: #ff8c00; /* Laranja escuro, alto contraste */
-    color: white; /* Garante que o texto seja branco */
-}
-.export-btn:hover {
-    background-color: #cc7000; /* Laranja um pouco mais escuro no hover */
+body { 
+    font-family: sans-serif; 
+    background-color: #f4f7f6; 
+    margin: 20px;
+    padding-bottom: 20px;
 }
 
+.container { 
+    max-width: 100%; 
+    width: 1200px;   
+    margin: auto; 
+    background: white; 
+    padding: 20px; 
+    border-radius: 8px; 
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1); 
+    display: flex;
+    flex-direction: column;
+}
 
+h1 { 
+    text-align: center; 
+    color: #333; 
+}
 
-.feedback-area { margin: 20px 0; font-weight: bold; }
-.table-container { overflow-x: auto; margin-top: 20px; }
-table { width: 100%; border-collapse: collapse; }
-th, td { padding: 12px; border: 1px solid #ddd; text-align: left; white-space: nowrap; }
-th { background-color: #f8f9fa; }
-tr:nth-child(even) { background-color: #f2f2f2; }
-.invalid-cell { background-color: #f8d7da !important; color: #721c24; outline: 1px solid #f5c6cb; }
-td select { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; background-color: white; font-family: inherit; font-size: inherit; }
-.invalid-cell select { border-color: #f5c6cb; background-color: #f8d7da; }
-/* --- NOVO: Estilos para o botão de deletar --- */
+.form-group { 
+    margin-bottom: 20px; 
+}
+
+form { 
+    margin-bottom: 20px; 
+    padding: 20px; 
+    border: 1px solid #ddd; 
+    border-radius: 5px; 
+    display: flex; 
+    align-items: center; 
+    gap: 20px; 
+    flex-wrap: wrap; 
+}
+
+input[type="file"] { 
+    border: 1px solid #ccc; 
+    padding: 10px; 
+    border-radius: 4px; 
+}
+
+select { 
+    padding: 10px; 
+    border: 1px solid #ccc; 
+    border-radius: 4px; 
+    font-size: 16px; 
+}
+
+button { 
+    padding: 12px 20px; 
+    color: white; 
+    border: none; 
+    border-radius: 4px; 
+    cursor: pointer; 
+    font-size: 16px; 
+}
+
+#upload-form button { 
+    background-color: #007bff; 
+}
+
+#save-data-btn { 
+    background-color: #007bff; 
+}
+
+.add-btn { 
+    background-color: #28a745; 
+}
+.add-btn:hover { 
+    background-color: #218838; 
+}
+
+.export-btn { 
+    background-color: #ff8c00; 
+    color: white; 
+}
+.export-btn:hover { 
+    background-color: #cc7000; 
+}
+
+.feedback-area { 
+    margin: 20px 0; 
+    font-weight: bold; 
+}
+
+/* --- ÁREA DA TABELA --- */
+
+.table-container { 
+    width: 100%;
+    
+    /* Define altura fixa para garantir que a barra de rolagem horizontal apareça na tela */
+    height: calc(100vh - 280px); 
+    min-height: 400px; 
+    
+    overflow: auto; 
+    
+    border: 1px solid #ddd;
+    background-color: #fff;
+    position: relative;
+    display: block;
+}
+
+.table-container::-webkit-scrollbar {
+    width: 12px;  
+    height: 12px; 
+}
+.table-container::-webkit-scrollbar-track {
+    background: #f1f1f1; 
+}
+.table-container::-webkit-scrollbar-thumb {
+    background: #c1c1c1; 
+    border-radius: 6px;
+    border: 3px solid #f1f1f1; 
+}
+.table-container::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8; 
+}
+
+table { 
+    width: max-content; 
+    min-width: 100%; 
+    border-collapse: separate; 
+    border-spacing: 0;
+    table-layout: fixed; 
+}
+
+th, td { 
+    padding: 10px; 
+    border-bottom: 1px solid #ddd; 
+    border-right: 1px solid #ddd;
+    text-align: left; 
+    vertical-align: top;
+    
+    white-space: normal; 
+    word-wrap: break-word;
+    
+    width: 150px; 
+    min-width: 80px; 
+    box-sizing: border-box;
+    position: relative; 
+}
+
+/* CABEÇALHO FIXO */
+thead th { 
+    position: sticky; 
+    top: 0; 
+    background-color: #f8f9fa; 
+    z-index: 100; /* Aumentado para garantir visibilidade */
+    border-top: 1px solid #ddd;
+    border-bottom: 2px solid #ddd;
+    color: #333;
+    /* Height removido para evitar corte de texto */
+}
+
+tr:nth-child(even) { 
+    background-color: #f2f2f2; 
+}
+
+.invalid-cell { 
+    background-color: #f8d7da !important; 
+    color: #721c24; 
+    outline: 1px solid #f5c6cb; 
+}
+
+td select { 
+    width: 100%; 
+    padding: 8px; 
+    border: 1px solid #ccc; 
+    border-radius: 4px; 
+    background-color: white; 
+    font-family: inherit; 
+    font-size: inherit; 
+}
+
+.invalid-cell select { 
+    border-color: #f5c6cb; 
+    background-color: #f8d7da; 
+}
+
 .delete-row-btn {
-    background-color: #dc3545; /* Vermelho "danger" */
+    background-color: #dc3545;
     color: white;
     border: none;
     border-radius: 4px;
     padding: 5px 10px;
     cursor: pointer;
     font-weight: bold;
-    line-height: 1; /* Para alinhar melhor o "X" */
+    line-height: 1;
 }
 
-.delete-row-btn:hover {
-    background-color: #c82333;
+.delete-row-btn:hover { 
+    background-color: #c82333; 
+}
+.delete-row-btn:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+.saved-row {
+    background-color: #e2e6ea !important;
+    color: #6c757d;
+}
+
+/* REDIMENSIONAMENTO */
+.resizer {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 5px;
+    cursor: col-resize;
+    user-select: none;
+    height: 100%;
+    z-index: 101; 
+}
+
+.resizer:hover, .resizing {
+    border-right: 2px solid #007bff; 
 }

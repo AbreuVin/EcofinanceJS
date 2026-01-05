@@ -1,14 +1,14 @@
 /* arquivo: frontend/main.css */
 
-/* Reset básico e estilos do body */
+
 body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     background-color: #f4f7f6;
     margin: 0;
-    padding-top: 70px; /* Espaço para a barra de navegação fixa */
+    padding-top: 70px; 
 }
 
-/* Estilos da Barra de Navegação */
+
 .navbar {
     background-color: #ffffff;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
@@ -17,7 +17,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    position: fixed; /* Fixa a barra no topo */
+    position: fixed; 
     top: 0;
     left: 0;
     width: 100%;

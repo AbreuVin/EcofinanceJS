@@ -1,3 +1,5 @@
+<!--Arquivo: importer.html-->
+
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -20,16 +22,10 @@
         
         <div id="upload-section" style="display: none;">
             
-            <!-- SEÇÃO DE DOWNLOADS ATUALIZADA -->
             <div class="template-download-section">
+                
                 <div class="template-download-group">
-                    <span>Baixar Modelo Vazio:</span>
-                    <a href="#" id="download-csv-btn" class="button-like-link" style="display: none;">.csv</a>
-                    <a href="#" id="download-xlsx-btn" class="button-like-link" style="display: none;">.xlsx</a>
-                </div>
-                <!-- NOVO BOTÃO (SPRINT 15 - FASE 2) -->
-                <div class="template-download-group">
-                     <button type="button" id="download-intelligent-btn" class="intelligent-btn" style="display: none; background-color: #007BFF; color: white">Baixar Template Preenchido</button>
+                     <button type="button" id="download-intelligent-btn" class="intelligent-btn" style="display: none; background-color: #007BFF; color: white">Baixar Template</button>
                 </div>
             </div>
             
@@ -42,7 +38,6 @@
         </div>
         
         <div id="table-actions" style="display: none; margin-top: 20px; margin-bottom: 20px; display: flex; gap: 10px;">
-            <button type="button" id="add-row-btn" class="add-btn">Adicionar Nova Linha</button>
             <button type="button" id="export-btn" class="export-btn" style="display: none;">Baixar Dados da Tabela</button>
             <button type="button" id="save-data-btn" style="display: none;">Salvar Dados no Banco</button>
         </div>
@@ -51,6 +46,7 @@
         <div id="table-container" class="table-container"></div>
     </div>
 
+    <script src="https://unpkg.com/imask"></script>
     <script type="module" src="importer.js"></script>
 </body>
 </html>

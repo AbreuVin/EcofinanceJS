@@ -6,6 +6,7 @@
     <title>Cadastro de Fontes - Ecofinance</title>
     <link rel="stylesheet" href="main.css">
     <link rel="stylesheet" href="dashboard.css">
+    
     <style>
         .custom-options-list { list-style: none; padding: 0; }
         .custom-options-list li { display: flex; justify-content: space-between; align-items: center; padding: 8px; border-bottom: 1px solid #eee; }
@@ -27,53 +28,7 @@
 
         <div id="asset-management-section" style="display: none;">
             
-            <div class="form-container">
-                <h2 style="font-size: 1.2rem; margin-bottom: 1rem;">Configuração da Fonte</h2>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="reporting-frequency">Frequência de Reporte</label>
-                        <select id="reporting-frequency">
-                            <option value="anual">Anual</option>
-                            <option value="mensal">Mensal</option>
-                        </select>
-                    </div>
-                    <div class="form-group" style="justify-content: flex-end;">
-                        <button type="button" id="save-frequency-btn" class="action-btn edit-btn" style="width: auto; padding: 0.75rem 1.5rem;">Salvar Frequência</button>
-                    </div>
-                </div>
-                 <div id="frequency-feedback" class="feedback-area" style="text-align: left; margin-top: 0.5rem; margin-bottom: 0;"></div>
-            </div>
-
-            <!-- --- ATENÇÃO: SEÇÃO MOVIDA PARA CIMA --- -->
-            <div class="form-container">
-                <h2 style="font-size: 1.2rem; margin-bottom: 1rem;">Gerenciar Opções Customizáveis</h2>
-                <p>Adicione ou remova opções para os campos de seleção que aparecerão nos formulários abaixo.</p>
-                <div class="form-row">
-                    <div class="form-group">
-                        <label for="custom-option-field-selector">Selecione o Campo para Customizar</label>
-                        <select id="custom-option-field-selector">
-                            <option value="">-- Selecione --</option>
-                        </select>
-                    </div>
-                </div>
-                
-                <div id="custom-option-manager" style="display: none;">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="new-custom-option-value">Nova Opção</label>
-                            <input type="text" id="new-custom-option-value" placeholder="Ex: Óleo Diesel B5">
-                        </div>
-                        <div class="form-group" style="justify-content: flex-end;">
-                             <button type="button" id="add-custom-option-btn" class="action-btn edit-btn" style="width: auto; padding: 0.75rem 1.5rem;">Adicionar</button>
-                        </div>
-                    </div>
-                    <div id="custom-option-feedback" class="feedback-area" style="text-align: left; margin-top: 0;"></div>
-                    
-                    <h3>Opções Atuais:</h3>
-                    <ul id="custom-options-list-container" class="custom-options-list"></ul>
-                </div>
-            </div>
-            <!-- --- FIM DA SEÇÃO MOVIDA --- -->
+            
 
             <div class="form-container">
                 <h2 id="form-title">Adicionar Nova Fonte</h2>
@@ -83,7 +38,7 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label for="asset-description">Descrição da Fonte</label>
-                            <input type="text" id="asset-description" placeholder="Ex: Geradores a Diesel, Frota de Caminhões Leves" required>
+                            <input type="text" id="asset-description" placeholder="" required>
                         </div>
                          <div class="form-group">
                             <label for="asset-unit">Unidade Empresarial</label>
@@ -91,7 +46,9 @@
                         </div>
                     </div>
                     
-                    <div id="specific-fields-container"></div>
+                    <div id="specific-fields-container">
+                        
+                    </div>
 
                     <div class="form-actions">
                         <button type="submit">Salvar Fonte</button>

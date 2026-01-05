@@ -3,11 +3,11 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Cadastro de Responsáveis - Ecofinance</title>
+    <title>Gestão de Responsáveis - Ecofinance</title>
     <link rel="stylesheet" href="main.css">
     <link rel="stylesheet" href="dashboard.css">
     <style>
-        /* Estilos adicionais para os checkboxes */
+        
         .sources-container {
             margin-top: 1.5rem;
             padding-top: 1.5rem;
@@ -31,12 +31,19 @@
         }
         .checkbox-item input {
             margin-right: 0.5rem;
-            width: auto; /* Reseta a largura padrão do input */
+            width: auto; 
         }
         .checkbox-item label {
-            margin-bottom: 0; /* Reseta a margem padrão do label */
+            margin-bottom: 0; 
             font-weight: normal;
         }
+        
+        .select-all-container {
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #eee;
+        }
+        
     </style>
 </head>
 <body>
@@ -56,26 +63,38 @@
                         <input type="text" id="name" placeholder="Nome do responsável" required>
                     </div>
                     <div class="form-group">
-                        <label for="area">Área</label>
-                        <input type="text" id="area" placeholder="Área do responsável">
+                        <label for="unit">Unidade Empresarial</label>
+                        <select id="unit" required>
+                            <option value="">-- Carregando unidades... --</option>
+                        </select>
                     </div>
                 </div>
+
                 <div class="form-row">
                     <div class="form-group">
                         <label for="email">E-mail</label>
-                        <input type="email" id="email" placeholder="E-mail do responsável">
+                        <input type="email" id="email" placeholder="E-mail do responsável" required>
                     </div>
-                    <div class="form-group">
+                     <div class="form-group">
                         <label for="phone">Telefone</label>
-                        <input type="text" id="phone" placeholder="Telefone do responsável">
+                        <input type="text" id="phone" placeholder="(00) 00000-0000">
                     </div>
                 </div>
                 
                 <div class="sources-container">
-                    <h3>Fontes Responsáveis</h3>
-                    <div id="sources-checkbox-container" class="checkbox-grid">
-                        <!-- Checkboxes serão gerados aqui via JS -->
+                    
+                    <h3>Fontes de Emissão sob sua Responsabilidade</h3>
+                    
+                    
+                    <div class="select-all-container checkbox-item">
+                        <input type="checkbox" id="select-all-sources">
+                        <label for="select-all-sources">Selecionar Todas as Fontes</label>
                     </div>
+
+                    <div id="sources-checkbox-container" class="checkbox-grid">
+                        
+                    </div>
+                    <small id="sources-feedback" style="color: red; display: none; margin-top: 5px;">É obrigatório selecionar ao menos uma fonte de emissão.</small>
                 </div>
                 
                 <div class="form-actions">
@@ -90,23 +109,25 @@
             <table>
                 <thead>
                     <tr>
+                        
                         <th>Nome</th>
-                        <th>Área</th>
+                        <th>Unidade</th>
                         <th>E-mail</th>
-                        <th>Telefone</th>
                         <th>Fontes Associadas</th>
+                        <th>Telefone</th>
                         <th>Ações</th>
                     </tr>
                 </thead>
                 <tbody id="contacts-tbody">
-                    <!-- Linhas serão inseridas aqui via JS -->
+                    
                 </tbody>
             </table>
         </div>
     </div>
 
-    <!-- --- ATENÇÃO: MUDANÇA AQUI --- -->
+    
+    <script src="https://unpkg.com/imask"></script>
+    
     <script type="module" src="dashboard.js"></script>
-    <!-- --- FIM DA MUDANÇA --- -->
 </body>
 </html>
