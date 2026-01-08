@@ -140,7 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 bioma: { label: "Bioma (Descrição)", type: "select" },
                 fitofisionomia: { label: "Fitofisionomia", type: "select" }, 
                 area_plantada: { label: "Área de conservação plantada?", type: "select" },
-                plantio: { label: "Plantio", type: "text", placeholder: "Ex: 2010 ou 'Nativo'", showIf: { field: "area_plantada", value: "Sim" } },
+                plantio: { label: "Plantio", type: "text", placeholder: "Ex: 2010", showIf: { field: "area_plantada", value: "Sim" } },
                 responsible_contact_id: { label: "Responsável pela Informação", type: "select", isContact: true }
             }
         },
