@@ -1,0 +1,675 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Company {
+  id   String  @id @default(uuid())
+  name String  @unique
+  cnpj String? @unique
+
+  // Relations
+  users User[]
+  units Unit[]
+
+  createdAt DateTime @default(now())
+}
+
+model User {
+  id       String  @id @default(uuid())
+  email    String  @unique
+  password String
+  name     String // Moved from Contact
+  phone    String? // Moved from Contact
+  role     String  @default("USER") // MASTER, ADMIN, USER
+
+  // Multi-tenancy
+  companyId String?
+  company   Company? @relation(fields: [companyId], references: [id])
+
+  // Unit Assignment: A user now "belongs" to a unit (optional for MASTER/ADMIN)
+  unitId Int?
+  unit   Unit? @relation(fields: [unitId], references: [id])
+
+  // Hierarchy
+  parentId String?
+  parent   User?   @relation("UserHierarchy", fields: [parentId], references: [id])
+  children User[]  @relation("UserHierarchy")
+
+  // Permissions: These define which Spreadsheets (SourceTypes) the user manages
+  permissions UserPermission[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model UserPermission {
+  id         String @id @default(uuid())
+  userId     String
+  user       User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sourceType String // e.g., "combustao_movel", "solid_waste"
+
+  @@unique([userId, sourceType])
+}
+
+model Unit {
+  id              Int    @id @default(autoincrement())
+  name            String
+  city            String
+  state           String
+  country         String
+  numberOfWorkers Int
+
+  // Multi-tenancy
+  companyId String
+  company   Company @relation(fields: [companyId], references: [id])
+
+  // Users belonging to this unit
+  users User[]
+
+  createdAt                   DateTime                     @default(now())
+  assetTypologies             AssetTypology[]
+  mobileCombustionDatas       MobileCombustionData[]
+  stationaryCombustionDatas   StationaryCombustionData[]
+  productionSalesDatas        ProductionSalesData[]
+  lubricantsIppuDatas         LubricantsIppuData[]
+  fugitiveEmissionsDatas      FugitiveEmissionsData[]
+  fertilizersDatas            FertilizersData[]
+  effluentsControlledDatas    EffluentsControlledData[]
+  domesticEffluentsDatas      DomesticEffluentsData[]
+  landUseChangeDatas          LandUseChangeData[]
+  solidWasteDatas             SolidWasteData[]
+  electricityPurchaseDatas    ElectricityPurchaseData[]
+  purchasedGoodsServicesDatas PurchasedGoodsServicesData[]
+  capitalGoodsDatas           CapitalGoodsData[]
+  upstreamTransportDatas      UpstreamTransportData[]
+  businessTravelLandDatas     BusinessTravelLandData[]
+  downstreamTransportDatas    DownstreamTransportData[]
+  wasteTransportDatas         WasteTransportData[]
+  homeOfficeDatas             HomeOfficeData[]
+  airTravelDatas              AirTravelData[]
+  employeeCommutingDatas      EmployeeCommutingData[]
+  energyGenerationDatas       EnergyGenerationData[]
+  plantedForestDatas          PlantedForestData[]
+  conservationAreaDatas       ConservationAreaData[]
+}
+
+// --- CONFIGURATION & METADATA ---
+
+model AssetTypology {
+  id                   Int     @id @default(autoincrement())
+  unitId               Int
+  unit                 Unit    @relation(fields: [unitId], references: [id], onDelete: Cascade)
+  sourceType           String
+  description          String
+  assetFields          String // JSON string
+  isActive             Boolean @default(true)
+  responsibleContactId Int?
+  reportingFrequency   String  @default("anual")
+}
+
+model ManagedOption {
+  id       Int    @id @default(autoincrement())
+  fieldKey String
+  value    String
+
+  @@unique([fieldKey, value])
+}
+
+// --- ESG DATA TABLES ---
+
+// 1. Mobile Combustion
+model MobileCombustionData {
+  id     Int    @id @default(autoincrement())
+  year   Int
+  period String
+  unitId Int
+  unit   Unit   @relation(fields: [unitId], references: [id])
+
+  sourceDescription   String?
+  isCompanyControlled Boolean
+  inputType           String? // 'consumo' or 'distancia'
+  fuelType            String?
+  consumption         Float?
+  consumptionUnit     String?
+  distance            Float?
+  distanceUnit        String?
+  vehicleType         String?
+
+  comments  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// 2. Stationary Combustion
+model StationaryCombustionData {
+  id     Int    @id @default(autoincrement())
+  year   Int
+  period String
+  unitId Int
+  unit   Unit   @relation(fields: [unitId], references: [id])
+
+  sourceDescription   String?
+  fuelType            String?
+  consumption         Float?
+  unitMeasure         String? // Renamed from 'unit' to avoid conflict with relation
+  isCompanyControlled Boolean
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// 3. Production & Sales
+model ProductionSalesData {
+  id     Int    @id @default(autoincrement())
+  year   Int
+  period String
+  unitId Int
+  unit   Unit   @relation(fields: [unitId], references: [id])
+
+  product      String
+  quantitySold Int
+  measureUnit  String
+  comments     String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// 4. Lubricants & IPPU
+model LubricantsIppuData {
+  id     Int    @id @default(autoincrement())
+  year   Int
+  period String
+  unitId Int
+  unit   Unit   @relation(fields: [unitId], references: [id])
+
+  emissionSource      String?
+  lubricantType       String?
+  consumption         Float?
+  unitMeasure         String?
+  isCompanyControlled Boolean
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// 5. Fugitive Emissions
+model FugitiveEmissionsData {
+  id     Int    @id @default(autoincrement())
+  year   Int
+  period String
+  unitId Int
+  unit   Unit   @relation(fields: [unitId], references: [id])
+
+  emissionSource      String?
+  gasType             String?
+  quantityReplaced    Float?
+  unitMeasure         String?
+  isCompanyControlled Boolean
+  comments            String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// 6. Fertilizers
+model FertilizersData {
+  id     Int    @id @default(autoincrement())
+  year   Int
+  period String
+  unitId Int
+  unit   Unit   @relation(fields: [unitId], references: [id])
+
+  fertilizerType      String?
+  quantityKg          Float?
+  unitMeasure         String?
+  percentNitrogen     Float?
+  percentCarbonate    Float?
+  isCompanyControlled Boolean
+  comments            String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// 7. Controlled Effluents
+model EffluentsControlledData {
+  id     Int    @id @default(autoincrement())
+  year   Int
+  period String
+  unitId Int
+  unit   Unit   @relation(fields: [unitId], references: [id])
+
+  treatmentOrDest String
+  treatmentType   String?
+  finalDestType   String?
+
+  qtyEffluentM3 Float
+  unitEffluent  String
+
+  qtyOrganic  Float
+  unitOrganic String
+
+  qtyNitrogen  Float
+  unitNitrogen String
+
+  organicRemovedSludge Float?
+  unitSludge           String?
+
+  comments String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// 8. Domestic Effluents
+model DomesticEffluentsData {
+  id     Int    @id @default(autoincrement())
+  year   Int
+  period String
+  unitId Int
+  unit   Unit   @relation(fields: [unitId], references: [id])
+
+  workerType      String
+  numWorkers      Int
+  avgWorkHours    Float
+  septicTankOwner String
+  comments        String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// 9. Land Use Change
+model LandUseChangeData {
+  id     Int    @id @default(autoincrement())
+  year   Int
+  period String
+  unitId Int
+  unit   Unit   @relation(fields: [unitId], references: [id])
+
+  prevLandUse      String
+  biome            String?
+  phytophysiognomy String?
+  areaType         String?
+  areaHectares     Float
+  comments         String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// 10. Solid Waste
+model SolidWasteData {
+  id     Int    @id @default(autoincrement())
+  year   Int
+  period String
+  unitId Int
+  unit   Unit   @relation(fields: [unitId], references: [id])
+
+  finalDestination   String?
+  wasteType          String?
+  quantityGenerated  Float?
+  unitMeasure        String?
+  cityStateDest      String?
+  locationControlled String?
+
+  responsible      String?
+  deptResponsible  String?
+  email            String?
+  phone            String?
+  internalTracking String?
+  comments         String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// 11. Electricity Purchase
+model ElectricityPurchaseData {
+  id     Int    @id @default(autoincrement())
+  year   Int
+  period String
+  unitId Int
+  unit   Unit   @relation(fields: [unitId], references: [id])
+
+  energySource  String?
+  specifySource String?
+  consumption   Float?
+  measureUnit   String?
+
+  responsible     String?
+  deptResponsible String?
+  email           String?
+  phone           String?
+  traceability    String?
+  comments        String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// 12. Purchased Goods & Services
+model PurchasedGoodsServicesData {
+  id     Int    @id @default(autoincrement())
+  year   Int
+  period String
+  unitId Int
+  unit   Unit   @relation(fields: [unitId], references: [id])
+
+  itemDescription  String?
+  itemType         String?
+  quantity         Float?
+  unitMeasure      String?
+  acquisitionValue Float?
+  thirdPartyGoods  String?
+
+  responsible     String?
+  deptResponsible String?
+  email           String?
+  phone           String?
+  comments        String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// 13. Capital Goods
+model CapitalGoodsData {
+  id     Int    @id @default(autoincrement())
+  year   Int
+  period String
+  unitId Int
+  unit   Unit   @relation(fields: [unitId], references: [id])
+
+  capitalGood      String?
+  quantity         Int?
+  unitMeasure      String?
+  acquisitionValue Float?
+
+  responsible     String?
+  deptResponsible String?
+  email           String?
+  phone           String?
+  comments        String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// 14. Upstream Transport
+model UpstreamTransportData {
+  id     Int    @id @default(autoincrement())
+  year   Int
+  period String
+  unitId Int
+  unit   Unit   @relation(fields: [unitId], references: [id])
+
+  transportedItem String?
+  transportMode   String?
+  reportType      String?
+  fuel            String?
+  consumption     Float?
+  consumptionUnit String?
+  vehicleClass    String?
+  distance        Float?
+  distanceUnit    String?
+  transportedLoad Float?
+  tripCount       Int?
+  origin          String?
+  destination     String?
+
+  responsible     String?
+  deptResponsible String?
+  email           String?
+  phone           String?
+  comments        String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// 15. Business Travel (Land)
+model BusinessTravelLandData {
+  id     Int    @id @default(autoincrement())
+  year   Int
+  period String
+  unitId Int
+  unit   Unit   @relation(fields: [unitId], references: [id])
+
+  tripDescription String?
+  travelMode      String?
+  reportType      String?
+  fuel            String?
+  consumption     Float?
+  consumptionUnit String?
+  distance        Float?
+  distanceUnit    String?
+  kmReimbursed    String?
+
+  responsible     String?
+  deptResponsible String?
+  email           String?
+  phone           String?
+  comments        String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// 16. Downstream Transport
+model DownstreamTransportData {
+  id     Int    @id @default(autoincrement())
+  year   Int
+  period String
+  unitId Int
+  unit   Unit   @relation(fields: [unitId], references: [id])
+
+  transportedItem String?
+  transportMode   String?
+  reportType      String?
+  fuel            String?
+  consumption     Float?
+  consumptionUnit String?
+  vehicleClass    String?
+  distance        Float?
+  distanceUnit    String?
+  transportedLoad Float?
+  tripCount       Int?
+  origin          String?
+  destination     String?
+
+  responsible     String?
+  deptResponsible String?
+  email           String?
+  phone           String?
+  comments        String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// 17. Waste Transport
+model WasteTransportData {
+  id     Int    @id @default(autoincrement())
+  year   Int
+  period String
+  unitId Int
+  unit   Unit   @relation(fields: [unitId], references: [id])
+
+  transportedItem String?
+  reportType      String?
+  fuel            String?
+  consumption     Float?
+  consumptionUnit String?
+  vehicleClass    String?
+  distance        Float?
+  distanceUnit    String?
+  transportedLoad Float?
+  tripCount       Int?
+
+  responsible     String?
+  deptResponsible String?
+  email           String?
+  phone           String?
+  comments        String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// 18. Home Office
+model HomeOfficeData {
+  id     Int    @id @default(autoincrement())
+  year   Int
+  period String
+  unitId Int
+  unit   Unit   @relation(fields: [unitId], references: [id])
+
+  workRegime   String?
+  numEmployees Int?
+
+  responsible     String?
+  deptResponsible String?
+  email           String?
+  phone           String?
+  comments        String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// 19. Air Travel
+model AirTravelData {
+  id     Int    @id @default(autoincrement())
+  year   Int
+  period String
+  unitId Int
+  unit   Unit   @relation(fields: [unitId], references: [id])
+
+  tripDescription   String?
+  airportCodeOrigin String?
+  airportCodeDest   String?
+  tripCount         Int?
+
+  responsible     String?
+  deptResponsible String?
+  email           String?
+  phone           String?
+  comments        String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// 20. Employee Commuting
+model EmployeeCommutingData {
+  id     Int    @id @default(autoincrement())
+  year   Int
+  period String
+  unitId Int
+  unit   Unit   @relation(fields: [unitId], references: [id])
+
+  identifier      String?
+  methodUsed      String?
+  reportType      String?
+  fuelType        String?
+  consumption     Float?
+  consumptionUnit String?
+  distanceKm      Float?
+  employeeAddress String?
+  workAddress     String?
+  daysCommuted    Int?
+
+  responsible     String?
+  deptResponsible String?
+  email           String?
+  phone           String?
+  comments        String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// 21. Energy Generation
+model EnergyGenerationData {
+  id     Int    @id @default(autoincrement())
+  year   Int
+  period String
+  unitId Int
+  unit   Unit   @relation(fields: [unitId], references: [id])
+
+  sourceDescription String?
+  generationSource  String?
+  totalGeneration   Float?
+  measureUnit       String?
+
+  responsible     String?
+  deptResponsible String?
+  email           String?
+  phone           String?
+  comments        String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// 22. Planted Forest
+model PlantedForestData {
+  id     Int    @id @default(autoincrement())
+  year   Int
+  period String
+  unitId Int
+  unit   Unit   @relation(fields: [unitId], references: [id])
+
+  areaId      String?
+  speciesName String?
+
+  areaPrePreLast       Float?
+  agePrePreLast        Int?
+  agePreLast           Int?
+  areaHarvestedPreLast Float?
+  currentArea          Float?
+
+  responsible     String?
+  deptResponsible String?
+  email           String?
+  phone           String?
+  comments        String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// 23. Conservation Area
+model ConservationAreaData {
+  id     Int    @id @default(autoincrement())
+  year   Int
+  period String
+  unitId Int
+  unit   Unit   @relation(fields: [unitId], references: [id])
+
+  description      String?
+  biome            String?
+  phytophysiognomy String?
+
+  plantedArea    String?
+  plantingStatus String?
+  areaStartYear  Float?
+  areaEndYear    Float?
+  changeReason   String?
+
+  responsible     String?
+  deptResponsible String?
+  email           String?
+  phone           String?
+  comments        String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
