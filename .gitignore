@@ -10,3 +10,28 @@ node_modules/
 # Misc
 .DS_Store
 npm-debug.log*
+
+# Frontend
+/frontend-react/logs
+/frontend-react/*.log
+/frontend-react/npm-debug.log*
+/frontend-react/yarn-debug.log*
+/frontend-react/yarn-error.log*
+/frontend-react/pnpm-debug.log*
+/frontend-react/lerna-debug.log*
+
+/frontend-react/node_modules
+/frontend-react/dist
+/frontend-react/dist-ssr
+/frontend-react/*.local
+
+# Editor directories and files
+/frontend-react/.vscode/*
+/frontend-react/!.vscode/extensions.json
+/frontend-react/.idea
+/frontend-react/.DS_Store
+/frontend-react/*.suo
+/frontend-react/*.ntvs*
+/frontend-react/*.njsproj
+/frontend-react/*.sln
+/frontend-react/*.sw?
