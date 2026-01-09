@@ -6,7 +6,7 @@ export const createUser = async (req: Request, res: Response) => {
     try {
         const validatedData = createUserSchema.parse(req.body);
 
-        const newUser = await userService.registerUser(validatedData, req.user);
+        const newUser = await userService.registerUser(validatedData, req.user!);
 
         const { password, ...safeUser } = newUser;
         res.status(201).json(safeUser);
@@ -18,3 +18,16 @@ export const createUser = async (req: Request, res: Response) => {
         res.status(400).json({ error: error.message });
     }
 };
+
+export const getLoggedUser = async (req: Request, res: Response) => {
+    try {
+        const { userId } = req.params
+
+        const loggedUser = await userService.fetchLoggedUser(userId);
+
+        const { password, ...safeUser } = loggedUser;
+        res.status(200).json(safeUser);
+    } catch (error: any) {
+        res.status(400).json({ error: error.message });
+    }
+}
