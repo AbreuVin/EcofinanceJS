@@ -1,10 +1,10 @@
 import { CardDescription, CardHeader, CardTitle } from "@/components/ui/card.tsx";
 
 function LoginCardHeader() {
-    return <CardHeader>
-        <CardTitle>Login to your account</CardTitle>
+    return <CardHeader className="flex flex-col items-start">
+        <CardTitle>Entre em sua conta</CardTitle>
         <CardDescription>
-            Enter your email below to login to your account
+            Insira seu e-mail para entrar
         </CardDescription>
     </CardHeader>;
 }

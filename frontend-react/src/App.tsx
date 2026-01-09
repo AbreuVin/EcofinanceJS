@@ -1,13 +1,25 @@
 import { Route } from "wouter";
-import LoginPage from "@/shared/pages/LoginPage.tsx";
+import {
+  QueryClient,
+  QueryClientProvider,
+} from "@tanstack/react-query"
+import LoginPage from "@/shared/pages/LoginPage";
+import HomePage from "@/shared/pages/HomePage";
+
+const queryClient = new QueryClient()
 
 function App() {
     return (
-        <main className="flex h-screen w-screen items-center justify-center bg-gray-100">
-            <Route path="/">
-                <LoginPage />
-            </Route>
-        </main>
+        <div className="h-screen w-screen">
+            <QueryClientProvider client={queryClient}>
+                <Route path="/">
+                    <LoginPage/>
+                </Route>
+                <Route path="/home">
+                    <HomePage/>
+                </Route>
+            </QueryClientProvider>
+        </div>
     )
 }
 

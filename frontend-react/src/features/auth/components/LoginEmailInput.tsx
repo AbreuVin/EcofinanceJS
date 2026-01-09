@@ -3,11 +3,11 @@ import { Input } from "@/components/ui/input.tsx";
 
 function LoginEmailInput() {
     return <div className="grid gap-2">
-        <Label htmlFor="email">Email</Label>
+        <Label htmlFor="email">E-mail</Label>
         <Input
             id="email"
             type="email"
-            placeholder="m@example.com"
+            placeholder="joao@ecofinance.com.br"
             required
         />
     </div>;
