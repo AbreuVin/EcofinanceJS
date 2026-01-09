@@ -5,6 +5,7 @@ import * as dotenv from 'dotenv';
 import authRoutes from './routes/authRoutes';
 import userRoutes from './routes/userRoutes';
 import esgRoutes from './routes/esgRoutes';
+import permissionRoutes from "./routes/permissionRoutes";
 
 dotenv.config();
 
@@ -17,6 +18,7 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/esg', esgRoutes);
+app.use('/api/permissions', permissionRoutes);
 
 app.get('/health', (req, res) => res.json({ status: 'OK' }));
 
