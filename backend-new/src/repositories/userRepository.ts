@@ -21,3 +21,10 @@ export const findByEmail = async (email: string) => {
         include: { company: true }
     })
 }
+
+export const findById = async (id: string) => {
+    return prisma.user.findUnique({
+        where: { id },
+        include: { company: true }
+    })
+}
