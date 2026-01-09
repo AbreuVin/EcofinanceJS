@@ -1,9 +1,11 @@
 # Dependencies
 node_modules/
 /backend/node_modules/
+/backend-new/node_modules/
 
 # Database file
 /backend/ecofinance.db
+/backend-new/dev.db
 
 # Misc
 .DS_Store

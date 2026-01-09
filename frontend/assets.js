@@ -123,7 +123,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 responsible_contact_id: { label: "Responsável pela Informação", type: "select", isContact: true }
             }
         },
-        // --- SPRINT 19: Floresta Plantada ---
         planted_forest: {
             displayName: "Área de Floresta Plantada",
             fields: {
@@ -132,11 +131,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 responsible_contact_id: { label: "Responsável pela Informação", type: "select", isContact: true }
             }
         },
-        // --- SPRINT 21: Área de Conservação (SEM DESCRIÇÃO MANUAL) ---
         conservation_area: {
             displayName: "Área de Conservação",
             fields: {
-                // Bioma agora atua como "Descrição" na lista
                 bioma: { label: "Bioma (Descrição)", type: "select" },
                 fitofisionomia: { label: "Fitofisionomia", type: "select" }, 
                 area_plantada: { label: "Área de conservação plantada?", type: "select" },
@@ -216,11 +213,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 unidade_componente_organico: { label: "Unidade Padrão (Componente Orgânico)", type: "select" }
             }
         },
-        // --- ATUALIZADO AQUI (Efluentes Domésticos) ---
         efluentes_domesticos: {
             displayName: "Efluentes Domésticos",
             fields: {
-                tipo_trabalhador: { label: "Tipo de Trabalhador (Descrição)", type: "select", options: ["Interno", "Terceiro"] },
+                // --- MUDANÇA: 'select' -> 'radio-group' ---
+                tipo_trabalhador: { label: "Tipo de Trabalhador (Descrição)", type: "radio-group", options: ["Interno", "Terceiro"] },
                 fossa_septica_propriedade: { label: "Fossa séptica na propriedade da empresa?", type: "select", options: ["Sim", "Não"] },
                 responsible_contact_id: { label: "Responsável pela Informação", type: "select", isContact: true }
             }
@@ -311,8 +308,6 @@ document.addEventListener('DOMContentLoaded', () => {
         assetsThead.innerHTML = ''; 
         const headerRow = document.createElement('tr'); 
         
-        // --- Lista de Schemas que usam Descrição Customizada (ATUALIZADA) ---
-        // Adicionado 'efluentes_domesticos'
         const usesCustomDescription = ['solid_waste', 'electricity_purchase', 'downstream_transport', 'waste_transport', 'home_office', 'air_travel', 'employee_commuting', 'energy_generation', 'planted_forest', 'conservation_area', 'efluentes_controlados', 'efluentes_domesticos'].includes(currentSourceType);
         const mainDescriptionKey = usesCustomDescription ? Object.keys(schema.fields)[0] : 'description';
         const mainDescriptionLabel = usesCustomDescription ? schema.fields[mainDescriptionKey].label : 'Descrição';
@@ -337,7 +332,6 @@ document.addEventListener('DOMContentLoaded', () => {
             typologies.forEach(typo => { 
                 const tr = document.createElement('tr'); 
                 
-                // --- Lista de Schemas que usam Descrição Customizada (ATUALIZADA) ---
                 const usesCustomDescription = ['solid_waste', 'electricity_purchase', 'downstream_transport', 'waste_transport', 'home_office', 'air_travel', 'employee_commuting', 'energy_generation', 'planted_forest', 'conservation_area', 'efluentes_controlados', 'efluentes_domesticos'].includes(currentSourceType);
                 const mainDescriptionKey = usesCustomDescription ? Object.keys(assetSchemas[currentSourceType].fields)[0] : 'description';
 
@@ -345,7 +339,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     ? (typo.asset_fields[mainDescriptionKey] || typo.description) 
                     : typo.description;
                 
-                // Lógica de limpeza de dados para exibição
                 const displayFields = { ...typo.asset_fields };
                 if (currentSourceType === 'combustao_movel') {
                     const tipoEntrada = displayFields.tipo_entrada;
@@ -358,7 +351,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else if (currentSourceType === 'business_travel_land') {
                      const tipoReporte = displayFields.tipo_reporte;
                      if (tipoReporte === 'Consumo') {
-                         // modal e reembolso são globais
+                         
                      } else if (tipoReporte === 'Distância') {
                          displayFields.combustivel = '';
                          displayFields.unidade_consumo = '';
@@ -375,7 +368,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else if (currentSourceType === 'employee_commuting') {
                      const tipoReporte = displayFields.tipo_reporte;
                      if (tipoReporte === 'Consumo') {
-                         // Mantém combustível
+                         
                      } else if (tipoReporte === 'Distância') {
                          displayFields.tipo_combustivel = '';
                          displayFields.unidade_consumo = '';
@@ -426,17 +419,15 @@ document.addEventListener('DOMContentLoaded', () => {
              }
         });
 
-        // --- VALIDAÇÃO ESPECÍFICA PARA FERTILIZANTES ---
         if (currentSourceType === 'fertilizantes') {
             const percN = parseFloat(asset_fields.percentual_nitrogenio) || 0;
             const percC = parseFloat(asset_fields.percentual_carbonato) || 0;
             if ((percN + percC) > 100) {
                 alert(`A soma das porcentagens (${(percN + percC).toFixed(2)}%) excede 100%. Por favor, corrija os valores.`);
-                return; // Interrompe o salvamento
+                return; 
             }
         }
 
-        // --- Lista de Schemas que usam Descrição Customizada (ATUALIZADA) ---
         const usesCustomDescription = ['solid_waste', 'electricity_purchase', 'downstream_transport', 'waste_transport', 'home_office', 'air_travel', 'employee_commuting', 'energy_generation', 'planted_forest', 'conservation_area', 'efluentes_controlados', 'efluentes_domesticos'].includes(currentSourceType);
         const mainDescriptionKey = usesCustomDescription ? Object.keys(assetSchemas[currentSourceType].fields)[0] : null;
 
@@ -489,7 +480,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (typoToEdit) {
                 assetIdInput.value = typoToEdit.id;
                 
-                // --- Lista de Schemas que usam Descrição Customizada (ATUALIZADA) ---
                 const usesCustomDescription = ['solid_waste', 'electricity_purchase', 'downstream_transport', 'waste_transport', 'home_office', 'air_travel', 'employee_commuting', 'energy_generation', 'planted_forest', 'conservation_area', 'efluentes_controlados', 'efluentes_domesticos'].includes(currentSourceType);
                 if (!usesCustomDescription) {
                     document.getElementById('asset-description').value = typoToEdit.description;
@@ -508,13 +498,21 @@ document.addEventListener('DOMContentLoaded', () => {
                     } else if (typoToEdit.asset_fields[key] !== undefined) {
                         input.value = typoToEdit.asset_fields[key];
                         
-                        // Lógica especial para checkbox-group
                         if (assetSchemas[currentSourceType].fields[key].type === 'checkbox-group') {
                             const selectedValues = (typoToEdit.asset_fields[key] || '').split(', ');
                             const container = input.closest('.form-group');
                             container.querySelectorAll('input[type="checkbox"]').forEach(cb => {
                                 cb.checked = selectedValues.includes(cb.value);
                             });
+                        }
+                        // --- NOVA LÓGICA PARA RADIO GROUP NO EDIT ---
+                        else if (assetSchemas[currentSourceType].fields[key].type === 'radio-group') {
+                            const selectedValue = typoToEdit.asset_fields[key];
+                            const container = input.closest('.form-group');
+                            const radioToSelect = container.querySelector(`input[type="radio"][value="${selectedValue}"]`);
+                            if (radioToSelect) {
+                                radioToSelect.checked = true;
+                            }
                         }
                     }
                         
@@ -550,7 +548,6 @@ document.addEventListener('DOMContentLoaded', () => {
         cancelBtn.style.display = 'none';
 
         const descriptionGroup = document.getElementById('asset-description').parentElement;
-        // --- Lista de Schemas que usam Descrição Customizada (ATUALIZADA) ---
         const usesCustomDescription = ['solid_waste', 'electricity_purchase', 'downstream_transport', 'waste_transport', 'home_office', 'air_travel', 'employee_commuting', 'energy_generation', 'planted_forest', 'conservation_area', 'efluentes_controlados', 'efluentes_domesticos'].includes(currentSourceType);
 
         if (usesCustomDescription) {
@@ -567,8 +564,8 @@ document.addEventListener('DOMContentLoaded', () => {
             if (trigger) trigger.dispatchEvent(new Event('change'));
         });
         
-        // Resetar checkboxes
         form.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+        form.querySelectorAll('input[type="radio"]').forEach(radio => radio.checked = false);
     }
 
     async function buildDynamicForm(schema) { 
@@ -578,7 +575,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const fieldElements = {};
         const triggerFields = new Set();
         const autoFillTriggers = new Set();
-        // --- Lista de Schemas que usam Descrição Customizada (ATUALIZADA) ---
         const usesCustomDescription = ['solid_waste', 'electricity_purchase', 'downstream_transport', 'waste_transport', 'home_office', 'air_travel', 'employee_commuting', 'energy_generation', 'planted_forest', 'conservation_area', 'efluentes_controlados', 'efluentes_domesticos'].includes(currentSourceType);
         
         const firstRowContainer = document.querySelector('#asset-form .form-row');
@@ -670,6 +666,52 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 wrapper.appendChild(label);
                 wrapper.appendChild(checkboxContainer);
+            
+            // --- NOVA LÓGICA: RADIO GROUP ---
+            } else if (field.type === 'radio-group') {
+                input = document.createElement('input');
+                input.type = 'hidden'; // Armazena o valor único selecionado
+                
+                const radioContainer = document.createElement('div');
+                radioContainer.style.display = 'flex';
+                radioContainer.style.flexWrap = 'wrap';
+                radioContainer.style.gap = '15px';
+                radioContainer.style.marginTop = '10px';
+
+                field.options.forEach(opt => {
+                    const rdWrapper = document.createElement('div');
+                    rdWrapper.style.display = 'flex';
+                    rdWrapper.style.alignItems = 'center';
+                    
+                    const rd = document.createElement('input');
+                    rd.type = 'radio';
+                    rd.name = `radio-group-${key}`; // Garante exclusividade pelo 'name'
+                    rd.value = opt;
+                    rd.id = `rd-${key}-${opt}`;
+                    rd.style.marginRight = '5px';
+                    rd.style.marginTop = '0';
+                    
+                    const rdLabel = document.createElement('label');
+                    rdLabel.htmlFor = `rd-${key}-${opt}`;
+                    rdLabel.textContent = opt;
+                    rdLabel.style.fontWeight = 'normal';
+                    rdLabel.style.marginBottom = '0';
+                    rdLabel.style.cursor = 'pointer';
+
+                    rd.addEventListener('change', () => {
+                        if (rd.checked) {
+                            input.value = rd.value;
+                        }
+                    });
+
+                    rdWrapper.appendChild(rd);
+                    rdWrapper.appendChild(rdLabel);
+                    radioContainer.appendChild(rdWrapper);
+                });
+                
+                wrapper.appendChild(label);
+                wrapper.appendChild(radioContainer);
+
             } else { 
                 input = document.createElement('input'); 
                 input.type = field.type || 'text';
@@ -678,7 +720,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             input.id = `field-${key}`; 
             input.dataset.key = key; 
-            input.required = !field.showIf && field.type !== 'checkbox-group'; 
+            input.required = !field.showIf && field.type !== 'checkbox-group' && field.type !== 'radio-group'; 
             if (field.disabled) input.disabled = true;
 
             if (field.type === 'select') {
@@ -706,11 +748,12 @@ document.addEventListener('DOMContentLoaded', () => {
             
             fieldElements[key] = { row: wrapper, input: input, config: field };
 
-            if (field.type !== 'checkbox-group') {
+            // O input hidden precisa ser anexado ao wrapper se for radio/checkbox, senão o label e input normais
+            if (field.type !== 'checkbox-group' && field.type !== 'radio-group') {
                 wrapper.appendChild(label); 
                 wrapper.appendChild(input); 
             } else {
-                wrapper.appendChild(input); 
+                wrapper.appendChild(input); // Anexa o hidden input
             }
 
             const mainDescriptionKey = usesCustomDescription ? Object.keys(schema.fields)[0] : null;
@@ -719,7 +762,29 @@ document.addEventListener('DOMContentLoaded', () => {
                 firstRowContainer.insertBefore(wrapper, descriptionFieldGroup);
             } else {
                 let targetRow = Array.from(specificFieldsContainer.querySelectorAll('.form-row.dynamic-field')).pop();
-                if (!targetRow || targetRow.children.length >= 2) {
+                
+                let addToSameRow = false;
+                if (targetRow && targetRow.children.length > 0) {
+                    const lastInput = targetRow.lastElementChild.querySelector('input, select, textarea');
+                    const lastKey = lastInput ? lastInput.dataset.key : null;
+                    const lastFieldConfig = schema.fields[lastKey];
+                    
+                    if (lastFieldConfig && lastFieldConfig.showIf && !field.showIf) {
+                        addToSameRow = true;
+                    }
+
+                    if (field.showIf && lastFieldConfig && lastFieldConfig.showIf) {
+                        if (field.showIf.field === lastFieldConfig.showIf.field && field.showIf.value !== lastFieldConfig.showIf.value) {
+                            addToSameRow = true;
+                        }
+                    }
+
+                    if (field.showIf && (!lastFieldConfig || !lastFieldConfig.showIf)) {
+                        addToSameRow = false;
+                    }
+                }
+
+                if (!targetRow || (targetRow.children.length >= 2 && !addToSameRow)) {
                     targetRow = document.createElement('div');
                     targetRow.className = 'form-row dynamic-field';
                     specificFieldsContainer.appendChild(targetRow);
@@ -733,7 +798,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 input.addEventListener('change', () => {
                     const selectedValue = input.value;
                     
-                    // Lógica ShowIf
                     for (const fieldKey in fieldElements) {
                         const element = fieldElements[fieldKey];
                         const showIfConfig = element.config.showIf;
@@ -747,7 +811,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
                     }
 
-                    // Lógica AutoFill
                     if (autoFillTriggers.has(key)) {
                         const rule = validationSchema.autoFillMap[key];
                         const targetValue = rule.map[selectedValue];
@@ -759,7 +822,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
                     }
 
-                    // Lógica de Dependência (Dropdown Dinâmico)
                     if (dependencyConfig && dependencyConfig.triggerField === key) {
                         const targetFieldKey = dependencyConfig.targetField;
                         const targetElement = fieldElements[targetFieldKey];
