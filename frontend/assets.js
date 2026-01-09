@@ -216,7 +216,8 @@ document.addEventListener('DOMContentLoaded', () => {
         efluentes_domesticos: {
             displayName: "Efluentes Domésticos",
             fields: {
-                tipo_trabalhador: { label: "Tipo de Trabalhador (Descrição)", type: "select", options: ["Interno", "Terceiro"] },
+                // --- MUDANÇA: 'select' -> 'radio-group' ---
+                tipo_trabalhador: { label: "Tipo de Trabalhador (Descrição)", type: "radio-group", options: ["Interno", "Terceiro"] },
                 fossa_septica_propriedade: { label: "Fossa séptica na propriedade da empresa?", type: "select", options: ["Sim", "Não"] },
                 responsible_contact_id: { label: "Responsável pela Informação", type: "select", isContact: true }
             }
@@ -504,6 +505,15 @@ document.addEventListener('DOMContentLoaded', () => {
                                 cb.checked = selectedValues.includes(cb.value);
                             });
                         }
+                        // --- NOVA LÓGICA PARA RADIO GROUP NO EDIT ---
+                        else if (assetSchemas[currentSourceType].fields[key].type === 'radio-group') {
+                            const selectedValue = typoToEdit.asset_fields[key];
+                            const container = input.closest('.form-group');
+                            const radioToSelect = container.querySelector(`input[type="radio"][value="${selectedValue}"]`);
+                            if (radioToSelect) {
+                                radioToSelect.checked = true;
+                            }
+                        }
                     }
                         
                     const conditionalTriggers = ['tipo_entrada', 'tratamento_ou_destino', 'uso_solo_anterior', 'destinacao_final', 'fonte_energia', 'tipo_item', 'tipo_reporte', 'combustivel', 'tipo_combustivel', 'area_plantada', 'bioma', 'tipo_lubrificante'];
@@ -555,6 +565,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         
         form.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
+        form.querySelectorAll('input[type="radio"]').forEach(radio => radio.checked = false);
     }
 
     async function buildDynamicForm(schema) { 
@@ -655,6 +666,52 @@ document.addEventListener('DOMContentLoaded', () => {
                 
                 wrapper.appendChild(label);
                 wrapper.appendChild(checkboxContainer);
+            
+            // --- NOVA LÓGICA: RADIO GROUP ---
+            } else if (field.type === 'radio-group') {
+                input = document.createElement('input');
+                input.type = 'hidden'; // Armazena o valor único selecionado
+                
+                const radioContainer = document.createElement('div');
+                radioContainer.style.display = 'flex';
+                radioContainer.style.flexWrap = 'wrap';
+                radioContainer.style.gap = '15px';
+                radioContainer.style.marginTop = '10px';
+
+                field.options.forEach(opt => {
+                    const rdWrapper = document.createElement('div');
+                    rdWrapper.style.display = 'flex';
+                    rdWrapper.style.alignItems = 'center';
+                    
+                    const rd = document.createElement('input');
+                    rd.type = 'radio';
+                    rd.name = `radio-group-${key}`; // Garante exclusividade pelo 'name'
+                    rd.value = opt;
+                    rd.id = `rd-${key}-${opt}`;
+                    rd.style.marginRight = '5px';
+                    rd.style.marginTop = '0';
+                    
+                    const rdLabel = document.createElement('label');
+                    rdLabel.htmlFor = `rd-${key}-${opt}`;
+                    rdLabel.textContent = opt;
+                    rdLabel.style.fontWeight = 'normal';
+                    rdLabel.style.marginBottom = '0';
+                    rdLabel.style.cursor = 'pointer';
+
+                    rd.addEventListener('change', () => {
+                        if (rd.checked) {
+                            input.value = rd.value;
+                        }
+                    });
+
+                    rdWrapper.appendChild(rd);
+                    rdWrapper.appendChild(rdLabel);
+                    radioContainer.appendChild(rdWrapper);
+                });
+                
+                wrapper.appendChild(label);
+                wrapper.appendChild(radioContainer);
+
             } else { 
                 input = document.createElement('input'); 
                 input.type = field.type || 'text';
@@ -663,7 +720,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             input.id = `field-${key}`; 
             input.dataset.key = key; 
-            input.required = !field.showIf && field.type !== 'checkbox-group'; 
+            input.required = !field.showIf && field.type !== 'checkbox-group' && field.type !== 'radio-group'; 
             if (field.disabled) input.disabled = true;
 
             if (field.type === 'select') {
@@ -691,11 +748,12 @@ document.addEventListener('DOMContentLoaded', () => {
             
             fieldElements[key] = { row: wrapper, input: input, config: field };
 
-            if (field.type !== 'checkbox-group') {
+            // O input hidden precisa ser anexado ao wrapper se for radio/checkbox, senão o label e input normais
+            if (field.type !== 'checkbox-group' && field.type !== 'radio-group') {
                 wrapper.appendChild(label); 
                 wrapper.appendChild(input); 
             } else {
-                wrapper.appendChild(input); 
+                wrapper.appendChild(input); // Anexa o hidden input
             }
 
             const mainDescriptionKey = usesCustomDescription ? Object.keys(schema.fields)[0] : null;
@@ -711,14 +769,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     const lastKey = lastInput ? lastInput.dataset.key : null;
                     const lastFieldConfig = schema.fields[lastKey];
                     
-                    // --- CORREÇÃO DE UX: Agrupar campos mutuamente exclusivos ---
-                    // Se o campo atual tem showIf e o anterior também tem, e dependem do mesmo campo pai,
-                    // mas com valores diferentes, eles nunca aparecerão juntos.
-                    // Portanto, permitimos adicionar mais um item na mesma linha para preencher o buraco visual.
+                    if (lastFieldConfig && lastFieldConfig.showIf && !field.showIf) {
+                        addToSameRow = true;
+                    }
+
                     if (field.showIf && lastFieldConfig && lastFieldConfig.showIf) {
                         if (field.showIf.field === lastFieldConfig.showIf.field && field.showIf.value !== lastFieldConfig.showIf.value) {
                             addToSameRow = true;
                         }
+                    }
+
+                    if (field.showIf && (!lastFieldConfig || !lastFieldConfig.showIf)) {
+                        addToSameRow = false;
                     }
                 }
 

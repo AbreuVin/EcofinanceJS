@@ -21,6 +21,17 @@ document.addEventListener('DOMContentLoaded', () => {
     const INTEGER_FIELDS = [ 'quantidade_vendida', 'num_trabalhadores', 'numero_viagens', 'num_funcionarios', 'dias_deslocados', 'idade_antepenultimo', 'idade_penultimo' ];
     const DECIMAL_FIELDS = [ 'consumo', 'distancia_percorrida', 'quantidade_reposta', 'quantidade_kg', 'percentual_nitrogenio', 'percentual_carbonato', 'area_hectare', 'qtd_efluente_liquido_m3', 'qtd_componente_organico', 'qtd_nitrogenio_mg_l', 'componente_organico_removido_lodo', 'carga_horaria_media', 'quantidade_gerado', 'quantidade', 'valor_aquisicao', 'distancia_trecho', 'carga_transportada', 'distancia_km', 'total_geracao', 'area_antepenultimo', 'area_colhida_penultimo', 'area_atual', 'area_inicio_ano', 'area_fim_ano' ];
 
+    // --- CORREÇÃO: CAMPOS TRAVADOS (Ignoram DB e usam apenas validators.js) ---
+    // Isso remove as opções "estranhas" que vêm do banco de dados para estes campos.
+    const LOCKED_FIELDS = [
+        'combustivel', 
+        'combustivel_estacionario', 
+        'tipo_combustivel', 
+        'tipo_gas',
+        'modal_transporte',
+        'classificacao_veiculo'
+    ];
+
     let currentSchema = null;
     let unitsList = [];
     let managedOptionsCache = {}; 
@@ -58,15 +69,21 @@ document.addEventListener('DOMContentLoaded', () => {
     async function fetchManagedOptions(schema) {
         managedOptionsCache = {};
         const optionKeysToFetch = new Set(); 
+        
         if (schema && schema.validOptions) {
             for (const key in schema.validOptions) {
+                // Sempre carrega a lista oficial do arquivo primeiro
                 managedOptionsCache[key] = schema.validOptions[key];
-                if (schema.validOptions[key].length > 2) {
+                
+                // --- MODIFICAÇÃO: Só busca no banco se o campo NÃO for travado ---
+                if (schema.validOptions[key].length > 2 && !LOCKED_FIELDS.includes(key)) {
                      optionKeysToFetch.add(key);
                 }
             }
         }
+        
         if (optionKeysToFetch.size === 0) return;
+        
         try {
             const fetchPromises = Array.from(optionKeysToFetch).map(key =>
                 fetch(`/api/options?field_key=${key}`)
@@ -123,7 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function checkAndLoadDraft() {
         const key = getDraftKey();
-        if (key) return; // (Nota: A lógica anterior tinha 'if (!key) return'. Corrigindo para consistência, mas aqui o fluxo original estava ok)
+        if (!key) return;
 
         const savedDraft = localStorage.getItem(key);
         if (savedDraft) {
@@ -188,6 +205,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const sourceType = tableSelector.value;
         const cleanedRow = { ...rowData }; 
 
+        // 1. Normalizações de Texto
         if (sourceType === 'emissoes_fugitivas') {
             const gasValue = cleanedRow['tipo_gas'];
             if (gasValue) {
@@ -200,6 +218,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
 
+        // 2. Limpezas Condicionais
         if (sourceType === 'electricity_purchase') {
             if (cleanedRow.fonte_energia === 'Sistema Interligado Nacional') {
                 cleanedRow.especificar_fonte = ''; 
@@ -256,6 +275,21 @@ document.addEventListener('DOMContentLoaded', () => {
         } else if (sourceType === 'conservation_area') {
             if (cleanedRow.area_plantada === 'Não') {
                 cleanedRow.plantio = ''; 
+            }
+        }
+
+        // 3. --- REFORÇO DE AUTO-FILL ---
+        // Garante que, mesmo que o Excel venha sem unidade, nós a recalculamos baseados no combustível.
+        if (currentSchema.autoFillMap) {
+            for (const triggerKey in currentSchema.autoFillMap) {
+                const rule = currentSchema.autoFillMap[triggerKey];
+                const triggerValue = cleanedRow[triggerKey];
+                
+                // Se temos um valor gatilho (ex: Gasolina), forçamos o valor alvo (ex: Litros)
+                // Isso sobrescreve qualquer valor vazio ou errado que tenha vindo no Excel para a coluna alvo.
+                if (triggerValue && rule.map[triggerValue]) {
+                    cleanedRow[rule.targetColumn] = rule.map[triggerValue];
+                }
             }
         }
         
@@ -436,6 +470,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 cell.style.backgroundColor = '#e9ecef';
                 cell.style.color = '#495057';
             }
+            // --- CORREÇÃO: Renderiza campo auto-preenchido como texto fixo, mesmo que não seja 'isAutoFilledUnit' tecnicamente pelo validador ---
+            // Se o campo for Unidade/Unidade Consumo e tiver valor (vindo do sanitize), deve aparecer fixo.
             else if (isAutoFilledUnit || (options && options.length === 1)) {
                 cell.textContent = (options && options.length === 1) ? options[0] : currentValue;
                 cell.setAttribute('contenteditable', 'false');
@@ -690,7 +726,7 @@ document.addEventListener('DOMContentLoaded', () => {
             feedbackDiv.textContent = 'Todos os dados são válidos! Você pode salvar.';
             feedbackDiv.style.color = 'green';
         } else if (!hasActiveRows && hasAnyRows) {
-            feedbackDiv.textContent = "Todos os dados exibidos já foram salvos ou estão travados.";
+            feedbackDiv.textContent = "Todos os dados exibidos já foram salvos.";
             feedbackDiv.style.color = 'green';
         } else {
             feedbackDiv.textContent = "";
