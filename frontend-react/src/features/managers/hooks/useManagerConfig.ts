@@ -1,6 +1,18 @@
 import { useMemo } from 'react';
 import type { User } from '@/types/User';
 
+const BR_STATES = [
+    { label: 'Acre', value: 'AC' }, { label: 'Alagoas', value: 'AL' }, { label: 'Amapá', value: 'AP' },
+    { label: 'Amazonas', value: 'AM' }, { label: 'Bahia', value: 'BA' }, { label: 'Ceará', value: 'CE' },
+    { label: 'Distrito Federal', value: 'DF' }, { label: 'Espírito Santo', value: 'ES' }, { label: 'Goiás', value: 'GO' },
+    { label: 'Maranhão', value: 'MA' }, { label: 'Mato Grosso', value: 'MT' }, { label: 'Mato Grosso do Sul', value: 'MS' },
+    { label: 'Minas Gerais', value: 'MG' }, { label: 'Pará', value: 'PA' }, { label: 'Paraíba', value: 'PB' },
+    { label: 'Paraná', value: 'PR' }, { label: 'Pernambuco', value: 'PE' }, { label: 'Piauí', value: 'PI' },
+    { label: 'Rio de Janeiro', value: 'RJ' }, { label: 'Rio Grande do Norte', value: 'RN' }, { label: 'Rio Grande do Sul', value: 'RS' },
+    { label: 'Rondônia', value: 'RO' }, { label: 'Roraima', value: 'RR' }, { label: 'Santa Catarina', value: 'SC' },
+    { label: 'São Paulo', value: 'SP' }, { label: 'Sergipe', value: 'SE' }, { label: 'Tocantins', value: 'TO' }
+];
+
 export type ManagerType = 'users' | 'units' | 'companies' | 'sources';
 
 export interface ColumnConfig {
@@ -12,8 +24,9 @@ export interface ColumnConfig {
 export interface FieldConfig {
     name: string;
     label: string;
-    type: 'text' | 'email' | 'select' | 'password' | 'number';
-    options?: { label: string; value: string | number }[];
+    type: 'text' | 'email' | 'select' | 'password' | 'number' | 'boolean';
+    options?: { label: string; value: string | number }[]; // Static options
+    dynamicOptions?: 'companies' | 'units'; // NEW: Dynamic Source
     required?: boolean;
 }
 
@@ -63,16 +76,23 @@ export const useManagerConfig = (type: ManagerType, user: User | null): ManagerV
                     title: 'Unidades',
                     description: 'Gerencie as unidades operacionais.',
                     isAllowed: true,
+                    // Task 2: Show Company in Table
                     columns: [
-                        { key: 'name', label: 'Nome', type: 'text' },
+                        { key: 'name', label: 'Nome da Unidade', type: 'text' },
+                        { key: 'company.name', label: 'Empresa', type: 'text' }, // <--- Deep Accessor
                         { key: 'city', label: 'Cidade', type: 'text' },
                         { key: 'state', label: 'Estado', type: 'text' },
+                        { key: 'numberOfWorkers', label: 'Colaboradores', type: 'text' },
                     ],
+                    // Task 1: Fields as per image (inferred)
                     fields: [
-                        { name: 'name', label: 'Nome', type: 'text', required: true },
+                        { name: 'name', label: 'Nome da Unidade', type: 'text', required: true },
+                        // Dynamic Select for Company
+                        { name: 'companyId', label: 'Empresa', type: 'select', dynamicOptions: 'companies', required: true },
                         { name: 'city', label: 'Cidade', type: 'text', required: true },
-                        { name: 'state', label: 'Estado', type: 'text', required: true },
-                        { name: 'numberOfWorkers', label: 'Nº Colaboradores', type: 'number', required: true }
+                        { name: 'state', label: 'Estado (UF)', type: 'select', options: BR_STATES, required: true },
+                        { name: 'country', label: 'País', type: 'text', required: true }, // Added Country
+                        { name: 'numberOfWorkers', label: 'Nº Colaboradores', type: 'number', required: true },
                     ]
                 };
 
