@@ -1,4 +1,5 @@
 import prisma from "./prisma";
+import { Prisma } from "../../generated/prisma";
 import { CreateUserDTO } from "../schemas/userSchema";
 
 export const create = async (userData: CreateUserDTO) => {
@@ -28,3 +29,16 @@ export const findById = async (id: string) => {
         include: { company: true }
     })
 }
+
+export const findUsers = () => prisma.user.findMany({
+    select: { id: true, name: true, email: true, role: true, unitId: true, companyId: true, createdAt: true }, // Exclude password
+    orderBy: { name: 'asc' }
+});
+
+export const updateUser = (id: string, data: Prisma.UserUpdateInput) => prisma.user.update({
+    where: { id },
+    data,
+    select: { id: true, name: true, email: true, role: true }
+});
+
+export const deleteUser = (id: string) => prisma.user.delete({ where: { id } });
