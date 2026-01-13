@@ -12,7 +12,7 @@ function LoginPasswordInput() {
                 Esqueceu sua senha?
             </a>
         </div>
-        <Input id="password" type="password" required/>
+        <Input id="password" type="password" name="password" required/>
     </div>;
 }
 

@@ -7,6 +7,7 @@ function LoginEmailInput() {
         <Input
             id="email"
             type="email"
+            name="email"
             placeholder="joao@ecofinance.com.br"
             required
         />
