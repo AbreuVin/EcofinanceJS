@@ -29,11 +29,11 @@ model User {
 
   // Multi-tenancy
   companyId String?
-  company   Company? @relation(fields: [companyId], references: [id])
+  company   Company? @relation(fields: [companyId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   // Unit Assignment: A user now "belongs" to a unit (optional for MASTER/ADMIN)
   unitId Int?
-  unit   Unit? @relation(fields: [unitId], references: [id])
+  unit   Unit? @relation(fields: [unitId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   // Hierarchy
   parentId String?
@@ -66,7 +66,7 @@ model Unit {
 
   // Multi-tenancy
   companyId String
-  company   Company @relation(fields: [companyId], references: [id])
+  company   Company @relation(fields: [companyId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   // Users belonging to this unit
   users User[]
@@ -103,7 +103,7 @@ model Unit {
 model AssetTypology {
   id                   Int     @id @default(autoincrement())
   unitId               Int
-  unit                 Unit    @relation(fields: [unitId], references: [id], onDelete: Cascade)
+  unit                 Unit    @relation(fields: [unitId], references: [id], onUpdate: Cascade, onDelete: Cascade)
   sourceType           String
   description          String
   assetFields          String // JSON string
@@ -128,7 +128,7 @@ model MobileCombustionData {
   year   Int
   period String
   unitId Int
-  unit   Unit   @relation(fields: [unitId], references: [id])
+  unit   Unit   @relation(fields: [unitId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   sourceDescription   String?
   isCompanyControlled Boolean
@@ -151,7 +151,7 @@ model StationaryCombustionData {
   year   Int
   period String
   unitId Int
-  unit   Unit   @relation(fields: [unitId], references: [id])
+  unit   Unit   @relation(fields: [unitId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   sourceDescription   String?
   fuelType            String?
@@ -169,7 +169,7 @@ model ProductionSalesData {
   year   Int
   period String
   unitId Int
-  unit   Unit   @relation(fields: [unitId], references: [id])
+  unit   Unit   @relation(fields: [unitId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   product      String
   quantitySold Int
@@ -186,7 +186,7 @@ model LubricantsIppuData {
   year   Int
   period String
   unitId Int
-  unit   Unit   @relation(fields: [unitId], references: [id])
+  unit   Unit   @relation(fields: [unitId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   emissionSource      String?
   lubricantType       String?
@@ -204,7 +204,7 @@ model FugitiveEmissionsData {
   year   Int
   period String
   unitId Int
-  unit   Unit   @relation(fields: [unitId], references: [id])
+  unit   Unit   @relation(fields: [unitId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   emissionSource      String?
   gasType             String?
@@ -223,7 +223,7 @@ model FertilizersData {
   year   Int
   period String
   unitId Int
-  unit   Unit   @relation(fields: [unitId], references: [id])
+  unit   Unit   @relation(fields: [unitId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   fertilizerType      String?
   quantityKg          Float?
@@ -243,7 +243,7 @@ model EffluentsControlledData {
   year   Int
   period String
   unitId Int
-  unit   Unit   @relation(fields: [unitId], references: [id])
+  unit   Unit   @relation(fields: [unitId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   treatmentOrDest String
   treatmentType   String?
@@ -273,7 +273,7 @@ model DomesticEffluentsData {
   year   Int
   period String
   unitId Int
-  unit   Unit   @relation(fields: [unitId], references: [id])
+  unit   Unit   @relation(fields: [unitId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   workerType      String
   numWorkers      Int
@@ -291,7 +291,7 @@ model LandUseChangeData {
   year   Int
   period String
   unitId Int
-  unit   Unit   @relation(fields: [unitId], references: [id])
+  unit   Unit   @relation(fields: [unitId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   prevLandUse      String
   biome            String?
@@ -310,7 +310,7 @@ model SolidWasteData {
   year   Int
   period String
   unitId Int
-  unit   Unit   @relation(fields: [unitId], references: [id])
+  unit   Unit   @relation(fields: [unitId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   finalDestination   String?
   wasteType          String?
@@ -336,7 +336,7 @@ model ElectricityPurchaseData {
   year   Int
   period String
   unitId Int
-  unit   Unit   @relation(fields: [unitId], references: [id])
+  unit   Unit   @relation(fields: [unitId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   energySource  String?
   specifySource String?
@@ -360,7 +360,7 @@ model PurchasedGoodsServicesData {
   year   Int
   period String
   unitId Int
-  unit   Unit   @relation(fields: [unitId], references: [id])
+  unit   Unit   @relation(fields: [unitId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   itemDescription  String?
   itemType         String?
@@ -385,7 +385,7 @@ model CapitalGoodsData {
   year   Int
   period String
   unitId Int
-  unit   Unit   @relation(fields: [unitId], references: [id])
+  unit   Unit   @relation(fields: [unitId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   capitalGood      String?
   quantity         Int?
@@ -408,7 +408,7 @@ model UpstreamTransportData {
   year   Int
   period String
   unitId Int
-  unit   Unit   @relation(fields: [unitId], references: [id])
+  unit   Unit   @relation(fields: [unitId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   transportedItem String?
   transportMode   String?
@@ -440,7 +440,7 @@ model BusinessTravelLandData {
   year   Int
   period String
   unitId Int
-  unit   Unit   @relation(fields: [unitId], references: [id])
+  unit   Unit   @relation(fields: [unitId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   tripDescription String?
   travelMode      String?
@@ -468,7 +468,7 @@ model DownstreamTransportData {
   year   Int
   period String
   unitId Int
-  unit   Unit   @relation(fields: [unitId], references: [id])
+  unit   Unit   @relation(fields: [unitId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   transportedItem String?
   transportMode   String?
@@ -500,7 +500,7 @@ model WasteTransportData {
   year   Int
   period String
   unitId Int
-  unit   Unit   @relation(fields: [unitId], references: [id])
+  unit   Unit   @relation(fields: [unitId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   transportedItem String?
   reportType      String?
@@ -529,7 +529,7 @@ model HomeOfficeData {
   year   Int
   period String
   unitId Int
-  unit   Unit   @relation(fields: [unitId], references: [id])
+  unit   Unit   @relation(fields: [unitId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   workRegime   String?
   numEmployees Int?
@@ -550,7 +550,7 @@ model AirTravelData {
   year   Int
   period String
   unitId Int
-  unit   Unit   @relation(fields: [unitId], references: [id])
+  unit   Unit   @relation(fields: [unitId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   tripDescription   String?
   airportCodeOrigin String?
@@ -573,7 +573,7 @@ model EmployeeCommutingData {
   year   Int
   period String
   unitId Int
-  unit   Unit   @relation(fields: [unitId], references: [id])
+  unit   Unit   @relation(fields: [unitId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   identifier      String?
   methodUsed      String?
@@ -602,7 +602,7 @@ model EnergyGenerationData {
   year   Int
   period String
   unitId Int
-  unit   Unit   @relation(fields: [unitId], references: [id])
+  unit   Unit   @relation(fields: [unitId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   sourceDescription String?
   generationSource  String?
@@ -625,7 +625,7 @@ model PlantedForestData {
   year   Int
   period String
   unitId Int
-  unit   Unit   @relation(fields: [unitId], references: [id])
+  unit   Unit   @relation(fields: [unitId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   areaId      String?
   speciesName String?
@@ -652,7 +652,7 @@ model ConservationAreaData {
   year   Int
   period String
   unitId Int
-  unit   Unit   @relation(fields: [unitId], references: [id])
+  unit   Unit   @relation(fields: [unitId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   description      String?
   biome            String?

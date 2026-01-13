@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import * as userService from '../services/userService';
 import { createUserSchema } from "../schemas/userSchema";
+import { handle } from "./adminController";
 
 export const createUser = async (req: Request, res: Response) => {
     try {
@@ -31,3 +32,7 @@ export const getLoggedUser = async (req: Request, res: Response) => {
         res.status(400).json({ error: error.message });
     }
 }
+
+export const getUsers = handle(() => userService.getUsers());
+export const updateUser = handle((req: Request) => userService.updateUser(req.params.id, req.body));
+export const deleteUser = handle((req: Request) => userService.deleteUser(req.params.id));

@@ -1,6 +1,9 @@
 import { NextFunction, Request, Response } from 'express';
 import * as jwt from 'jsonwebtoken';
+import * as dotenv from 'dotenv';
 import { AppJwtPayload } from "../types/auth";
+
+dotenv.config();
 
 declare global {
     namespace Express {
