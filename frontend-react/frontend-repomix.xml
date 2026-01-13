@@ -52,9 +52,11 @@ src/components/ui/avatar.tsx
 src/components/ui/badge.tsx
 src/components/ui/button.tsx
 src/components/ui/card.tsx
+src/components/ui/collapsible.tsx
 src/components/ui/dropdown-menu.tsx
 src/components/ui/input.tsx
 src/components/ui/label.tsx
+src/components/ui/select.tsx
 src/components/ui/separator.tsx
 src/components/ui/sheet.tsx
 src/components/ui/sidebar.tsx
@@ -70,7 +72,9 @@ src/features/auth/components/LoginCardHeader.tsx
 src/features/auth/components/LoginEmailInput.tsx
 src/features/auth/components/LoginPasswordInput.tsx
 src/features/auth/hooks/useLogin.ts
+src/features/managers/components/ManagerAccordion.tsx
 src/features/managers/components/ManagerColumns.tsx
+src/features/managers/components/ManagerForm.tsx
 src/features/managers/hooks/useManagerConfig.ts
 src/features/managers/hooks/useManagerData.ts
 src/features/managers/hooks/useManagerMutation.ts
@@ -216,9 +220,11 @@ export default defineConfig([
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.11",
+    "@radix-ui/react-collapsible": "^1.1.12",
     "@radix-ui/react-dialog": "^1.1.15",
     "@radix-ui/react-dropdown-menu": "^2.1.16",
     "@radix-ui/react-label": "^2.1.8",
+    "@radix-ui/react-select": "^2.2.6",
     "@radix-ui/react-separator": "^1.1.8",
     "@radix-ui/react-slot": "^1.2.4",
     "@radix-ui/react-tooltip": "^1.2.8",
@@ -232,6 +238,7 @@ export default defineConfig([
     "next-themes": "^0.4.6",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
+    "react-hook-form": "^7.71.0",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.4.0",
     "tailwindcss": "^4.1.18",
@@ -692,6 +699,40 @@ export {
 }
 </file>
 
+<file path="src/components/ui/collapsible.tsx">
+import * as CollapsiblePrimitive from "@radix-ui/react-collapsible"
+
+function Collapsible({
+  ...props
+}: React.ComponentProps<typeof CollapsiblePrimitive.Root>) {
+  return <CollapsiblePrimitive.Root data-slot="collapsible" {...props} />
+}
+
+function CollapsibleTrigger({
+  ...props
+}: React.ComponentProps<typeof CollapsiblePrimitive.CollapsibleTrigger>) {
+  return (
+    <CollapsiblePrimitive.CollapsibleTrigger
+      data-slot="collapsible-trigger"
+      {...props}
+    />
+  )
+}
+
+function CollapsibleContent({
+  ...props
+}: React.ComponentProps<typeof CollapsiblePrimitive.CollapsibleContent>) {
+  return (
+    <CollapsiblePrimitive.CollapsibleContent
+      data-slot="collapsible-content"
+      {...props}
+    />
+  )
+}
+
+export { Collapsible, CollapsibleTrigger, CollapsibleContent }
+</file>
+
 <file path="src/components/ui/dropdown-menu.tsx">
 import * as React from "react"
 import * as DropdownMenuPrimitive from "@radix-ui/react-dropdown-menu"
@@ -997,6 +1038,197 @@ function Label({
 }
 
 export { Label }
+</file>
+
+<file path="src/components/ui/select.tsx">
+import * as React from "react"
+import * as SelectPrimitive from "@radix-ui/react-select"
+import { CheckIcon, ChevronDownIcon, ChevronUpIcon } from "lucide-react"
+
+import { cn } from "@/lib/utils"
+
+function Select({
+  ...props
+}: React.ComponentProps<typeof SelectPrimitive.Root>) {
+  return <SelectPrimitive.Root data-slot="select" {...props} />
+}
+
+function SelectGroup({
+  ...props
+}: React.ComponentProps<typeof SelectPrimitive.Group>) {
+  return <SelectPrimitive.Group data-slot="select-group" {...props} />
+}
+
+function SelectValue({
+  ...props
+}: React.ComponentProps<typeof SelectPrimitive.Value>) {
+  return <SelectPrimitive.Value data-slot="select-value" {...props} />
+}
+
+function SelectTrigger({
+  className,
+  size = "default",
+  children,
+  ...props
+}: React.ComponentProps<typeof SelectPrimitive.Trigger> & {
+  size?: "sm" | "default"
+}) {
+  return (
+    <SelectPrimitive.Trigger
+      data-slot="select-trigger"
+      data-size={size}
+      className={cn(
+        "border-input data-[placeholder]:text-muted-foreground [&_svg:not([class*='text-'])]:text-muted-foreground focus-visible:border-ring focus-visible:ring-ring/50 aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:bg-input/30 dark:hover:bg-input/50 flex w-fit items-center justify-between gap-2 rounded-md border bg-transparent px-3 py-2 text-sm whitespace-nowrap shadow-xs transition-[color,box-shadow] outline-none focus-visible:ring-[3px] disabled:cursor-not-allowed disabled:opacity-50 data-[size=default]:h-9 data-[size=sm]:h-8 *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center *:data-[slot=select-value]:gap-2 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        className
+      )}
+      {...props}
+    >
+      {children}
+      <SelectPrimitive.Icon asChild>
+        <ChevronDownIcon className="size-4 opacity-50" />
+      </SelectPrimitive.Icon>
+    </SelectPrimitive.Trigger>
+  )
+}
+
+function SelectContent({
+  className,
+  children,
+  position = "item-aligned",
+  align = "center",
+  ...props
+}: React.ComponentProps<typeof SelectPrimitive.Content>) {
+  return (
+    <SelectPrimitive.Portal>
+      <SelectPrimitive.Content
+        data-slot="select-content"
+        className={cn(
+          "bg-popover text-popover-foreground data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 relative z-50 max-h-(--radix-select-content-available-height) min-w-[8rem] origin-(--radix-select-content-transform-origin) overflow-x-hidden overflow-y-auto rounded-md border shadow-md",
+          position === "popper" &&
+            "data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1",
+          className
+        )}
+        position={position}
+        align={align}
+        {...props}
+      >
+        <SelectScrollUpButton />
+        <SelectPrimitive.Viewport
+          className={cn(
+            "p-1",
+            position === "popper" &&
+              "h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)] scroll-my-1"
+          )}
+        >
+          {children}
+        </SelectPrimitive.Viewport>
+        <SelectScrollDownButton />
+      </SelectPrimitive.Content>
+    </SelectPrimitive.Portal>
+  )
+}
+
+function SelectLabel({
+  className,
+  ...props
+}: React.ComponentProps<typeof SelectPrimitive.Label>) {
+  return (
+    <SelectPrimitive.Label
+      data-slot="select-label"
+      className={cn("text-muted-foreground px-2 py-1.5 text-xs", className)}
+      {...props}
+    />
+  )
+}
+
+function SelectItem({
+  className,
+  children,
+  ...props
+}: React.ComponentProps<typeof SelectPrimitive.Item>) {
+  return (
+    <SelectPrimitive.Item
+      data-slot="select-item"
+      className={cn(
+        "focus:bg-accent focus:text-accent-foreground [&_svg:not([class*='text-'])]:text-muted-foreground relative flex w-full cursor-default items-center gap-2 rounded-sm py-1.5 pr-8 pl-2 text-sm outline-hidden select-none data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 *:[span]:last:flex *:[span]:last:items-center *:[span]:last:gap-2",
+        className
+      )}
+      {...props}
+    >
+      <span
+        data-slot="select-item-indicator"
+        className="absolute right-2 flex size-3.5 items-center justify-center"
+      >
+        <SelectPrimitive.ItemIndicator>
+          <CheckIcon className="size-4" />
+        </SelectPrimitive.ItemIndicator>
+      </span>
+      <SelectPrimitive.ItemText>{children}</SelectPrimitive.ItemText>
+    </SelectPrimitive.Item>
+  )
+}
+
+function SelectSeparator({
+  className,
+  ...props
+}: React.ComponentProps<typeof SelectPrimitive.Separator>) {
+  return (
+    <SelectPrimitive.Separator
+      data-slot="select-separator"
+      className={cn("bg-border pointer-events-none -mx-1 my-1 h-px", className)}
+      {...props}
+    />
+  )
+}
+
+function SelectScrollUpButton({
+  className,
+  ...props
+}: React.ComponentProps<typeof SelectPrimitive.ScrollUpButton>) {
+  return (
+    <SelectPrimitive.ScrollUpButton
+      data-slot="select-scroll-up-button"
+      className={cn(
+        "flex cursor-default items-center justify-center py-1",
+        className
+      )}
+      {...props}
+    >
+      <ChevronUpIcon className="size-4" />
+    </SelectPrimitive.ScrollUpButton>
+  )
+}
+
+function SelectScrollDownButton({
+  className,
+  ...props
+}: React.ComponentProps<typeof SelectPrimitive.ScrollDownButton>) {
+  return (
+    <SelectPrimitive.ScrollDownButton
+      data-slot="select-scroll-down-button"
+      className={cn(
+        "flex cursor-default items-center justify-center py-1",
+        className
+      )}
+      {...props}
+    >
+      <ChevronDownIcon className="size-4" />
+    </SelectPrimitive.ScrollDownButton>
+  )
+}
+
+export {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectScrollDownButton,
+  SelectScrollUpButton,
+  SelectSeparator,
+  SelectTrigger,
+  SelectValue,
+}
 </file>
 
 <file path="src/components/ui/separator.tsx">
@@ -2387,6 +2619,49 @@ export const useLogin = () => {
 }
 </file>
 
+<file path="src/features/managers/components/ManagerAccordion.tsx">
+import { Collapsible, CollapsibleContent, } from "@/components/ui/collapsible"
+import { ManagerForm } from "./ManagerForm"
+import type { FieldConfig } from "../hooks/useManagerConfig"
+
+interface ManagerAccordionProps {
+    isOpen: boolean
+    setIsOpen: (open: boolean) => void
+    fields: FieldConfig[]
+    initialData?: any
+    onSubmit: (data: any) => Promise<void>
+    isLoading: boolean
+}
+
+export function ManagerAccordion({
+                                     isOpen,
+                                     setIsOpen,
+                                     fields,
+                                     initialData,
+                                     onSubmit,
+                                     isLoading,
+                                 }: ManagerAccordionProps) {
+    return (
+        <Collapsible
+            open={isOpen}
+            onOpenChange={setIsOpen}
+        >
+            <CollapsibleContent className=" pb-4">
+                <div className="bg-white p-4 rounded-md border shadow-sm">
+                    <ManagerForm
+                        fields={fields}
+                        initialData={initialData}
+                        onSubmit={onSubmit}
+                        isLoading={isLoading}
+                        onCancel={() => setIsOpen(false)}
+                    />
+                </div>
+            </CollapsibleContent>
+        </Collapsible>
+    )
+}
+</file>
+
 <file path="src/features/managers/components/ManagerColumns.tsx">
 import type { ColumnDef } from "@tanstack/react-table";
 import type { ColumnConfig } from "../hooks/useManagerConfig";
@@ -2401,7 +2676,6 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-// Helper to format dates consistently
 const formatDate = (dateString: string) => {
     if (!dateString) return "-";
     return new Date(dateString).toLocaleDateString("pt-BR");
@@ -2413,24 +2687,22 @@ export const generateColumns = (
     onDelete: (item: any) => void
 ): ColumnDef<any>[] => {
 
-    // 1. Map dynamic columns from config
     const generated: ColumnDef<any>[] = configColumns.map((col) => ({
-        accessorKey: col.key,
+        accessorKey: col.key, // This works for "company.name"
         header: col.label,
-        cell: ({ row }) => {
-            const value = row.getValue(col.key);
+        // FIX: Use 'info' to get the value, not 'row.getValue'
+        cell: (info) => {
+            const value = info.getValue() as string | boolean | number | null;
 
             switch (col.type) {
                 case 'boolean':
                     return value ? (
-                        <div className="flex justify-center"><Check className="size-4 text-green-600" /></div>
+                        <div className="flex justify-start"><Check className="size-4 text-green-600" /></div>
                     ) : (
-                        <div className="flex justify-center"><X className="size-4 text-red-400" /></div>
+                        <div className="flex justify-start"><X className="size-4 text-red-400" /></div>
                     );
 
                 case 'badge':
-                    // Simple logic: If value is 'ADMIN' or 'MASTER', color it.
-                    // You can make this smarter later.
                     return (
                         <Badge variant={value === 'USER' ? 'secondary' : 'default'}>
                             {String(value)}
@@ -2449,7 +2721,7 @@ export const generateColumns = (
         }
     }));
 
-    // 2. Add the "Actions" column automatically
+    // Actions Column
     generated.push({
         id: "actions",
         cell: ({ row }) => {
@@ -2480,9 +2752,218 @@ export const generateColumns = (
 };
 </file>
 
+<file path="src/features/managers/components/ManagerForm.tsx">
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
+import type { FieldConfig } from "../hooks/useManagerConfig";
+import { useManagerData } from "../hooks/useManagerData"; // Import the data hook
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+} from "@/components/ui/select";
+import { Loader2 } from "lucide-react";
+
+interface ManagerFormProps {
+    fields: FieldConfig[];
+    initialData?: any;
+    onSubmit: (data: any) => Promise<void>;
+    isLoading: boolean;
+    onCancel: () => void;
+}
+
+export function ManagerForm({
+                                fields,
+                                initialData,
+                                onSubmit,
+                                isLoading,
+                                onCancel,
+                            }: ManagerFormProps) {
+    // 1. Initialize Form
+    const {
+        register,
+        handleSubmit,
+        setValue,
+        watch,
+        reset,
+        formState: { errors },
+    } = useForm({
+        defaultValues: initialData || {},
+    });
+
+    // 2. Load Dynamic Data (Companies & Units)
+    // We fetch these regardless of the current page to ensure dropdowns always have data.
+    // React Query will cache this, so it's efficient.
+    const { data: companiesData } = useManagerData('companies');
+    const { data: unitsData } = useManagerData('units');
+
+    // 3. Reset form when opening/closing or changing selection
+    useEffect(() => {
+        if (initialData) {
+            reset(initialData);
+        } else {
+            reset({}); // Clear form for "New" mode
+        }
+    }, [initialData, reset]);
+
+    // 4. Helper to resolve options
+    const getOptions = (field: FieldConfig) => {
+        // Priority 1: Static Options (defined in config)
+        if (field.options) return field.options;
+
+        // Priority 2: Dynamic Companies
+        if (field.dynamicOptions === 'companies') {
+            return companiesData?.map((c: any) => ({
+                label: c.name,
+                value: c.id
+            })) || [];
+        }
+
+        // Priority 3: Dynamic Units
+        if (field.dynamicOptions === 'units') {
+            return unitsData?.map((u: any) => ({
+                label: u.name,
+                value: u.id
+            })) || [];
+        }
+
+        return [];
+    };
+
+    // 5. Render Helper
+    const renderField = (field: FieldConfig) => {
+        const options = getOptions(field);
+
+        const currentValue = watch(field.name);
+
+        switch (field.type) {
+            case "select":
+                return (
+                    <Select
+                        value={currentValue ? String(currentValue) : undefined}
+                        onValueChange={(val) => setValue(field.name, val)}
+                        defaultValue={
+                            initialData?.[field.name]
+                                ? String(initialData[field.name])
+                                : undefined
+                        }
+                    >
+                        <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Selecione..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {options.length > 0 ? (
+                                options.map((opt: any) => (
+                                    <SelectItem key={opt.value} value={String(opt.value)}>
+                                        {opt.label}
+                                    </SelectItem>
+                                ))
+                            ) : (
+                                <div className="p-2 text-sm text-gray-500 text-center">
+                                    Nenhum item disponível
+                                </div>
+                            )}
+                        </SelectContent>
+                    </Select>
+                );
+
+            case "boolean":
+                return (
+                    <Select
+                        value={currentValue !== undefined ? String(currentValue) : undefined}
+                        onValueChange={(val) => setValue(field.name, val === "true")}
+                        defaultValue={
+                            initialData?.[field.name] !== undefined
+                                ? String(initialData[field.name])
+                                : undefined
+                        }
+                    >
+                        <SelectTrigger>
+                            <SelectValue placeholder="Selecione..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="true">Sim (Ativo)</SelectItem>
+                            <SelectItem value="false">Não (Inativo)</SelectItem>
+                        </SelectContent>
+                    </Select>
+                );
+
+            case "number":
+                return (
+                    <Input
+                        type="number"
+                        placeholder={field.label}
+                        {...register(field.name, {
+                            required: field.required,
+                            valueAsNumber: true // Important for Zod validation
+                        })}
+                    />
+                );
+
+            default: // text, email, password
+                return (
+                    <Input
+                        type={field.type}
+                        placeholder={field.label}
+                        {...register(field.name, { required: field.required })}
+                    />
+                );
+        }
+    };
+
+    return (
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 py-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {fields.map((field) => (
+                    <div key={field.name} className="space-y-2">
+                        <Label htmlFor={field.name} className="text-sm font-medium">
+                            {field.label}{" "}
+                            {field.required && <span className="text-red-500">*</span>}
+                        </Label>
+
+                        {renderField(field)}
+
+                        {errors[field.name] && (
+                            <span className="text-xs text-red-500">Campo obrigatório</span>
+                        )}
+                    </div>
+                ))}
+            </div>
+
+            <div className="flex justify-end space-x-2 pt-4 border-t mt-4">
+                <Button variant="outline" type="button" onClick={onCancel}>
+                    Cancelar
+                </Button>
+                <Button type="submit" disabled={isLoading}>
+                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {isLoading ? "Salvando..." : "Salvar Registro"}
+                </Button>
+            </div>
+        </form>
+    );
+}
+</file>
+
 <file path="src/features/managers/hooks/useManagerConfig.ts">
 import { useMemo } from 'react';
 import type { User } from '@/types/User';
+
+const BR_STATES = [
+    { label: 'Acre', value: 'AC' }, { label: 'Alagoas', value: 'AL' }, { label: 'Amapá', value: 'AP' },
+    { label: 'Amazonas', value: 'AM' }, { label: 'Bahia', value: 'BA' }, { label: 'Ceará', value: 'CE' },
+    { label: 'Distrito Federal', value: 'DF' }, { label: 'Espírito Santo', value: 'ES' }, { label: 'Goiás', value: 'GO' },
+    { label: 'Maranhão', value: 'MA' }, { label: 'Mato Grosso', value: 'MT' }, { label: 'Mato Grosso do Sul', value: 'MS' },
+    { label: 'Minas Gerais', value: 'MG' }, { label: 'Pará', value: 'PA' }, { label: 'Paraíba', value: 'PB' },
+    { label: 'Paraná', value: 'PR' }, { label: 'Pernambuco', value: 'PE' }, { label: 'Piauí', value: 'PI' },
+    { label: 'Rio de Janeiro', value: 'RJ' }, { label: 'Rio Grande do Norte', value: 'RN' }, { label: 'Rio Grande do Sul', value: 'RS' },
+    { label: 'Rondônia', value: 'RO' }, { label: 'Roraima', value: 'RR' }, { label: 'Santa Catarina', value: 'SC' },
+    { label: 'São Paulo', value: 'SP' }, { label: 'Sergipe', value: 'SE' }, { label: 'Tocantins', value: 'TO' }
+];
 
 export type ManagerType = 'users' | 'units' | 'companies' | 'sources';
 
@@ -2495,8 +2976,9 @@ export interface ColumnConfig {
 export interface FieldConfig {
     name: string;
     label: string;
-    type: 'text' | 'email' | 'select' | 'password' | 'number';
-    options?: { label: string; value: string | number }[];
+    type: 'text' | 'email' | 'select' | 'password' | 'number' | 'boolean';
+    options?: { label: string; value: string | number }[]; // Static options
+    dynamicOptions?: 'companies' | 'units'; // NEW: Dynamic Source
     required?: boolean;
 }
 
@@ -2546,16 +3028,23 @@ export const useManagerConfig = (type: ManagerType, user: User | null): ManagerV
                     title: 'Unidades',
                     description: 'Gerencie as unidades operacionais.',
                     isAllowed: true,
+                    // Task 2: Show Company in Table
                     columns: [
-                        { key: 'name', label: 'Nome', type: 'text' },
+                        { key: 'name', label: 'Nome da Unidade', type: 'text' },
+                        { key: 'company.name', label: 'Empresa', type: 'text' }, // <--- Deep Accessor
                         { key: 'city', label: 'Cidade', type: 'text' },
                         { key: 'state', label: 'Estado', type: 'text' },
+                        { key: 'numberOfWorkers', label: 'Colaboradores', type: 'text' },
                     ],
+                    // Task 1: Fields as per image (inferred)
                     fields: [
-                        { name: 'name', label: 'Nome', type: 'text', required: true },
+                        { name: 'name', label: 'Nome da Unidade', type: 'text', required: true },
+                        // Dynamic Select for Company
+                        { name: 'companyId', label: 'Empresa', type: 'select', dynamicOptions: 'companies', required: true },
                         { name: 'city', label: 'Cidade', type: 'text', required: true },
-                        { name: 'state', label: 'Estado', type: 'text', required: true },
-                        { name: 'numberOfWorkers', label: 'Nº Colaboradores', type: 'number', required: true }
+                        { name: 'state', label: 'Estado (UF)', type: 'select', options: BR_STATES, required: true },
+                        { name: 'country', label: 'País', type: 'text', required: true }, // Added Country
+                        { name: 'numberOfWorkers', label: 'Nº Colaboradores', type: 'number', required: true },
                     ]
                 };
 
@@ -2626,10 +3115,10 @@ import { toast } from "sonner";
 
 // 1. Map "Manager Types" to "API Endpoints"
 const ENDPOINT_MAP: Record<ManagerType, string> = {
-    companies: "/companies",
-    units: "/units",
+    companies: "/admin/companies",
+    units: "/admin/units",
     users: "/users",
-    sources: "/config/typologies" // Matches the endpoint we created earlier
+    sources: "/esg/config/typologies" // Matches the endpoint we created earlier
 };
 
 export const useManagerData = (type: ManagerType) => {
@@ -2678,10 +3167,10 @@ import type { ManagerType } from "./useManagerConfig";
 import { toast } from "sonner";
 
 const ENDPOINT_MAP: Record<ManagerType, string> = {
-    companies: "/companies",
-    units: "/units",
+    companies: "/admin/companies",
+    units: "/admin/units",
     users: "/users",
-    sources: "/config/typologies"
+    sources: "/esg/config/typologies"
 };
 
 export const useManagerMutations = (type: ManagerType, onCloseModal?: () => void) => {
@@ -3240,7 +3729,7 @@ export function GenericTable<TData, TValue>({
 
     return (
         <div className="space-y-4">
-            <div className="rounded-md border">
+            <div className="rounded-md border shadow-sm">
                 <Table>
                     <TableHeader>
                         {table.getHeaderGroups().map((headerGroup) => (
@@ -3415,42 +3904,92 @@ export default LoginPage;
 </file>
 
 <file path="src/shared/pages/ManagerPage.tsx">
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Link, useParams } from 'wouter';
 import { useAuthStore } from '@/store/authStore';
 import { type ManagerType, useManagerConfig } from '@/features/managers/hooks/useManagerConfig';
+import { useManagerData } from '@/features/managers/hooks/useManagerData';
+import { useManagerMutations } from '@/features/managers/hooks/useManagerMutation';
+
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { Plus, ShieldAlert } from 'lucide-react';
 import { GenericTable } from '@/shared/components/ui/GenericTable';
 import { generateColumns } from '@/features/managers/components/ManagerColumns';
-import { useManagerData } from "@/features/managers/hooks/useManagerData.ts";
+import { ManagerAccordion } from '@/features/managers/components/ManagerAccordion';
 
 export default function ManagerPage() {
     const { type } = useParams<{ type: string }>();
     const { user } = useAuthStore();
+
+    // 1. Load Strategy (Brain)
     const config = useManagerConfig(type as ManagerType, user);
 
-    // 2. Fetch Data (Real API)
-    const { data, isLoading, isError, deleteItem } = useManagerData(type as ManagerType);
+    // 2. Fetch Data (Heart)
+    const { data, isLoading: isDataLoading, isError, deleteItem } = useManagerData(type as ManagerType);
 
-    // 3. Define Actions
-    const handleDelete = async (item: any) => {
-        if (confirm(`Tem certeza que deseja excluir: ${item.name || item.description}?`)) {
-            await deleteItem(item.id);
+    // 3. UI State
+    const [isFormOpen, setIsFormOpen] = useState(false);
+    const [selectedItem, setSelectedItem] = useState<any>(null);
+
+    // 4. Mutations (Hands)
+    // We close the form automatically on success
+    const { createItem, updateItem, isSaving } = useManagerMutations(
+        type as ManagerType,
+        () => {
+            setIsFormOpen(false);
+            setSelectedItem(null);
+        }
+    );
+
+    // 5. Handlers
+    const handleCreate = () => {
+        // If form is already open in "Create" mode, close it. Otherwise open it.
+        if (isFormOpen && !selectedItem) {
+            setIsFormOpen(false);
+        } else {
+            setSelectedItem(null); // Clear selection for create mode
+            setIsFormOpen(true);
         }
     };
 
     const handleEdit = (item: any) => {
-        console.log("Open Edit Modal for:", item);
-        // Next Step: We will wire this to a Dynamic Form
+        setSelectedItem(item); // Set item for edit mode
+        setIsFormOpen(true);   // Expand accordion
+
+        // Smooth scroll to top to show the form
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     };
 
-    // 4. Generate Columns
+    const handleDelete = async (item: any) => {
+        if (confirm(`Tem certeza que deseja excluir: ${item.name || item.description || 'este item'}?`)) {
+            await deleteItem(item.id);
+        }
+    };
+
+    const handleSubmit = async (formData: any) => {
+        const { company, unit, children, parent, id, ...cleanData } = formData;
+
+        if (selectedItem) {
+            // Update Mode
+            await updateItem({ id: selectedItem.id, data: cleanData });
+        } else {
+            // Create Mode
+            await createItem(cleanData);
+        }
+    };
+
+    // const handleCancel = () => {
+    //     setIsFormOpen(false);
+    //     setSelectedItem(null);
+    // }
+
+    // 6. Generate Columns
     const tableColumns = useMemo(() =>
             generateColumns(config.columns, handleEdit, handleDelete),
-        [config.columns]
+        [config.columns, deleteItem]
     );
+
+    // --- RENDER ---
 
     // Security Gate
     if (!config.isAllowed) {
@@ -3461,42 +4000,59 @@ export default function ManagerPage() {
                 </div>
                 <h2 className="text-xl font-semibold text-gray-900">Acesso Restrito</h2>
                 <p className="text-muted-foreground">Você não tem permissão para acessar este módulo.</p>
-                <Link href="/home"><Button variant="outline">Voltar</Button></Link>
+                <Link href="/home">
+                    <Button variant="outline">Voltar para Dashboard</Button>
+                </Link>
             </div>
         );
     }
 
-    // Error State
+    // API Error
     if (isError) {
-        return (
-            <div className="p-8 text-center text-red-500">
-                Erro ao carregar dados. Verifique sua conexão ou contate o suporte.
-            </div>
-        );
+        return <div className="p-8 text-center text-red-500">Erro ao carregar dados. Verifique sua conexão.</div>;
     }
 
     return (
         <div className="space-y-6">
+            {/* HEADER */}
             <div className="flex justify-between items-center">
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight">{config.title}</h1>
                     <p className="text-muted-foreground">{config.description}</p>
                 </div>
-                <Button>
-                    <Plus className="mr-2 size-4" /> Novo Registro
-                </Button>
+
+                {/* Toggle Button */}
+                {!isFormOpen && (
+                    <Button
+                        onClick={handleCreate}
+                        variant={isFormOpen && !selectedItem ? "secondary" : "default"}
+                    >
+                        <>
+                            <Plus className="mr-2 size-4" /> Novo Registro
+                        </>
+                    </Button>
+                )}
             </div>
 
-            <Card>
-                <CardContent className="p-0">
-                    {/* 5. Pass real state to table */}
-                    <GenericTable
-                        columns={tableColumns}
-                        data={data}
-                        isLoading={isLoading}
-                    />
-                </CardContent>
-            </Card>
+            {/* ACCORDION FORM */}
+            <ManagerAccordion
+                isOpen={isFormOpen}
+                setIsOpen={(open) => {
+                    setIsFormOpen(open);
+                    if (!open) setSelectedItem(null); // Clear selection on close
+                }}
+                fields={config.fields}
+                initialData={selectedItem}
+                onSubmit={handleSubmit}
+                isLoading={isSaving}
+            />
+
+            {/* DATA TABLE */}
+            <GenericTable
+                columns={tableColumns}
+                data={data}
+                isLoading={isDataLoading}
+            />
         </div>
     );
 }
