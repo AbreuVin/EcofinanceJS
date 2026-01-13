@@ -1,0 +1,11 @@
+{
+  "name": "ecofinance-root",
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "concurrently \"npm run dev --prefix backend-new\" \"npm run dev --prefix frontend-react\"",
+    "install-all": "npm install && npm install --prefix backend-new && npm install --prefix frontend-react"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}
