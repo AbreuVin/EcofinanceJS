@@ -53,21 +53,25 @@ backend-new/repomix-output.xml
 backend-new/src/controllers/authController.ts
 backend-new/src/controllers/configController.ts
 backend-new/src/controllers/esgDataController.ts
+backend-new/src/controllers/permissionController.ts
 backend-new/src/controllers/userController.ts
 backend-new/src/index.ts
 backend-new/src/interfaces/crudDelegate.ts
 backend-new/src/middleware/authMiddleware.ts
 backend-new/src/repositories/configRepository.ts
+backend-new/src/repositories/permissionRepository.ts
 backend-new/src/repositories/prisma.ts
 backend-new/src/repositories/userRepository.ts
 backend-new/src/routes/authRoutes.ts
 backend-new/src/routes/esgRoutes.ts
+backend-new/src/routes/permissionRoutes.ts
 backend-new/src/routes/userRoutes.ts
 backend-new/src/schemas/esgSchemas.ts
 backend-new/src/schemas/userSchema.ts
 backend-new/src/services/authService.ts
 backend-new/src/services/configService.ts
 backend-new/src/services/esgGenericService.ts
+backend-new/src/services/permissionService.ts
 backend-new/src/services/userService.ts
 backend-new/src/types/auth.ts
 backend-new/src/utils/jwtUtils.ts
@@ -78,6 +82,45 @@ backend/database.js
 backend/legacy-code.xml
 backend/package.json
 backend/server.js
+frontend-react/.gitignore
+frontend-react/components.json
+frontend-react/eslint.config.js
+frontend-react/index.html
+frontend-react/package.json
+frontend-react/README.md
+frontend-react/repomix-output.xml
+frontend-react/src/api/api.ts
+frontend-react/src/App.tsx
+frontend-react/src/components/ui/button.tsx
+frontend-react/src/components/ui/card.tsx
+frontend-react/src/components/ui/input.tsx
+frontend-react/src/components/ui/label.tsx
+frontend-react/src/features/auth/components/LoginCard.tsx
+frontend-react/src/features/auth/components/LoginCardContent.tsx
+frontend-react/src/features/auth/components/LoginCardFooter.tsx
+frontend-react/src/features/auth/components/LoginCardHeader.tsx
+frontend-react/src/features/auth/components/LoginEmailInput.tsx
+frontend-react/src/features/auth/components/LoginPasswordInput.tsx
+frontend-react/src/features/auth/hooks/useLogin.ts
+frontend-react/src/index.css
+frontend-react/src/lib/authUtils.ts
+frontend-react/src/lib/utils.ts
+frontend-react/src/main.tsx
+frontend-react/src/shared/components/RequireAuth.tsx
+frontend-react/src/shared/pages/HomePage.tsx
+frontend-react/src/shared/pages/LoginPage.tsx
+frontend-react/src/store/authStore.ts
+frontend-react/src/types/AssetTypology.ts
+frontend-react/src/types/Company.ts
+frontend-react/src/types/enums.ts
+frontend-react/src/types/EsgData.ts
+frontend-react/src/types/ManagedOptions.ts
+frontend-react/src/types/Unit.ts
+frontend-react/src/types/User.ts
+frontend-react/tsconfig.app.json
+frontend-react/tsconfig.json
+frontend-react/tsconfig.node.json
+frontend-react/vite.config.ts
 frontend/admin.html
 frontend/admin.js
 frontend/assets.html
@@ -98,11 +141,1993 @@ frontend/register.html
 frontend/register.js
 frontend/units.html
 frontend/units.js
+package.json
 shared/validators.js
 </directory_structure>
 
 <files>
 This section contains the contents of the repository's files.
+
+<file path="frontend-react/repomix-output.xml">
+This file is a merged representation of the entire codebase, combined into a single document by Repomix.
+
+<file_summary>
+This section contains a summary of this file.
+
+<purpose>
+This file contains a packed representation of the entire repository's contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+</purpose>
+
+<file_format>
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files (if enabled)
+5. Multiple file entries, each consisting of:
+  - File path as an attribute
+  - Full contents of the file
+</file_format>
+
+<usage_guidelines>
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+</usage_guidelines>
+
+<notes>
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Files are sorted by Git change count (files with more changes are at the bottom)
+</notes>
+
+</file_summary>
+
+<directory_structure>
+.gitignore
+components.json
+eslint.config.js
+index.html
+package.json
+README.md
+src/api/api.ts
+src/App.tsx
+src/components/ui/button.tsx
+src/components/ui/card.tsx
+src/components/ui/input.tsx
+src/components/ui/label.tsx
+src/features/auth/components/LoginCard.tsx
+src/features/auth/components/LoginCardContent.tsx
+src/features/auth/components/LoginCardFooter.tsx
+src/features/auth/components/LoginCardHeader.tsx
+src/features/auth/components/LoginEmailInput.tsx
+src/features/auth/components/LoginPasswordInput.tsx
+src/features/auth/hooks/useLogin.ts
+src/index.css
+src/lib/utils.ts
+src/main.tsx
+src/shared/pages/HomePage.tsx
+src/shared/pages/LoginPage.tsx
+src/store/authStore.ts
+src/types/AssetTypology.ts
+src/types/Company.ts
+src/types/enums.ts
+src/types/EsgData.ts
+src/types/ManagedOptions.ts
+src/types/Unit.ts
+src/types/User.ts
+tsconfig.app.json
+tsconfig.json
+tsconfig.node.json
+vite.config.ts
+</directory_structure>
+
+<files>
+This section contains the contents of the repository's files.
+
+<file path=".gitignore">
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+</file>
+
+<file path="components.json">
+{
+  "$schema": "https://ui.shadcn.com/schema.json",
+  "style": "new-york",
+  "rsc": false,
+  "tsx": true,
+  "tailwind": {
+    "config": "",
+    "css": "src/index.css",
+    "baseColor": "neutral",
+    "cssVariables": true,
+    "prefix": ""
+  },
+  "iconLibrary": "lucide",
+  "aliases": {
+    "components": "@/components",
+    "utils": "@/lib/utils",
+    "ui": "@/components/ui",
+    "lib": "@/lib",
+    "hooks": "@/hooks"
+  },
+  "registries": {}
+}
+</file>
+
+<file path="eslint.config.js">
+import js from '@eslint/js'
+import globals from 'globals'
+import reactHooks from 'eslint-plugin-react-hooks'
+import reactRefresh from 'eslint-plugin-react-refresh'
+import tseslint from 'typescript-eslint'
+import { defineConfig, globalIgnores } from 'eslint/config'
+
+export default defineConfig([
+  globalIgnores(['dist']),
+  {
+    files: ['**/*.{ts,tsx}'],
+    extends: [
+      js.configs.recommended,
+      tseslint.configs.recommended,
+      reactHooks.configs.flat.recommended,
+      reactRefresh.configs.vite,
+    ],
+    languageOptions: {
+      ecmaVersion: 2020,
+      globals: globals.browser,
+    },
+  },
+])
+</file>
+
+<file path="index.html">
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>frontend-react</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+</file>
+
+<file path="package.json">
+{
+  "name": "frontend-react",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "eslint .",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@radix-ui/react-label": "^2.1.8",
+    "@radix-ui/react-slot": "^1.2.4",
+    "@tailwindcss/vite": "^4.1.18",
+    "@tanstack/react-query": "^5.90.16",
+    "axios": "^1.13.2",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.562.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "tailwind-merge": "^3.4.0",
+    "tailwindcss": "^4.1.18",
+    "wouter": "^3.9.0",
+    "zustand": "^5.0.9"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.1",
+    "@types/node": "^24.10.4",
+    "@types/react": "^19.2.5",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.1.1",
+    "eslint": "^9.39.1",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-react-refresh": "^0.4.24",
+    "globals": "^16.5.0",
+    "tw-animate-css": "^1.4.0",
+    "typescript": "~5.9.3",
+    "typescript-eslint": "^8.46.4",
+    "vite": "npm:rolldown-vite@7.2.5"
+  },
+  "overrides": {
+    "vite": "npm:rolldown-vite@7.2.5"
+  }
+}
+</file>
+
+<file path="README.md">
+# React + TypeScript + Vite
+
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+
+Currently, two official plugins are available:
+
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+
+## React Compiler
+
+The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+
+## Expanding the ESLint configuration
+
+If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+
+```js
+export default defineConfig([
+  globalIgnores(['dist']),
+  {
+    files: ['**/*.{ts,tsx}'],
+    extends: [
+      // Other configs...
+
+      // Remove tseslint.configs.recommended and replace with this
+      tseslint.configs.recommendedTypeChecked,
+      // Alternatively, use this for stricter rules
+      tseslint.configs.strictTypeChecked,
+      // Optionally, add this for stylistic rules
+      tseslint.configs.stylisticTypeChecked,
+
+      // Other configs...
+    ],
+    languageOptions: {
+      parserOptions: {
+        project: ['./tsconfig.node.json', './tsconfig.app.json'],
+        tsconfigRootDir: import.meta.dirname,
+      },
+      // other options...
+    },
+  },
+])
+```
+
+You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+
+```js
+// eslint.config.js
+import reactX from 'eslint-plugin-react-x'
+import reactDom from 'eslint-plugin-react-dom'
+
+export default defineConfig([
+  globalIgnores(['dist']),
+  {
+    files: ['**/*.{ts,tsx}'],
+    extends: [
+      // Other configs...
+      // Enable lint rules for React
+      reactX.configs['recommended-typescript'],
+      // Enable lint rules for React DOM
+      reactDom.configs.recommended,
+    ],
+    languageOptions: {
+      parserOptions: {
+        project: ['./tsconfig.node.json', './tsconfig.app.json'],
+        tsconfigRootDir: import.meta.dirname,
+      },
+      // other options...
+    },
+  },
+])
+```
+</file>
+
+<file path="src/api/api.ts">
+import axios from "axios";
+import { useAuthStore } from "@/store/authStore.ts";
+
+const BASE_URL = 'https://localhost:8080/api'
+
+const api = axios.create({
+    baseURL: BASE_URL,
+});
+
+api.interceptors.request.use((config) => {
+    const token = useAuthStore.getState().token;
+
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+})
+
+export default api;
+</file>
+
+<file path="src/App.tsx">
+import { Route } from "wouter";
+import {
+  QueryClient,
+  QueryClientProvider,
+} from "@tanstack/react-query"
+import LoginPage from "@/shared/pages/LoginPage";
+import HomePage from "@/shared/pages/HomePage";
+
+const queryClient = new QueryClient()
+
+function App() {
+    return (
+        <div className="h-screen w-screen">
+            <QueryClientProvider client={queryClient}>
+                <Route path="/">
+                    <LoginPage/>
+                </Route>
+                <Route path="/home">
+                    <HomePage/>
+                </Route>
+            </QueryClientProvider>
+        </div>
+    )
+}
+
+export default App
+</file>
+
+<file path="src/components/ui/button.tsx">
+import * as React from "react"
+import { Slot } from "@radix-ui/react-slot"
+import { cva, type VariantProps } from "class-variance-authority"
+
+import { cn } from "@/lib/utils"
+
+const buttonVariants = cva(
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
+  {
+    variants: {
+      variant: {
+        default: "bg-primary text-primary-foreground hover:bg-primary/90",
+        destructive:
+          "bg-destructive text-white hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
+        outline:
+          "border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50",
+        secondary:
+          "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+        ghost:
+          "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
+        link: "text-primary underline-offset-4 hover:underline",
+      },
+      size: {
+        default: "h-9 px-4 py-2 has-[>svg]:px-3",
+        sm: "h-8 rounded-md gap-1.5 px-3 has-[>svg]:px-2.5",
+        lg: "h-10 rounded-md px-6 has-[>svg]:px-4",
+        icon: "size-9",
+        "icon-sm": "size-8",
+        "icon-lg": "size-10",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+      size: "default",
+    },
+  }
+)
+
+function Button({
+  className,
+  variant = "default",
+  size = "default",
+  asChild = false,
+  ...props
+}: React.ComponentProps<"button"> &
+  VariantProps<typeof buttonVariants> & {
+    asChild?: boolean
+  }) {
+  const Comp = asChild ? Slot : "button"
+
+  return (
+    <Comp
+      data-slot="button"
+      data-variant={variant}
+      data-size={size}
+      className={cn(buttonVariants({ variant, size, className }))}
+      {...props}
+    />
+  )
+}
+
+export { Button, buttonVariants }
+</file>
+
+<file path="src/components/ui/card.tsx">
+import * as React from "react"
+
+import { cn } from "@/lib/utils"
+
+function Card({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="card"
+      className={cn(
+        "bg-card text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm",
+        className
+      )}
+      {...props}
+    />
+  )
+}
+
+function CardHeader({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="card-header"
+      className={cn(
+        "@container/card-header grid auto-rows-min grid-rows-[auto_auto] items-start gap-2 px-6 has-data-[slot=card-action]:grid-cols-[1fr_auto] [.border-b]:pb-6",
+        className
+      )}
+      {...props}
+    />
+  )
+}
+
+function CardTitle({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="card-title"
+      className={cn("leading-none font-semibold", className)}
+      {...props}
+    />
+  )
+}
+
+function CardDescription({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="card-description"
+      className={cn("text-muted-foreground text-sm", className)}
+      {...props}
+    />
+  )
+}
+
+function CardAction({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="card-action"
+      className={cn(
+        "col-start-2 row-span-2 row-start-1 self-start justify-self-end",
+        className
+      )}
+      {...props}
+    />
+  )
+}
+
+function CardContent({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="card-content"
+      className={cn("px-6", className)}
+      {...props}
+    />
+  )
+}
+
+function CardFooter({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="card-footer"
+      className={cn("flex items-center px-6 [.border-t]:pt-6", className)}
+      {...props}
+    />
+  )
+}
+
+export {
+  Card,
+  CardHeader,
+  CardFooter,
+  CardTitle,
+  CardAction,
+  CardDescription,
+  CardContent,
+}
+</file>
+
+<file path="src/components/ui/input.tsx">
+import * as React from "react"
+
+import { cn } from "@/lib/utils"
+
+function Input({ className, type, ...props }: React.ComponentProps<"input">) {
+  return (
+    <input
+      type={type}
+      data-slot="input"
+      className={cn(
+        "file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 border-input h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
+        "focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]",
+        "aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
+        className
+      )}
+      {...props}
+    />
+  )
+}
+
+export { Input }
+</file>
+
+<file path="src/components/ui/label.tsx">
+import * as React from "react"
+import * as LabelPrimitive from "@radix-ui/react-label"
+
+import { cn } from "@/lib/utils"
+
+function Label({
+  className,
+  ...props
+}: React.ComponentProps<typeof LabelPrimitive.Root>) {
+  return (
+    <LabelPrimitive.Root
+      data-slot="label"
+      className={cn(
+        "flex items-center gap-2 text-sm leading-none font-medium select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50",
+        className
+      )}
+      {...props}
+    />
+  )
+}
+
+export { Label }
+</file>
+
+<file path="src/features/auth/components/LoginCard.tsx">
+import { Card } from "@/components/ui/card";
+import LoginCardHeader from "@/features/auth/components/LoginCardHeader.tsx";
+import LoginCardFooter from "@/features/auth/components/LoginCardFooter.tsx";
+import LoginCardContent from "@/features/auth/components/LoginCardContent.tsx";
+
+function LoginCard() {
+    return (
+        <Card className="w-full max-w-sm">
+            <LoginCardHeader/>
+            <LoginCardContent/>
+            <LoginCardFooter/>
+        </Card>
+    );
+}
+
+export default LoginCard;
+</file>
+
+<file path="src/features/auth/components/LoginCardContent.tsx">
+import { CardContent } from "@/components/ui/card.tsx";
+import LoginEmailInput from "@/features/auth/components/LoginEmailInput.tsx";
+import LoginPasswordInput from "./LoginPasswordInput";
+
+
+function LoginCardContent() {
+    return <CardContent>
+        <form>
+            <div className="flex flex-col gap-6">
+                <LoginEmailInput/>
+                <LoginPasswordInput/>
+            </div>
+        </form>
+    </CardContent>;
+}
+
+export default LoginCardContent;
+</file>
+
+<file path="src/features/auth/components/LoginCardFooter.tsx">
+import { CardFooter } from "@/components/ui/card.tsx";
+import { Button } from "@/components/ui/button.tsx";
+
+function LoginCardFooter() {
+    return <CardFooter className="flex-col gap-2">
+        <Button type="submit" className="w-full">
+            Login
+        </Button>
+    </CardFooter>;
+}
+
+export default LoginCardFooter;
+</file>
+
+<file path="src/features/auth/components/LoginCardHeader.tsx">
+import { CardDescription, CardHeader, CardTitle } from "@/components/ui/card.tsx";
+
+function LoginCardHeader() {
+    return <CardHeader className="flex flex-col items-start">
+        <CardTitle>Entre em sua conta</CardTitle>
+        <CardDescription>
+            Insira seu e-mail para entrar
+        </CardDescription>
+    </CardHeader>;
+}
+
+export default LoginCardHeader;
+</file>
+
+<file path="src/features/auth/components/LoginEmailInput.tsx">
+import { Label } from "@/components/ui/label.tsx";
+import { Input } from "@/components/ui/input.tsx";
+
+function LoginEmailInput() {
+    return <div className="grid gap-2">
+        <Label htmlFor="email">E-mail</Label>
+        <Input
+            id="email"
+            type="email"
+            placeholder="joao@ecofinance.com.br"
+            required
+        />
+    </div>;
+}
+
+export default LoginEmailInput
+</file>
+
+<file path="src/features/auth/components/LoginPasswordInput.tsx">
+import { Label } from "@/components/ui/label.tsx";
+import { Input } from "@/components/ui/input.tsx";
+
+function LoginPasswordInput() {
+    return <div className="grid gap-2">
+        <div className="flex items-center">
+            <Label htmlFor="password">Senha</Label>
+            <a
+                href="#"
+                className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
+            >
+                Esqueceu sua senha?
+            </a>
+        </div>
+        <Input id="password" type="password" required/>
+    </div>;
+}
+
+export default LoginPasswordInput;
+</file>
+
+<file path="src/features/auth/hooks/useLogin.ts">
+import { useAuthStore } from "@/store/authStore.ts";
+import { useMutation } from "@tanstack/react-query";
+import api from "@/api/api.ts";
+import type { User } from "@/types/User.ts";
+
+export const useLogin = () => {
+    const login = useAuthStore((state) => state.login);
+
+    return useMutation({
+        mutationFn: async (credentials: { email: string; password: string }) => {
+            const { data } = await api.post('/auth/login', credentials);
+            return data;
+        },
+        onSuccess: (data: { token: string, user: User}) => {
+            login(data.token, data.user);
+        }
+    })
+}
+</file>
+
+<file path="src/index.css">
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+:root {
+  --radius: 0.625rem;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.556 0 0);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+</file>
+
+<file path="src/lib/utils.ts">
+import { clsx, type ClassValue } from "clsx"
+import { twMerge } from "tailwind-merge"
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs))
+}
+</file>
+
+<file path="src/main.tsx">
+import { createRoot } from 'react-dom/client'
+import './index.css'
+import App from './App.tsx'
+
+createRoot(document.getElementById('root')!).render(
+    <App />
+)
+</file>
+
+<file path="src/shared/pages/HomePage.tsx">
+function HomePage() {
+    return (
+        <main className="flex h-full w-full flex-col items-center justify-center px-4 text-center">
+            Hello from home
+        </main>
+    )
+}
+
+export default HomePage;
+</file>
+
+<file path="src/shared/pages/LoginPage.tsx">
+import LoginCard from "@/features/auth/components/LoginCard.tsx";
+
+function LoginPage() {
+    return (
+        <main className="flex h-full w-full flex-col items-center justify-center px-4 text-center">
+            <LoginCard />
+        </main>
+    );
+}
+
+export default LoginPage;
+</file>
+
+<file path="src/store/authStore.ts">
+import type { User } from "@/types/User.ts";
+import { create } from 'zustand';
+import { createJSONStorage, persist } from "zustand/middleware/persist";
+
+interface AuthState {
+    token: string | null;
+    user: User | null;
+    isAuthenticated: boolean;
+    login: (token: string, user: User) => void;
+    logout: () => void;
+}
+
+export const useAuthStore = create<AuthState>()(
+    persist(
+        (set) => ({
+            token: null,
+            user: null,
+            isAuthenticated: false,
+            login: (token, user) => set({ token, user, isAuthenticated: true }),
+            logout: () => set({ token: null, user: null, isAuthenticated: false }),
+        }),
+        {
+            name: 'auth-storage',
+            storage: createJSONStorage(() => localStorage),
+        }
+    )
+)
+</file>
+
+<file path="src/types/AssetTypology.ts">
+import type { ReportingFrequency } from "@/types/enums.ts";
+import type { Unit } from "@/types/Unit.ts";
+
+export interface AssetTypology {
+    id: number;
+    unitId: number;
+    sourceType: string;
+    description: string;
+    assetFields: string; // JSON string
+    isActive: boolean;
+    responsibleContactId: number | null;
+    reportingFrequency: ReportingFrequency;
+    unit?: Unit;
+}
+</file>
+
+<file path="src/types/Company.ts">
+import type { User } from "./User";
+import type { Unit } from "@/types/Unit.ts";
+
+export interface Company {
+    id: string;
+    name: string;
+    cnpj: string | null;
+    createdAt: Date;
+    // Relations
+    users?: User[];
+    units?: Unit[];
+}
+</file>
+
+<file path="src/types/enums.ts">
+export type UserRole = 'MASTER' | 'ADMIN' | 'USER';
+export type ReportingFrequency = 'anual' | 'mensal';
+</file>
+
+<file path="src/types/EsgData.ts">
+import type { Unit } from "@/types/Unit.ts";
+
+interface BaseEsgData {
+    id: number;
+    year: number;
+    period: string;
+    unitId: number;
+    comments: string | null;
+    createdAt: Date;
+    updatedAt: Date;
+
+    // Relations
+    unit?: Unit;
+
+    // Common Responsibility Fields (Present in most, but not all. Optional here)
+    responsible?: string | null;
+    deptResponsible?: string | null;
+    email?: string | null;
+    phone?: string | null;
+}
+
+// 1. Mobile Combustion
+export interface MobileCombustionData extends BaseEsgData {
+    sourceDescription: string | null;
+    isCompanyControlled: boolean;
+    inputType: string | null;
+    fuelType: string | null;
+    consumption: number | null;
+    consumptionUnit: string | null;
+    distance: number | null;
+    distanceUnit: string | null;
+    vehicleType: string | null;
+}
+
+// 2. Stationary Combustion
+export interface StationaryCombustionData extends BaseEsgData {
+    sourceDescription: string | null;
+    fuelType: string | null;
+    consumption: number | null;
+    unitMeasure: string | null;
+    isCompanyControlled: boolean;
+}
+
+// 3. Production & Sales
+export interface ProductionSalesData extends BaseEsgData {
+    product: string;
+    quantitySold: number;
+    measureUnit: string;
+}
+
+// 4. Lubricants & IPPU
+export interface LubricantsIppuData extends BaseEsgData {
+    emissionSource: string | null;
+    lubricantType: string | null;
+    consumption: number | null;
+    unitMeasure: string | null;
+    isCompanyControlled: boolean;
+}
+
+// 5. Fugitive Emissions
+export interface FugitiveEmissionsData extends BaseEsgData {
+    emissionSource: string | null;
+    gasType: string | null;
+    quantityReplaced: number | null;
+    unitMeasure: string | null;
+    isCompanyControlled: boolean;
+}
+
+// 6. Fertilizers
+export interface FertilizersData extends BaseEsgData {
+    fertilizerType: string | null;
+    quantityKg: number | null;
+    unitMeasure: string | null;
+    percentNitrogen: number | null;
+    percentCarbonate: number | null;
+    isCompanyControlled: boolean;
+}
+
+// 7. Controlled Effluents
+export interface EffluentsControlledData extends BaseEsgData {
+    treatmentOrDest: string;
+    treatmentType: string | null;
+    finalDestType: string | null;
+    qtyEffluentM3: number;
+    unitEffluent: string;
+    qtyOrganic: number;
+    unitOrganic: string;
+    qtyNitrogen: number;
+    unitNitrogen: string;
+    organicRemovedSludge: number | null;
+    unitSludge: string | null;
+}
+
+// 8. Domestic Effluents
+export interface DomesticEffluentsData extends BaseEsgData {
+    workerType: string;
+    numWorkers: number;
+    avgWorkHours: number;
+    septicTankOwner: string;
+}
+
+// 9. Land Use Change
+export interface LandUseChangeData extends BaseEsgData {
+    prevLandUse: string;
+    biome: string | null;
+    phytophysiognomy: string | null;
+    areaType: string | null;
+    areaHectares: number;
+}
+
+// 10. Solid Waste
+export interface SolidWasteData extends BaseEsgData {
+    finalDestination: string | null;
+    wasteType: string | null;
+    quantityGenerated: number | null;
+    unitMeasure: string | null;
+    cityStateDest: string | null;
+    locationControlled: string | null;
+    internalTracking: string | null;
+}
+
+// 11. Electricity Purchase
+export interface ElectricityPurchaseData extends BaseEsgData {
+    energySource: string | null;
+    specifySource: string | null;
+    consumption: number | null;
+    measureUnit: string | null;
+    traceability: string | null;
+}
+
+// 12. Purchased Goods & Services
+export interface PurchasedGoodsServicesData extends BaseEsgData {
+    itemDescription: string | null;
+    itemType: string | null;
+    quantity: number | null;
+    unitMeasure: string | null;
+    acquisitionValue: number | null;
+    thirdPartyGoods: string | null;
+}
+
+// 13. Capital Goods
+export interface CapitalGoodsData extends BaseEsgData {
+    capitalGood: string | null;
+    quantity: number | null;
+    unitMeasure: string | null;
+    acquisitionValue: number | null;
+}
+
+// 14. Upstream Transport
+export interface UpstreamTransportData extends BaseEsgData {
+    transportedItem: string | null;
+    transportMode: string | null;
+    reportType: string | null;
+    fuel: string | null;
+    consumption: number | null;
+    consumptionUnit: string | null;
+    vehicleClass: string | null;
+    distance: number | null;
+    distanceUnit: string | null;
+    transportedLoad: number | null;
+    tripCount: number | null;
+    origin: string | null;
+    destination: string | null;
+}
+
+// 15. Business Travel (Land)
+export interface BusinessTravelLandData extends BaseEsgData {
+    tripDescription: string | null;
+    travelMode: string | null;
+    reportType: string | null;
+    fuel: string | null;
+    consumption: number | null;
+    consumptionUnit: string | null;
+    distance: number | null;
+    distanceUnit: string | null;
+    kmReimbursed: string | null;
+}
+
+// 16. Downstream Transport
+// (Identical to Upstream in structure, separated for domain clarity)
+export interface DownstreamTransportData extends UpstreamTransportData {}
+
+// 17. Waste Transport
+export interface WasteTransportData extends BaseEsgData {
+    transportedItem: string | null;
+    reportType: string | null;
+    fuel: string | null;
+    consumption: number | null;
+    consumptionUnit: string | null;
+    vehicleClass: string | null;
+    distance: number | null;
+    distanceUnit: string | null;
+    transportedLoad: number | null;
+    tripCount: number | null;
+}
+
+// 18. Home Office
+export interface HomeOfficeData extends BaseEsgData {
+    workRegime: string | null;
+    numEmployees: number | null;
+}
+
+// 19. Air Travel
+export interface AirTravelData extends BaseEsgData {
+    tripDescription: string | null;
+    airportCodeOrigin: string | null;
+    airportCodeDest: string | null;
+    tripCount: number | null;
+}
+
+// 20. Employee Commuting
+export interface EmployeeCommutingData extends BaseEsgData {
+    identifier: string | null;
+    methodUsed: string | null;
+    reportType: string | null;
+    fuelType: string | null;
+    consumption: number | null;
+    consumptionUnit: string | null;
+    distanceKm: number | null;
+    employeeAddress: string | null;
+    workAddress: string | null;
+    daysCommuted: number | null;
+}
+
+// 21. Energy Generation
+export interface EnergyGenerationData extends BaseEsgData {
+    sourceDescription: string | null;
+    generationSource: string | null;
+    totalGeneration: number | null;
+    measureUnit: string | null;
+}
+
+// 22. Planted Forest
+export interface PlantedForestData extends BaseEsgData {
+    areaId: string | null;
+    speciesName: string | null;
+    areaPrePreLast: number | null;
+    agePrePreLast: number | null;
+    agePreLast: number | null;
+    areaHarvestedPreLast: number | null;
+    currentArea: number | null;
+}
+
+// 23. Conservation Area
+export interface ConservationAreaData extends BaseEsgData {
+    description: string | null;
+    biome: string | null;
+    phytophysiognomy: string | null;
+    plantedArea: string | null;
+    plantingStatus: string | null;
+    areaStartYear: number | null;
+    areaEndYear: number | null;
+    changeReason: string | null;
+}
+</file>
+
+<file path="src/types/ManagedOptions.ts">
+export interface ManagedOption {
+    id: number;
+    fieldKey: string;
+    value: string;
+}
+</file>
+
+<file path="src/types/Unit.ts">
+import type { AssetTypology } from "./AssetTypology";
+import type { Company } from "./Company";
+import type { User } from "@/types/User.ts";
+import type {
+    AirTravelData,
+    BusinessTravelLandData,
+    CapitalGoodsData,
+    ConservationAreaData, DomesticEffluentsData, DownstreamTransportData, EffluentsControlledData,
+    ElectricityPurchaseData, EmployeeCommutingData,
+    EnergyGenerationData,
+    FertilizersData,
+    FugitiveEmissionsData, HomeOfficeData, LandUseChangeData,
+    LubricantsIppuData,
+    MobileCombustionData, PlantedForestData, ProductionSalesData, PurchasedGoodsServicesData, SolidWasteData,
+    StationaryCombustionData, UpstreamTransportData, WasteTransportData
+} from "./EsgData";
+
+export interface Unit {
+    id: number;
+    name: string;
+    city: string;
+    state: string;
+    country: string;
+    numberOfWorkers: number;
+
+    // Foreign Keys
+    companyId: string;
+
+    // Parent Relations (Upwards)
+    company?: Company;
+
+    // Child Relations (Downwards - Users)
+    users?: User[];
+
+    // --- ESG DATA RELATIONS (Downwards - Data) ---
+    // These are optional arrays because you might not include them in every Prisma query.
+
+    assetTypologies?: AssetTypology[];
+
+    // Scope 1 & 2
+    mobileCombustionDatas?: MobileCombustionData[];
+    stationaryCombustionDatas?: StationaryCombustionData[];
+    fugitiveEmissionsDatas?: FugitiveEmissionsData[];
+    lubricantsIppuDatas?: LubricantsIppuData[];
+    fertilizersDatas?: FertilizersData[];
+    energyGenerationDatas?: EnergyGenerationData[];
+    electricityPurchaseDatas?: ElectricityPurchaseData[];
+    landUseChangeDatas?: LandUseChangeData[];
+    plantedForestDatas?: PlantedForestData[];
+    conservationAreaDatas?: ConservationAreaData[];
+
+    // Scope 3 & Value Chain
+    productionSalesDatas?: ProductionSalesData[];
+    purchasedGoodsServicesDatas?: PurchasedGoodsServicesData[];
+    capitalGoodsDatas?: CapitalGoodsData[];
+    upstreamTransportDatas?: UpstreamTransportData[];
+    downstreamTransportDatas?: DownstreamTransportData[];
+    businessTravelLandDatas?: BusinessTravelLandData[];
+    airTravelDatas?: AirTravelData[];
+    employeeCommutingDatas?: EmployeeCommutingData[];
+    wasteTransportDatas?: WasteTransportData[];
+    homeOfficeDatas?: HomeOfficeData[];
+
+    // Waste & Effluents
+    solidWasteDatas?: SolidWasteData[];
+    effluentsControlledDatas?: EffluentsControlledData[];
+    domesticEffluentsDatas?: DomesticEffluentsData[];
+
+    createdAt: Date;
+}
+</file>
+
+<file path="src/types/User.ts">
+import type { Company } from "@/types/Company.ts";
+import type { UserRole } from "@/types/enums.ts";
+import type { Unit } from "@/types/Unit.ts";
+
+export interface User {
+    id: string;
+    email: string;
+    name: string;
+    phone: string | null;
+    role: UserRole;
+
+    // Multi-tenancy & Hierarchy
+    companyId: string | null;
+    unitId: number | null;
+    parentId: string | null;
+
+    // Relations
+    company?: Company | null;
+    unit?: Unit | null;
+    parent?: User | null;
+    children?: User[];
+    permissions?: UserPermission[];
+
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+export interface UserPermission {
+    id: string;
+    userId: string;
+    sourceType: string;
+    user?: User;
+}
+</file>
+
+<file path="tsconfig.app.json">
+{
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+    "target": "ES2022",
+    "useDefineForClassFields": true,
+    "lib": [
+      "ES2022",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "module": "ESNext",
+    "types": [
+      "vite/client"
+    ],
+    "skipLibCheck": true,
+
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+    "jsx": "react-jsx",
+
+    /* Linting */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "erasableSyntaxOnly": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedSideEffectImports": true,
+
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ]
+    }
+  },
+  "include": [
+    "src"
+  ]
+}
+</file>
+
+<file path="tsconfig.json">
+{
+  "files": [],
+  "references": [
+    {
+      "path": "./tsconfig.app.json"
+    },
+    {
+      "path": "./tsconfig.node.json"
+    }
+  ],
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ]
+    }
+  }
+}
+</file>
+
+<file path="tsconfig.node.json">
+{
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
+    "target": "ES2023",
+    "lib": ["ES2023"],
+    "module": "ESNext",
+    "types": ["node"],
+    "skipLibCheck": true,
+
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+
+    /* Linting */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "erasableSyntaxOnly": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedSideEffectImports": true
+  },
+  "include": ["vite.config.ts"]
+}
+</file>
+
+<file path="vite.config.ts">
+import path from "path"
+import tailwindcss from "@tailwindcss/vite"
+import react from "@vitejs/plugin-react"
+import { defineConfig } from "vite"
+
+// https://vite.dev/config/
+export default defineConfig({
+  plugins: [react(), tailwindcss()],
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "./src"),
+    },
+  },
+})
+</file>
+
+</files>
+</file>
+
+<file path="frontend-react/src/api/api.ts">
+import axios from "axios";
+import { useAuthStore } from "@/store/authStore.ts";
+
+const BASE_URL = 'https://localhost:8080/api'
+
+const api = axios.create({
+    baseURL: BASE_URL,
+});
+
+api.interceptors.request.use((config) => {
+    const token = useAuthStore.getState().token;
+
+    if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+});
+
+api.interceptors.response.use(
+    (response) => response, // Return successful responses as is
+    (error) => {
+        // If the error is 401 (Unauthorized)
+        if (error.response?.status === 401) {
+            // Force logout directly from the store
+            useAuthStore.getState().logout();
+        }
+        return Promise.reject(error);
+    }
+);
+
+export default api;
+</file>
+
+<file path="frontend-react/src/features/auth/hooks/useLogin.ts">
+import { useAuthStore } from "@/store/authStore.ts";
+import { useMutation } from "@tanstack/react-query";
+import api from "@/api/api.ts";
+import type { User } from "@/types/User.ts";
+
+export const useLogin = () => {
+    const login = useAuthStore((state) => state.login);
+
+    return useMutation({
+        mutationFn: async (credentials: { email: string; password: string }) => {
+            const { data } = await api.post('/auth/login', credentials);
+            return data;
+        },
+        onSuccess: (data: { token: string, user: User}) => {
+            login(data.token, data.user);
+        }
+    })
+}
+</file>
+
+<file path="frontend-react/src/lib/authUtils.ts">
+export function isTokenExpired(token: string): boolean {
+    if (!token) return true;
+
+    try {
+        // 1. Split the token (Header.Payload.Signature)
+        const base64Url = token.split('.')[1];
+
+        // 2. Normalize Base64Url to Base64
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+
+        // 3. Decode the payload
+        const jsonPayload = decodeURIComponent(
+            atob(base64)
+                .split('')
+                .map((c) => '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2))
+                .join('')
+        );
+
+        const { exp } = JSON.parse(jsonPayload);
+
+        // 4. Check if expired (exp is in seconds, Date.now is in ms)
+        if (!exp) return false; // If no expiry, assume valid
+        return Date.now() >= exp * 1000;
+
+    } catch (error) {
+        console.error("Error checking token expiration:", error);
+        return true; // Treat invalid format as expired
+    }
+}
+</file>
+
+<file path="frontend-react/src/shared/components/RequireAuth.tsx">
+// src/components/RequireAuth.tsx (Create this file)
+import { useAuthStore } from "@/store/authStore.ts";
+import { Redirect } from "wouter";
+import type { ReactNode } from "react";
+
+export function RequireAuth({ children }: { children: ReactNode }) {
+    const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+
+    if (!isAuthenticated) {
+        return <Redirect to="/" />;
+    }
+
+    return <>{children}</>;
+}
+</file>
+
+<file path="frontend-react/src/store/authStore.ts">
+import type { User } from "@/types/User.ts";
+import { create } from 'zustand';
+import { createJSONStorage, persist } from "zustand/middleware/persist";
+import { isTokenExpired } from "@/lib/authUtils.ts";
+
+interface AuthState {
+    token: string | null;
+    user: User | null;
+    isAuthenticated: boolean;
+    login: (token: string, user: User) => void;
+    logout: () => void;
+    checkSession: () => void;
+}
+
+export const useAuthStore = create<AuthState>()(
+    persist(
+        (set, get) => ({
+            token: null,
+            user: null,
+            isAuthenticated: false,
+            login: (token, user) => set({ token, user, isAuthenticated: true }),
+            logout: () => set({ token: null, user: null, isAuthenticated: false }),
+
+            checkSession: () => {
+                const { token, logout } = get();
+                if (!token || isTokenExpired(token)) {
+                    logout();
+                }
+            }
+        }),
+        {
+            name: 'auth-storage',
+            storage: createJSONStorage(() => localStorage),
+        }
+    )
+)
+</file>
+
+<file path="frontend-react/src/types/AssetTypology.ts">
+import type { ReportingFrequency } from "@/types/enums.ts";
+import type { Unit } from "@/types/Unit.ts";
+
+export interface AssetTypology {
+    id: number;
+    unitId: number;
+    sourceType: string;
+    description: string;
+    assetFields: string; // JSON string
+    isActive: boolean;
+    responsibleContactId: number | null;
+    reportingFrequency: ReportingFrequency;
+    unit?: Unit;
+}
+</file>
+
+<file path="frontend-react/src/types/Company.ts">
+import type { User } from "./User";
+import type { Unit } from "@/types/Unit.ts";
+
+export interface Company {
+    id: string;
+    name: string;
+    cnpj: string | null;
+    createdAt: Date;
+    // Relations
+    users?: User[];
+    units?: Unit[];
+}
+</file>
+
+<file path="frontend-react/src/types/enums.ts">
+export type UserRole = 'MASTER' | 'ADMIN' | 'USER';
+export type ReportingFrequency = 'anual' | 'mensal';
+</file>
+
+<file path="frontend-react/src/types/EsgData.ts">
+import type { Unit } from "@/types/Unit.ts";
+
+interface BaseEsgData {
+    id: number;
+    year: number;
+    period: string;
+    unitId: number;
+    comments: string | null;
+    createdAt: Date;
+    updatedAt: Date;
+
+    // Relations
+    unit?: Unit;
+
+    // Common Responsibility Fields (Present in most, but not all. Optional here)
+    responsible?: string | null;
+    deptResponsible?: string | null;
+    email?: string | null;
+    phone?: string | null;
+}
+
+// 1. Mobile Combustion
+export interface MobileCombustionData extends BaseEsgData {
+    sourceDescription: string | null;
+    isCompanyControlled: boolean;
+    inputType: string | null;
+    fuelType: string | null;
+    consumption: number | null;
+    consumptionUnit: string | null;
+    distance: number | null;
+    distanceUnit: string | null;
+    vehicleType: string | null;
+}
+
+// 2. Stationary Combustion
+export interface StationaryCombustionData extends BaseEsgData {
+    sourceDescription: string | null;
+    fuelType: string | null;
+    consumption: number | null;
+    unitMeasure: string | null;
+    isCompanyControlled: boolean;
+}
+
+// 3. Production & Sales
+export interface ProductionSalesData extends BaseEsgData {
+    product: string;
+    quantitySold: number;
+    measureUnit: string;
+}
+
+// 4. Lubricants & IPPU
+export interface LubricantsIppuData extends BaseEsgData {
+    emissionSource: string | null;
+    lubricantType: string | null;
+    consumption: number | null;
+    unitMeasure: string | null;
+    isCompanyControlled: boolean;
+}
+
+// 5. Fugitive Emissions
+export interface FugitiveEmissionsData extends BaseEsgData {
+    emissionSource: string | null;
+    gasType: string | null;
+    quantityReplaced: number | null;
+    unitMeasure: string | null;
+    isCompanyControlled: boolean;
+}
+
+// 6. Fertilizers
+export interface FertilizersData extends BaseEsgData {
+    fertilizerType: string | null;
+    quantityKg: number | null;
+    unitMeasure: string | null;
+    percentNitrogen: number | null;
+    percentCarbonate: number | null;
+    isCompanyControlled: boolean;
+}
+
+// 7. Controlled Effluents
+export interface EffluentsControlledData extends BaseEsgData {
+    treatmentOrDest: string;
+    treatmentType: string | null;
+    finalDestType: string | null;
+    qtyEffluentM3: number;
+    unitEffluent: string;
+    qtyOrganic: number;
+    unitOrganic: string;
+    qtyNitrogen: number;
+    unitNitrogen: string;
+    organicRemovedSludge: number | null;
+    unitSludge: string | null;
+}
+
+// 8. Domestic Effluents
+export interface DomesticEffluentsData extends BaseEsgData {
+    workerType: string;
+    numWorkers: number;
+    avgWorkHours: number;
+    septicTankOwner: string;
+}
+
+// 9. Land Use Change
+export interface LandUseChangeData extends BaseEsgData {
+    prevLandUse: string;
+    biome: string | null;
+    phytophysiognomy: string | null;
+    areaType: string | null;
+    areaHectares: number;
+}
+
+// 10. Solid Waste
+export interface SolidWasteData extends BaseEsgData {
+    finalDestination: string | null;
+    wasteType: string | null;
+    quantityGenerated: number | null;
+    unitMeasure: string | null;
+    cityStateDest: string | null;
+    locationControlled: string | null;
+    internalTracking: string | null;
+}
+
+// 11. Electricity Purchase
+export interface ElectricityPurchaseData extends BaseEsgData {
+    energySource: string | null;
+    specifySource: string | null;
+    consumption: number | null;
+    measureUnit: string | null;
+    traceability: string | null;
+}
+
+// 12. Purchased Goods & Services
+export interface PurchasedGoodsServicesData extends BaseEsgData {
+    itemDescription: string | null;
+    itemType: string | null;
+    quantity: number | null;
+    unitMeasure: string | null;
+    acquisitionValue: number | null;
+    thirdPartyGoods: string | null;
+}
+
+// 13. Capital Goods
+export interface CapitalGoodsData extends BaseEsgData {
+    capitalGood: string | null;
+    quantity: number | null;
+    unitMeasure: string | null;
+    acquisitionValue: number | null;
+}
+
+// 14. Upstream Transport
+export interface UpstreamTransportData extends BaseEsgData {
+    transportedItem: string | null;
+    transportMode: string | null;
+    reportType: string | null;
+    fuel: string | null;
+    consumption: number | null;
+    consumptionUnit: string | null;
+    vehicleClass: string | null;
+    distance: number | null;
+    distanceUnit: string | null;
+    transportedLoad: number | null;
+    tripCount: number | null;
+    origin: string | null;
+    destination: string | null;
+}
+
+// 15. Business Travel (Land)
+export interface BusinessTravelLandData extends BaseEsgData {
+    tripDescription: string | null;
+    travelMode: string | null;
+    reportType: string | null;
+    fuel: string | null;
+    consumption: number | null;
+    consumptionUnit: string | null;
+    distance: number | null;
+    distanceUnit: string | null;
+    kmReimbursed: string | null;
+}
+
+// 16. Downstream Transport
+// (Identical to Upstream in structure, separated for domain clarity)
+export interface DownstreamTransportData extends UpstreamTransportData {}
+
+// 17. Waste Transport
+export interface WasteTransportData extends BaseEsgData {
+    transportedItem: string | null;
+    reportType: string | null;
+    fuel: string | null;
+    consumption: number | null;
+    consumptionUnit: string | null;
+    vehicleClass: string | null;
+    distance: number | null;
+    distanceUnit: string | null;
+    transportedLoad: number | null;
+    tripCount: number | null;
+}
+
+// 18. Home Office
+export interface HomeOfficeData extends BaseEsgData {
+    workRegime: string | null;
+    numEmployees: number | null;
+}
+
+// 19. Air Travel
+export interface AirTravelData extends BaseEsgData {
+    tripDescription: string | null;
+    airportCodeOrigin: string | null;
+    airportCodeDest: string | null;
+    tripCount: number | null;
+}
+
+// 20. Employee Commuting
+export interface EmployeeCommutingData extends BaseEsgData {
+    identifier: string | null;
+    methodUsed: string | null;
+    reportType: string | null;
+    fuelType: string | null;
+    consumption: number | null;
+    consumptionUnit: string | null;
+    distanceKm: number | null;
+    employeeAddress: string | null;
+    workAddress: string | null;
+    daysCommuted: number | null;
+}
+
+// 21. Energy Generation
+export interface EnergyGenerationData extends BaseEsgData {
+    sourceDescription: string | null;
+    generationSource: string | null;
+    totalGeneration: number | null;
+    measureUnit: string | null;
+}
+
+// 22. Planted Forest
+export interface PlantedForestData extends BaseEsgData {
+    areaId: string | null;
+    speciesName: string | null;
+    areaPrePreLast: number | null;
+    agePrePreLast: number | null;
+    agePreLast: number | null;
+    areaHarvestedPreLast: number | null;
+    currentArea: number | null;
+}
+
+// 23. Conservation Area
+export interface ConservationAreaData extends BaseEsgData {
+    description: string | null;
+    biome: string | null;
+    phytophysiognomy: string | null;
+    plantedArea: string | null;
+    plantingStatus: string | null;
+    areaStartYear: number | null;
+    areaEndYear: number | null;
+    changeReason: string | null;
+}
+</file>
+
+<file path="frontend-react/src/types/ManagedOptions.ts">
+export interface ManagedOption {
+    id: number;
+    fieldKey: string;
+    value: string;
+}
+</file>
+
+<file path="frontend-react/src/types/Unit.ts">
+import type { AssetTypology } from "./AssetTypology";
+import type { Company } from "./Company";
+import type { User } from "@/types/User.ts";
+import type {
+    AirTravelData,
+    BusinessTravelLandData,
+    CapitalGoodsData,
+    ConservationAreaData, DomesticEffluentsData, DownstreamTransportData, EffluentsControlledData,
+    ElectricityPurchaseData, EmployeeCommutingData,
+    EnergyGenerationData,
+    FertilizersData,
+    FugitiveEmissionsData, HomeOfficeData, LandUseChangeData,
+    LubricantsIppuData,
+    MobileCombustionData, PlantedForestData, ProductionSalesData, PurchasedGoodsServicesData, SolidWasteData,
+    StationaryCombustionData, UpstreamTransportData, WasteTransportData
+} from "./EsgData";
+
+export interface Unit {
+    id: number;
+    name: string;
+    city: string;
+    state: string;
+    country: string;
+    numberOfWorkers: number;
+
+    // Foreign Keys
+    companyId: string;
+
+    // Parent Relations (Upwards)
+    company?: Company;
+
+    // Child Relations (Downwards - Users)
+    users?: User[];
+
+    // --- ESG DATA RELATIONS (Downwards - Data) ---
+    // These are optional arrays because you might not include them in every Prisma query.
+
+    assetTypologies?: AssetTypology[];
+
+    // Scope 1 & 2
+    mobileCombustionDatas?: MobileCombustionData[];
+    stationaryCombustionDatas?: StationaryCombustionData[];
+    fugitiveEmissionsDatas?: FugitiveEmissionsData[];
+    lubricantsIppuDatas?: LubricantsIppuData[];
+    fertilizersDatas?: FertilizersData[];
+    energyGenerationDatas?: EnergyGenerationData[];
+    electricityPurchaseDatas?: ElectricityPurchaseData[];
+    landUseChangeDatas?: LandUseChangeData[];
+    plantedForestDatas?: PlantedForestData[];
+    conservationAreaDatas?: ConservationAreaData[];
+
+    // Scope 3 & Value Chain
+    productionSalesDatas?: ProductionSalesData[];
+    purchasedGoodsServicesDatas?: PurchasedGoodsServicesData[];
+    capitalGoodsDatas?: CapitalGoodsData[];
+    upstreamTransportDatas?: UpstreamTransportData[];
+    downstreamTransportDatas?: DownstreamTransportData[];
+    businessTravelLandDatas?: BusinessTravelLandData[];
+    airTravelDatas?: AirTravelData[];
+    employeeCommutingDatas?: EmployeeCommutingData[];
+    wasteTransportDatas?: WasteTransportData[];
+    homeOfficeDatas?: HomeOfficeData[];
+
+    // Waste & Effluents
+    solidWasteDatas?: SolidWasteData[];
+    effluentsControlledDatas?: EffluentsControlledData[];
+    domesticEffluentsDatas?: DomesticEffluentsData[];
+
+    createdAt: Date;
+}
+</file>
+
+<file path="frontend-react/src/types/User.ts">
+import type { Company } from "@/types/Company.ts";
+import type { UserRole } from "@/types/enums.ts";
+import type { Unit } from "@/types/Unit.ts";
+
+export interface User {
+    id: string;
+    email: string;
+    name: string;
+    phone: string | null;
+    role: UserRole;
+
+    // Multi-tenancy & Hierarchy
+    companyId: string | null;
+    unitId: number | null;
+    parentId: string | null;
+
+    // Relations
+    company?: Company | null;
+    unit?: Unit | null;
+    parent?: User | null;
+    children?: User[];
+    permissions?: UserPermission[];
+
+    createdAt: Date;
+    updatedAt: Date;
+}
+
+export interface UserPermission {
+    id: string;
+    userId: string;
+    sourceType: string;
+    user?: User;
+}
+</file>
+
+<file path="package.json">
+{}
+</file>
 
 <file path="backend-new/.gitignore">
 node_modules
@@ -1525,7 +3550,6 @@ The content is organized as follows:
 
 <directory_structure>
 .gitignore
-dev.db
 package.json
 prisma.config.ts
 prisma/migrations/20260105150207_init/migration.sql
@@ -1536,21 +3560,25 @@ prisma/seed.ts
 src/controllers/authController.ts
 src/controllers/configController.ts
 src/controllers/esgDataController.ts
+src/controllers/permissionController.ts
 src/controllers/userController.ts
 src/index.ts
 src/interfaces/crudDelegate.ts
 src/middleware/authMiddleware.ts
 src/repositories/configRepository.ts
+src/repositories/permissionRepository.ts
 src/repositories/prisma.ts
 src/repositories/userRepository.ts
 src/routes/authRoutes.ts
 src/routes/esgRoutes.ts
+src/routes/permissionRoutes.ts
 src/routes/userRoutes.ts
 src/schemas/esgSchemas.ts
 src/schemas/userSchema.ts
 src/services/authService.ts
 src/services/configService.ts
 src/services/esgGenericService.ts
+src/services/permissionService.ts
 src/services/userService.ts
 src/types/auth.ts
 src/utils/jwtUtils.ts
@@ -1568,6 +3596,7 @@ node_modules
 .env
 
 /generated/prisma
+/dev.db
 </file>
 
 <file path="package.json">
@@ -2940,12 +4969,22 @@ main().catch(e => console.error(e)).finally(() => prisma.$disconnect());
 
 <file path="src/controllers/authController.ts">
 import { Request, Response } from 'express';
+import * as jwt from 'jsonwebtoken';
+import * as dotenv from 'dotenv';
 import * as authService from '../services/authService';
+import * as userService from '../services/userService';
+import { AppJwtPayload } from "../types/auth";
+
+dotenv.config();
 
 export const handleLogin = async (req: Request, res: Response) => {
     try {
         const token = await authService.login(req.body.email, req.body.password);
-        res.json({ token });
+        const { id } = jwt.verify(token, process.env.JWT_SECRET!) as AppJwtPayload;
+
+        const user = await userService.fetchLoggedUser(id);
+
+        res.json({ token, user });
     } catch (error: any) {
         res.status(401).json({ message: error.message });
     }
@@ -3086,6 +5125,70 @@ export const deleteEntry = async (req: Request, res: Response) => {
 };
 </file>
 
+<file path="src/controllers/permissionController.ts">
+import { Request, Response } from 'express';
+import * as permissionService from '../services/permissionService';
+import { z } from 'zod';
+
+// Zod Schema for validation
+const permissionListSchema = z.object({
+    permissions: z.array(z.string().min(1))
+});
+
+const singlePermissionSchema = z.object({
+    sourceType: z.string().min(1)
+});
+
+export const getPermissions = async (req: Request, res: Response) => {
+    try {
+        const { userId } = req.params;
+        const permissions = await permissionService.getUserPermissions(userId);
+        res.json({ permissions });
+    } catch (err: any) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
+export const syncPermissions = async (req: Request, res: Response) => {
+    try {
+        const { userId } = req.params;
+
+        // Validate Input
+        const { permissions } = permissionListSchema.parse(req.body);
+
+        // Execute Sync
+        await permissionService.syncPermissions(userId, permissions);
+
+        res.json({ message: "Permissions updated successfully", count: permissions.length });
+    } catch (err: any) {
+        if (err.errors) return res.status(400).json({ error: "Validation failed", details: err.errors });
+        res.status(400).json({ error: err.message });
+    }
+};
+
+export const addPermission = async (req: Request, res: Response) => {
+    try {
+        const { userId } = req.params;
+        const { sourceType } = singlePermissionSchema.parse(req.body);
+
+        await permissionService.grantPermission(userId, sourceType);
+        res.status(201).json({ message: "Permission granted" });
+    } catch (err: any) {
+        res.status(400).json({ error: err.message });
+    }
+};
+
+export const removePermission = async (req: Request, res: Response) => {
+    try {
+        const { userId, sourceType } = req.params;
+        await permissionService.revokePermission(userId, sourceType);
+        res.status(204).send();
+    } catch (err: any) {
+        res.status(400).json({ error: err.message });
+    }
+};
+</file>
+
 <file path="src/controllers/userController.ts">
 import { Request, Response } from 'express';
 import * as userService from '../services/userService';
@@ -3095,7 +5198,7 @@ export const createUser = async (req: Request, res: Response) => {
     try {
         const validatedData = createUserSchema.parse(req.body);
 
-        const newUser = await userService.registerUser(validatedData, req.user);
+        const newUser = await userService.registerUser(validatedData, req.user!);
 
         const { password, ...safeUser } = newUser;
         res.status(201).json(safeUser);
@@ -3107,6 +5210,19 @@ export const createUser = async (req: Request, res: Response) => {
         res.status(400).json({ error: error.message });
     }
 };
+
+export const getLoggedUser = async (req: Request, res: Response) => {
+    try {
+        const { userId } = req.params
+
+        const loggedUser = await userService.fetchLoggedUser(userId);
+
+        const { password, ...safeUser } = loggedUser;
+        res.status(200).json(safeUser);
+    } catch (error: any) {
+        res.status(400).json({ error: error.message });
+    }
+}
 </file>
 
 <file path="src/index.ts">
@@ -3117,6 +5233,7 @@ import * as dotenv from 'dotenv';
 import authRoutes from './routes/authRoutes';
 import userRoutes from './routes/userRoutes';
 import esgRoutes from './routes/esgRoutes';
+import permissionRoutes from "./routes/permissionRoutes";
 
 dotenv.config();
 
@@ -3129,6 +5246,7 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/esg', esgRoutes);
+app.use('/api/permissions', permissionRoutes);
 
 app.get('/health', (req, res) => res.json({ status: 'OK' }));
 
@@ -3156,7 +5274,10 @@ export interface CrudDelegate<T> {
 <file path="src/middleware/authMiddleware.ts">
 import { NextFunction, Request, Response } from 'express';
 import * as jwt from 'jsonwebtoken';
+import * as dotenv from 'dotenv';
 import { AppJwtPayload } from "../types/auth";
+
+dotenv.config();
 
 declare global {
     namespace Express {
@@ -3223,6 +5344,48 @@ export const createOption = async (data: Prisma.ManagedOptionCreateInput) => {
 };
 </file>
 
+<file path="src/repositories/permissionRepository.ts">
+import prisma from './prisma';
+
+export const findByUserId = async (userId: string) => {
+    return prisma.userPermission.findMany({
+        where: { userId },
+        select: { sourceType: true } // We only need the string values
+    });
+};
+
+export const addPermission = async (userId: string, sourceType: string) => {
+    return prisma.userPermission.create({
+        data: { userId, sourceType }
+    });
+};
+
+export const removePermission = async (userId: string, sourceType: string) => {
+    return prisma.userPermission.deleteMany({ // deleteMany avoids error if it doesn't exist
+        where: { userId, sourceType }
+    });
+};
+
+// The "Update" Logic: Atomic Transaction
+export const replacePermissions = async (userId: string, sourceTypes: string[]) => {
+    return prisma.$transaction(async (tx) => {
+        // 1. Clear existing
+        await tx.userPermission.deleteMany({
+            where: { userId }
+        });
+
+        // 2. Insert new (if list is not empty)
+        if (sourceTypes.length > 0) {
+            await tx.userPermission.createMany({
+                data: sourceTypes.map(type => ({ userId, sourceType: type }))
+            });
+        }
+
+        return sourceTypes;
+    });
+};
+</file>
+
 <file path="src/repositories/prisma.ts">
 import { PrismaClient } from "../../generated/prisma";
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
@@ -3257,6 +5420,13 @@ export const create = async (userData: CreateUserDTO) => {
 export const findByEmail = async (email: string) => {
     return prisma.user.findUnique({
         where: { email },
+        include: { company: true }
+    })
+}
+
+export const findById = async (id: string) => {
+    return prisma.user.findUnique({
+        where: { id },
         include: { company: true }
     })
 }
@@ -3299,6 +5469,21 @@ router.delete('/data/:sourceType/:id', authenticate, esgController.deleteEntry);
 export default router;
 </file>
 
+<file path="src/routes/permissionRoutes.ts">
+import { Router } from 'express';
+import { authenticate } from '../middleware/authMiddleware';
+import * as permissionController from '../controllers/permissionController';
+
+const router = Router();
+
+router.get('/:userId', authenticate, permissionController.getPermissions);
+router.put('/:userId', authenticate, permissionController.syncPermissions);
+router.post('/:userId', authenticate, permissionController.addPermission);
+router.delete('/:userId/:sourceType', authenticate, permissionController.removePermission);
+
+export default router;
+</file>
+
 <file path="src/routes/userRoutes.ts">
 import { Router } from "express";
 import * as userController from '../controllers/userController';
@@ -3307,6 +5492,7 @@ import { authenticate } from "../middleware/authMiddleware";
 const router = Router()
 
 router.post("/create-user", authenticate, userController.createUser)
+router.get("/:userId", authenticate, userController.getLoggedUser)
 
 export default router
 </file>
@@ -3682,7 +5868,7 @@ export const createOption = async (rawData: unknown) => {
 </file>
 
 <file path="src/services/esgGenericService.ts">
-import { CrudDelegate } from "../interfaces/curdDelegate";
+import { CrudDelegate } from "../interfaces/crudDelegate";
 import { ZodObject } from "zod";
 import { AppJwtPayload } from "../types/auth";
 
@@ -3722,12 +5908,52 @@ export class EsgGenericService<T> {
 }
 </file>
 
+<file path="src/services/permissionService.ts">
+import * as permissionRepo from '../repositories/permissionRepository';
+import { esgRegistry } from '../utils/modelRegistry';
+
+const validateSourceType = (sourceType: string) => {
+    if (!esgRegistry[sourceType]) {
+        throw new Error(`Invalid source type: '${sourceType}'. Must be one of: ${Object.keys(esgRegistry).join(', ')}`);
+    }
+};
+
+export const getUserPermissions = async (userId: string) => {
+    const perms = await permissionRepo.findByUserId(userId);
+    return perms.map(p => p.sourceType); // Return simple array of strings
+};
+
+export const grantPermission = async (userId: string, sourceType: string) => {
+    validateSourceType(sourceType);
+
+    try {
+        return await permissionRepo.addPermission(userId, sourceType);
+    } catch (err: any) {
+        if (err.code === 'P2002') return;
+        throw err;
+    }
+};
+
+export const revokePermission = async (userId: string, sourceType: string) => {
+    return permissionRepo.removePermission(userId, sourceType);
+};
+
+export const syncPermissions = async (userId: string, sourceTypes: string[]) => {
+    sourceTypes.forEach(validateSourceType);
+
+    const uniqueTypes = [...new Set(sourceTypes)];
+
+    return permissionRepo.replacePermissions(userId, uniqueTypes);
+};
+</file>
+
 <file path="src/services/userService.ts">
-import { CreateUserDTO, UserPayload } from "../types/user";
+import { CreateUserDTO } from "../schemas/userSchema";
 import * as userRepository from "../repositories/userRepository";
 import { hashPassword } from "../utils/passwordUtils";
+import { AppJwtPayload } from "../types/auth";
 
-export const registerUser = async (userData: CreateUserDTO, currentUser: UserPayload) => {
+export const registerUser = async (userData: CreateUserDTO, currentUser: AppJwtPayload) => {
     const exists = await userRepository.findByEmail(userData.email);
     if (exists) throw new Error('User already exists');
 
@@ -3740,6 +5966,14 @@ export const registerUser = async (userData: CreateUserDTO, currentUser: UserPay
         companyId,
         parentId: currentUser.id
     });
+}
+
+export const fetchLoggedUser = async (userId: string) => {
+    const user = await userRepository.findById(userId);
+
+    if (!user) throw new Error('User not found');
+
+    return user;
 }
 </file>
 
@@ -3921,12 +6155,22 @@ export const comparePassword = async (password: string, hash: string): Promise<b
 
 <file path="backend-new/src/controllers/authController.ts">
 import { Request, Response } from 'express';
+import * as jwt from 'jsonwebtoken';
+import * as dotenv from 'dotenv';
 import * as authService from '../services/authService';
+import * as userService from '../services/userService';
+import { AppJwtPayload } from "../types/auth";
+
+dotenv.config();
 
 export const handleLogin = async (req: Request, res: Response) => {
     try {
         const token = await authService.login(req.body.email, req.body.password);
-        res.json({ token });
+        const { id } = jwt.verify(token, process.env.JWT_SECRET!) as AppJwtPayload;
+
+        const user = await userService.fetchLoggedUser(id);
+
+        res.json({ token, user });
     } catch (error: any) {
         res.status(401).json({ message: error.message });
     }
@@ -4067,55 +6311,68 @@ export const deleteEntry = async (req: Request, res: Response) => {
 };
 </file>
 
-<file path="backend-new/src/controllers/userController.ts">
+<file path="backend-new/src/controllers/permissionController.ts">
 import { Request, Response } from 'express';
-import * as userService from '../services/userService';
-import { createUserSchema } from "../schemas/userSchema";
+import * as permissionService from '../services/permissionService';
+import { z } from 'zod';
 
-export const createUser = async (req: Request, res: Response) => {
+// Zod Schema for validation
+const permissionListSchema = z.object({
+    permissions: z.array(z.string().min(1))
+});
+
+const singlePermissionSchema = z.object({
+    sourceType: z.string().min(1)
+});
+
+export const getPermissions = async (req: Request, res: Response) => {
     try {
-        const validatedData = createUserSchema.parse(req.body);
-
-        const newUser = await userService.registerUser(validatedData, req.user);
-
-        const { password, ...safeUser } = newUser;
-        res.status(201).json(safeUser);
-    } catch (error: any) {
-        if (error.name === 'ZodError') {
-            return res.status(400).json({ errors: error.errors });
-        }
-
-        res.status(400).json({ error: error.message });
+        const { userId } = req.params;
+        const permissions = await permissionService.getUserPermissions(userId);
+        res.json({ permissions });
+    } catch (err: any) {
+        res.status(500).json({ error: err.message });
     }
 };
-</file>
 
-<file path="backend-new/src/index.ts">
-import express from 'express';
-import cors from 'cors';
-import * as dotenv from 'dotenv';
+export const syncPermissions = async (req: Request, res: Response) => {
+    try {
+        const { userId } = req.params;
 
-import authRoutes from './routes/authRoutes';
-import userRoutes from './routes/userRoutes';
-import esgRoutes from './routes/esgRoutes';
+        // Validate Input
+        const { permissions } = permissionListSchema.parse(req.body);
 
-dotenv.config();
+        // Execute Sync
+        await permissionService.syncPermissions(userId, permissions);
 
-const app = express();
-const PORT = process.env.PORT || 3000;
+        res.json({ message: "Permissions updated successfully", count: permissions.length });
+    } catch (err: any) {
+        if (err.errors) return res.status(400).json({ error: "Validation failed", details: err.errors });
+        res.status(400).json({ error: err.message });
+    }
+};
 
-app.use(cors());
-app.use(express.json());
+export const addPermission = async (req: Request, res: Response) => {
+    try {
+        const { userId } = req.params;
+        const { sourceType } = singlePermissionSchema.parse(req.body);
 
-app.use('/api/auth', authRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/esg', esgRoutes);
+        await permissionService.grantPermission(userId, sourceType);
+        res.status(201).json({ message: "Permission granted" });
+    } catch (err: any) {
+        res.status(400).json({ error: err.message });
+    }
+};
 
-app.get('/health', (req, res) => res.json({ status: 'OK' }));
-
-app.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
-});
+export const removePermission = async (req: Request, res: Response) => {
+    try {
+        const { userId, sourceType } = req.params;
+        await permissionService.revokePermission(userId, sourceType);
+        res.status(204).send();
+    } catch (err: any) {
+        res.status(400).json({ error: err.message });
+    }
+};
 </file>
 
 <file path="backend-new/src/interfaces/crudDelegate.ts">
@@ -4137,7 +6394,10 @@ export interface CrudDelegate<T> {
 <file path="backend-new/src/middleware/authMiddleware.ts">
 import { NextFunction, Request, Response } from 'express';
 import * as jwt from 'jsonwebtoken';
+import * as dotenv from 'dotenv';
 import { AppJwtPayload } from "../types/auth";
+
+dotenv.config();
 
 declare global {
     namespace Express {
@@ -4204,6 +6464,48 @@ export const createOption = async (data: Prisma.ManagedOptionCreateInput) => {
 };
 </file>
 
+<file path="backend-new/src/repositories/permissionRepository.ts">
+import prisma from './prisma';
+
+export const findByUserId = async (userId: string) => {
+    return prisma.userPermission.findMany({
+        where: { userId },
+        select: { sourceType: true } // We only need the string values
+    });
+};
+
+export const addPermission = async (userId: string, sourceType: string) => {
+    return prisma.userPermission.create({
+        data: { userId, sourceType }
+    });
+};
+
+export const removePermission = async (userId: string, sourceType: string) => {
+    return prisma.userPermission.deleteMany({ // deleteMany avoids error if it doesn't exist
+        where: { userId, sourceType }
+    });
+};
+
+// The "Update" Logic: Atomic Transaction
+export const replacePermissions = async (userId: string, sourceTypes: string[]) => {
+    return prisma.$transaction(async (tx) => {
+        // 1. Clear existing
+        await tx.userPermission.deleteMany({
+            where: { userId }
+        });
+
+        // 2. Insert new (if list is not empty)
+        if (sourceTypes.length > 0) {
+            await tx.userPermission.createMany({
+                data: sourceTypes.map(type => ({ userId, sourceType: type }))
+            });
+        }
+
+        return sourceTypes;
+    });
+};
+</file>
+
 <file path="backend-new/src/repositories/prisma.ts">
 import { PrismaClient } from "../../generated/prisma";
 import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
@@ -4215,32 +6517,6 @@ const adapter = new PrismaBetterSqlite3({
 const prisma = new PrismaClient({ adapter });
 
 export default prisma;
-</file>
-
-<file path="backend-new/src/repositories/userRepository.ts">
-import prisma from "./prisma";
-import { CreateUserDTO } from "../schemas/userSchema";
-
-export const create = async (userData: CreateUserDTO) => {
-    return prisma.user.create({
-        data: {
-            email: userData.email,
-            password: userData.password,
-            name: userData.name,
-            role: userData.role,
-            companyId: userData.companyId,
-            unitId: userData.unitId,
-            parentId: userData.parentId,
-        }
-    })
-}
-
-export const findByEmail = async (email: string) => {
-    return prisma.user.findUnique({
-        where: { email },
-        include: { company: true }
-    })
-}
 </file>
 
 <file path="backend-new/src/routes/authRoutes.ts">
@@ -4280,16 +6556,19 @@ router.delete('/data/:sourceType/:id', authenticate, esgController.deleteEntry);
 export default router;
 </file>
 
-<file path="backend-new/src/routes/userRoutes.ts">
-import { Router } from "express";
-import * as userController from '../controllers/userController';
-import { authenticate } from "../middleware/authMiddleware";
+<file path="backend-new/src/routes/permissionRoutes.ts">
+import { Router } from 'express';
+import { authenticate } from '../middleware/authMiddleware';
+import * as permissionController from '../controllers/permissionController';
 
-const router = Router()
+const router = Router();
 
-router.post("/create-user", authenticate, userController.createUser)
+router.get('/:userId', authenticate, permissionController.getPermissions);
+router.put('/:userId', authenticate, permissionController.syncPermissions);
+router.post('/:userId', authenticate, permissionController.addPermission);
+router.delete('/:userId/:sourceType', authenticate, permissionController.removePermission);
 
-export default router
+export default router;
 </file>
 
 <file path="backend-new/src/schemas/esgSchemas.ts">
@@ -4703,25 +6982,43 @@ export class EsgGenericService<T> {
 }
 </file>
 
-<file path="backend-new/src/services/userService.ts">
-import { CreateUserDTO, UserPayload } from "../types/user";
-import * as userRepository from "../repositories/userRepository";
-import { hashPassword } from "../utils/passwordUtils";
+<file path="backend-new/src/services/permissionService.ts">
+import * as permissionRepo from '../repositories/permissionRepository';
+import { esgRegistry } from '../utils/modelRegistry';
 
-export const registerUser = async (userData: CreateUserDTO, currentUser: UserPayload) => {
-    const exists = await userRepository.findByEmail(userData.email);
-    if (exists) throw new Error('User already exists');
+const validateSourceType = (sourceType: string) => {
+    if (!esgRegistry[sourceType]) {
+        throw new Error(`Invalid source type: '${sourceType}'. Must be one of: ${Object.keys(esgRegistry).join(', ')}`);
+    }
+};
 
-    const companyId = currentUser.role === 'ADMIN' ? currentUser.companyId : userData.companyId;
-    const hashedPassword = await hashPassword(userData.password);
+export const getUserPermissions = async (userId: string) => {
+    const perms = await permissionRepo.findByUserId(userId);
+    return perms.map(p => p.sourceType); // Return simple array of strings
+};
 
-    return userRepository.create({
-        ...userData,
-        password: hashedPassword,
-        companyId,
-        parentId: currentUser.id
-    });
-}
+export const grantPermission = async (userId: string, sourceType: string) => {
+    validateSourceType(sourceType);
+
+    try {
+        return await permissionRepo.addPermission(userId, sourceType);
+    } catch (err: any) {
+        if (err.code === 'P2002') return;
+        throw err;
+    }
+};
+
+export const revokePermission = async (userId: string, sourceType: string) => {
+    return permissionRepo.removePermission(userId, sourceType);
+};
+
+export const syncPermissions = async (userId: string, sourceTypes: string[]) => {
+    sourceTypes.forEach(validateSourceType);
+
+    const uniqueTypes = [...new Set(sourceTypes)];
+
+    return permissionRepo.replacePermissions(userId, uniqueTypes);
+};
 </file>
 
 <file path="backend-new/src/types/auth.ts">
@@ -6206,6 +8503,738 @@ app.listen(PORT, () => {
 </files>
 </file>
 
+<file path="frontend-react/.gitignore">
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+</file>
+
+<file path="frontend-react/components.json">
+{
+  "$schema": "https://ui.shadcn.com/schema.json",
+  "style": "new-york",
+  "rsc": false,
+  "tsx": true,
+  "tailwind": {
+    "config": "",
+    "css": "src/index.css",
+    "baseColor": "neutral",
+    "cssVariables": true,
+    "prefix": ""
+  },
+  "iconLibrary": "lucide",
+  "aliases": {
+    "components": "@/components",
+    "utils": "@/lib/utils",
+    "ui": "@/components/ui",
+    "lib": "@/lib",
+    "hooks": "@/hooks"
+  },
+  "registries": {}
+}
+</file>
+
+<file path="frontend-react/eslint.config.js">
+import js from '@eslint/js'
+import globals from 'globals'
+import reactHooks from 'eslint-plugin-react-hooks'
+import reactRefresh from 'eslint-plugin-react-refresh'
+import tseslint from 'typescript-eslint'
+import { defineConfig, globalIgnores } from 'eslint/config'
+
+export default defineConfig([
+  globalIgnores(['dist']),
+  {
+    files: ['**/*.{ts,tsx}'],
+    extends: [
+      js.configs.recommended,
+      tseslint.configs.recommended,
+      reactHooks.configs.flat.recommended,
+      reactRefresh.configs.vite,
+    ],
+    languageOptions: {
+      ecmaVersion: 2020,
+      globals: globals.browser,
+    },
+  },
+])
+</file>
+
+<file path="frontend-react/README.md">
+# React + TypeScript + Vite
+
+This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+
+Currently, two official plugins are available:
+
+- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
+- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+
+## React Compiler
+
+The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+
+## Expanding the ESLint configuration
+
+If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+
+```js
+export default defineConfig([
+  globalIgnores(['dist']),
+  {
+    files: ['**/*.{ts,tsx}'],
+    extends: [
+      // Other configs...
+
+      // Remove tseslint.configs.recommended and replace with this
+      tseslint.configs.recommendedTypeChecked,
+      // Alternatively, use this for stricter rules
+      tseslint.configs.strictTypeChecked,
+      // Optionally, add this for stylistic rules
+      tseslint.configs.stylisticTypeChecked,
+
+      // Other configs...
+    ],
+    languageOptions: {
+      parserOptions: {
+        project: ['./tsconfig.node.json', './tsconfig.app.json'],
+        tsconfigRootDir: import.meta.dirname,
+      },
+      // other options...
+    },
+  },
+])
+```
+
+You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+
+```js
+// eslint.config.js
+import reactX from 'eslint-plugin-react-x'
+import reactDom from 'eslint-plugin-react-dom'
+
+export default defineConfig([
+  globalIgnores(['dist']),
+  {
+    files: ['**/*.{ts,tsx}'],
+    extends: [
+      // Other configs...
+      // Enable lint rules for React
+      reactX.configs['recommended-typescript'],
+      // Enable lint rules for React DOM
+      reactDom.configs.recommended,
+    ],
+    languageOptions: {
+      parserOptions: {
+        project: ['./tsconfig.node.json', './tsconfig.app.json'],
+        tsconfigRootDir: import.meta.dirname,
+      },
+      // other options...
+    },
+  },
+])
+```
+</file>
+
+<file path="frontend-react/src/components/ui/button.tsx">
+import * as React from "react"
+import { Slot } from "@radix-ui/react-slot"
+import { cva, type VariantProps } from "class-variance-authority"
+
+import { cn } from "@/lib/utils"
+
+const buttonVariants = cva(
+  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
+  {
+    variants: {
+      variant: {
+        default: "bg-primary text-primary-foreground hover:bg-primary/90",
+        destructive:
+          "bg-destructive text-white hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
+        outline:
+          "border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50",
+        secondary:
+          "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+        ghost:
+          "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
+        link: "text-primary underline-offset-4 hover:underline",
+      },
+      size: {
+        default: "h-9 px-4 py-2 has-[>svg]:px-3",
+        sm: "h-8 rounded-md gap-1.5 px-3 has-[>svg]:px-2.5",
+        lg: "h-10 rounded-md px-6 has-[>svg]:px-4",
+        icon: "size-9",
+        "icon-sm": "size-8",
+        "icon-lg": "size-10",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+      size: "default",
+    },
+  }
+)
+
+function Button({
+  className,
+  variant = "default",
+  size = "default",
+  asChild = false,
+  ...props
+}: React.ComponentProps<"button"> &
+  VariantProps<typeof buttonVariants> & {
+    asChild?: boolean
+  }) {
+  const Comp = asChild ? Slot : "button"
+
+  return (
+    <Comp
+      data-slot="button"
+      data-variant={variant}
+      data-size={size}
+      className={cn(buttonVariants({ variant, size, className }))}
+      {...props}
+    />
+  )
+}
+
+export { Button, buttonVariants }
+</file>
+
+<file path="frontend-react/src/components/ui/card.tsx">
+import * as React from "react"
+
+import { cn } from "@/lib/utils"
+
+function Card({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="card"
+      className={cn(
+        "bg-card text-card-foreground flex flex-col gap-6 rounded-xl border py-6 shadow-sm",
+        className
+      )}
+      {...props}
+    />
+  )
+}
+
+function CardHeader({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="card-header"
+      className={cn(
+        "@container/card-header grid auto-rows-min grid-rows-[auto_auto] items-start gap-2 px-6 has-data-[slot=card-action]:grid-cols-[1fr_auto] [.border-b]:pb-6",
+        className
+      )}
+      {...props}
+    />
+  )
+}
+
+function CardTitle({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="card-title"
+      className={cn("leading-none font-semibold", className)}
+      {...props}
+    />
+  )
+}
+
+function CardDescription({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="card-description"
+      className={cn("text-muted-foreground text-sm", className)}
+      {...props}
+    />
+  )
+}
+
+function CardAction({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="card-action"
+      className={cn(
+        "col-start-2 row-span-2 row-start-1 self-start justify-self-end",
+        className
+      )}
+      {...props}
+    />
+  )
+}
+
+function CardContent({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="card-content"
+      className={cn("px-6", className)}
+      {...props}
+    />
+  )
+}
+
+function CardFooter({ className, ...props }: React.ComponentProps<"div">) {
+  return (
+    <div
+      data-slot="card-footer"
+      className={cn("flex items-center px-6 [.border-t]:pt-6", className)}
+      {...props}
+    />
+  )
+}
+
+export {
+  Card,
+  CardHeader,
+  CardFooter,
+  CardTitle,
+  CardAction,
+  CardDescription,
+  CardContent,
+}
+</file>
+
+<file path="frontend-react/src/components/ui/input.tsx">
+import * as React from "react"
+
+import { cn } from "@/lib/utils"
+
+function Input({ className, type, ...props }: React.ComponentProps<"input">) {
+  return (
+    <input
+      type={type}
+      data-slot="input"
+      className={cn(
+        "file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground dark:bg-input/30 border-input h-9 w-full min-w-0 rounded-md border bg-transparent px-3 py-1 text-base shadow-xs transition-[color,box-shadow] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm",
+        "focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]",
+        "aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive",
+        className
+      )}
+      {...props}
+    />
+  )
+}
+
+export { Input }
+</file>
+
+<file path="frontend-react/src/components/ui/label.tsx">
+import * as React from "react"
+import * as LabelPrimitive from "@radix-ui/react-label"
+
+import { cn } from "@/lib/utils"
+
+function Label({
+  className,
+  ...props
+}: React.ComponentProps<typeof LabelPrimitive.Root>) {
+  return (
+    <LabelPrimitive.Root
+      data-slot="label"
+      className={cn(
+        "flex items-center gap-2 text-sm leading-none font-medium select-none group-data-[disabled=true]:pointer-events-none group-data-[disabled=true]:opacity-50 peer-disabled:cursor-not-allowed peer-disabled:opacity-50",
+        className
+      )}
+      {...props}
+    />
+  )
+}
+
+export { Label }
+</file>
+
+<file path="frontend-react/src/features/auth/components/LoginCard.tsx">
+import type { FormEvent } from "react";
+import { Card } from "@/components/ui/card";
+import LoginCardHeader from "@/features/auth/components/LoginCardHeader.tsx";
+import LoginCardFooter from "@/features/auth/components/LoginCardFooter.tsx";
+import LoginCardContent from "@/features/auth/components/LoginCardContent.tsx";
+import { useLogin } from "@/features/auth/hooks/useLogin.ts";
+
+function LoginCard() {
+    // 1. Initialize the hook
+    const { mutate, isPending } = useLogin();
+    const FORM_ID = "login-form";
+
+    // 2. Create the submit handler
+    const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+
+        // Extract data natively using FormData (no state needed!)
+        const formData = new FormData(e.currentTarget);
+        const email = formData.get("email") as string;
+        const password = formData.get("password") as string;
+
+        // 3. Call the mutation
+        mutate({ email, password });
+    };
+
+    return (
+        <Card className="w-full max-w-sm">
+            <LoginCardHeader/>
+
+            <LoginCardContent
+                formId={FORM_ID}
+                onSubmit={handleSubmit}
+            />
+
+            <LoginCardFooter
+                formId={FORM_ID}
+                isLoading={isPending}
+            />
+        </Card>
+    );
+}
+
+export default LoginCard;
+</file>
+
+<file path="frontend-react/src/features/auth/components/LoginCardContent.tsx">
+import { CardContent } from "@/components/ui/card.tsx";
+import LoginEmailInput from "@/features/auth/components/LoginEmailInput.tsx";
+import LoginPasswordInput from "./LoginPasswordInput";
+import type { FormEvent } from "react";
+
+interface LoginCardContentProps {
+    onSubmit: (e: FormEvent<HTMLFormElement>) => void;
+    formId: string;
+}
+
+function LoginCardContent({ onSubmit, formId }: LoginCardContentProps) {
+    return (
+        <CardContent>
+            <form id={formId} onSubmit={onSubmit}>
+                <div className="flex flex-col gap-6">
+                    <LoginEmailInput/>
+                    <LoginPasswordInput/>
+                </div>
+            </form>
+        </CardContent>
+    );
+}
+
+export default LoginCardContent;
+</file>
+
+<file path="frontend-react/src/features/auth/components/LoginCardFooter.tsx">
+import { CardFooter } from "@/components/ui/card.tsx";
+import { Button } from "@/components/ui/button.tsx";
+
+interface LoginCardFooterProps {
+    isLoading: boolean;
+    formId: string;
+}
+
+function LoginCardFooter({ isLoading, formId }: LoginCardFooterProps) {
+    return <CardFooter className="flex-col gap-2">
+        <Button
+            type="submit"
+            className="w-full"
+            form={formId}
+            disabled={isLoading}
+        >
+            {isLoading ? "Entrando..." : "Login"}
+        </Button>
+    </CardFooter>;
+}
+
+export default LoginCardFooter;
+</file>
+
+<file path="frontend-react/src/index.css">
+@import "tailwindcss";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+:root {
+  --radius: 0.625rem;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.145 0 0);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.145 0 0);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.145 0 0);
+  --primary: oklch(0.205 0 0);
+  --primary-foreground: oklch(0.985 0 0);
+  --secondary: oklch(0.97 0 0);
+  --secondary-foreground: oklch(0.205 0 0);
+  --muted: oklch(0.97 0 0);
+  --muted-foreground: oklch(0.556 0 0);
+  --accent: oklch(0.97 0 0);
+  --accent-foreground: oklch(0.205 0 0);
+  --destructive: oklch(0.577 0.245 27.325);
+  --border: oklch(0.922 0 0);
+  --input: oklch(0.922 0 0);
+  --ring: oklch(0.708 0 0);
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: oklch(0.205 0 0);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.205 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.205 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.922 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.704 0.191 22.216);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.556 0 0);
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(1 0 0 / 10%);
+  --sidebar-ring: oklch(0.556 0 0);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+</file>
+
+<file path="frontend-react/src/lib/utils.ts">
+import { clsx, type ClassValue } from "clsx"
+import { twMerge } from "tailwind-merge"
+
+export function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs))
+}
+</file>
+
+<file path="frontend-react/src/main.tsx">
+import { createRoot } from 'react-dom/client'
+import './index.css'
+import App from './App.tsx'
+
+createRoot(document.getElementById('root')!).render(
+    <App />
+)
+</file>
+
+<file path="frontend-react/src/shared/pages/HomePage.tsx">
+function HomePage() {
+    return (
+        <main className="flex h-full w-full flex-col items-center justify-center px-4 text-center">
+            Hello from home
+        </main>
+    )
+}
+
+export default HomePage;
+</file>
+
+<file path="frontend-react/tsconfig.app.json">
+{
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+    "target": "ES2022",
+    "useDefineForClassFields": true,
+    "lib": [
+      "ES2022",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "module": "ESNext",
+    "types": [
+      "vite/client"
+    ],
+    "skipLibCheck": true,
+
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+    "jsx": "react-jsx",
+
+    /* Linting */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "erasableSyntaxOnly": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedSideEffectImports": true,
+
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ]
+    }
+  },
+  "include": [
+    "src"
+  ]
+}
+</file>
+
+<file path="frontend-react/tsconfig.json">
+{
+  "files": [],
+  "references": [
+    {
+      "path": "./tsconfig.app.json"
+    },
+    {
+      "path": "./tsconfig.node.json"
+    }
+  ],
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ]
+    }
+  }
+}
+</file>
+
+<file path="frontend-react/tsconfig.node.json">
+{
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
+    "target": "ES2023",
+    "lib": ["ES2023"],
+    "module": "ESNext",
+    "types": ["node"],
+    "skipLibCheck": true,
+
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+
+    /* Linting */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "erasableSyntaxOnly": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedSideEffectImports": true
+  },
+  "include": ["vite.config.ts"]
+}
+</file>
+
+<file path="frontend-react/vite.config.ts">
+import path from "path"
+import tailwindcss from "@tailwindcss/vite"
+import react from "@vitejs/plugin-react"
+import { defineConfig } from "vite"
+
+// https://vite.dev/config/
+export default defineConfig({
+  plugins: [react(), tailwindcss()],
+  resolve: {
+    alias: {
+      "@": path.resolve(__dirname, "./src"),
+    },
+  },
+})
+</file>
+
 <file path="frontend/auth.css">
 body {
   font-family: sans-serif;
@@ -6281,49 +9310,146 @@ button {
 </html>
 </file>
 
-<file path="frontend/register.html">
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-  <meta charset="UTF-8">
-  <title>Cadastro - Ecofinance</title>
-  <link rel="stylesheet" href="auth.css">
-</head>
-<body>
-  <div class="auth-container">
-    <h2>Cadastro</h2>
-    <form id="register-form">
-      <div class="form-group">
-        <label for="email">Email</label>
-        <input type="email" id="email" required>
-      </div>
-      <div class="form-group">
-        <label for="password">Senha</label>
-        <input type="password" id="password" required>
-      </div>
-      <button type="submit">Cadastrar</button>
-    </form>
-    <p id="message"></p>
-    <p>Já tem uma conta? <a href="login.html">Faça Login</a></p>
-  </div>
-  <script src="register.js"></script>
-</body>
-</html>
+<file path="backend-new/src/controllers/userController.ts">
+import { Request, Response } from 'express';
+import * as userService from '../services/userService';
+import { createUserSchema } from "../schemas/userSchema";
+
+export const createUser = async (req: Request, res: Response) => {
+    try {
+        const validatedData = createUserSchema.parse(req.body);
+
+        const newUser = await userService.registerUser(validatedData, req.user!);
+
+        const { password, ...safeUser } = newUser;
+        res.status(201).json(safeUser);
+    } catch (error: any) {
+        if (error.name === 'ZodError') {
+            return res.status(400).json({ errors: error.errors });
+        }
+
+        res.status(400).json({ error: error.message });
+    }
+};
+
+export const getLoggedUser = async (req: Request, res: Response) => {
+    try {
+        const { userId } = req.params
+
+        const loggedUser = await userService.fetchLoggedUser(userId);
+
+        const { password, ...safeUser } = loggedUser;
+        res.status(200).json(safeUser);
+    } catch (error: any) {
+        res.status(400).json({ error: error.message });
+    }
+}
 </file>
 
-<file path=".gitignore">
-# Dependencies
-node_modules/
-/backend/node_modules/
-/backend-new/node_modules/
+<file path="backend-new/src/index.ts">
+import express from 'express';
+import cors from 'cors';
+import * as dotenv from 'dotenv';
 
-# Database file
-/backend/ecofinance.db
-/backend-new/dev.db
+import authRoutes from './routes/authRoutes';
+import userRoutes from './routes/userRoutes';
+import esgRoutes from './routes/esgRoutes';
+import permissionRoutes from "./routes/permissionRoutes";
 
-# Misc
-.DS_Store
-npm-debug.log*
+dotenv.config();
+
+const app = express();
+const PORT = process.env.PORT || 3000;
+
+app.use(cors());
+app.use(express.json());
+
+app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/esg', esgRoutes);
+app.use('/api/permissions', permissionRoutes);
+
+app.get('/health', (req, res) => res.json({ status: 'OK' }));
+
+app.listen(PORT, () => {
+    console.log(`Server is running on http://localhost:${PORT}`);
+});
+</file>
+
+<file path="backend-new/src/repositories/userRepository.ts">
+import prisma from "./prisma";
+import { CreateUserDTO } from "../schemas/userSchema";
+
+export const create = async (userData: CreateUserDTO) => {
+    return prisma.user.create({
+        data: {
+            email: userData.email,
+            password: userData.password,
+            name: userData.name,
+            role: userData.role,
+            companyId: userData.companyId,
+            unitId: userData.unitId,
+            parentId: userData.parentId,
+        }
+    })
+}
+
+export const findByEmail = async (email: string) => {
+    return prisma.user.findUnique({
+        where: { email },
+        include: { company: true }
+    })
+}
+
+export const findById = async (id: string) => {
+    return prisma.user.findUnique({
+        where: { id },
+        include: { company: true }
+    })
+}
+</file>
+
+<file path="backend-new/src/routes/userRoutes.ts">
+import { Router } from "express";
+import * as userController from '../controllers/userController';
+import { authenticate } from "../middleware/authMiddleware";
+
+const router = Router()
+
+router.post("/create-user", authenticate, userController.createUser)
+router.get("/:userId", authenticate, userController.getLoggedUser)
+
+export default router
+</file>
+
+<file path="backend-new/src/services/userService.ts">
+import { CreateUserDTO } from "../schemas/userSchema";
+import * as userRepository from "../repositories/userRepository";
+import { hashPassword } from "../utils/passwordUtils";
+import { AppJwtPayload } from "../types/auth";
+
+export const registerUser = async (userData: CreateUserDTO, currentUser: AppJwtPayload) => {
+    const exists = await userRepository.findByEmail(userData.email);
+    if (exists) throw new Error('User already exists');
+
+    const companyId = currentUser.role === 'ADMIN' ? currentUser.companyId : userData.companyId;
+    const hashedPassword = await hashPassword(userData.password);
+
+    return userRepository.create({
+        ...userData,
+        password: hashedPassword,
+        companyId,
+        parentId: currentUser.id
+    });
+}
+
+export const fetchLoggedUser = async (userId: string) => {
+    const user = await userRepository.findById(userId);
+
+    if (!user) throw new Error('User not found');
+
+    return user;
+}
 </file>
 
 <file path="backend/package.json">
@@ -6349,6 +9475,204 @@ npm-debug.log*
     "xlsx": "^0.18.5"
   }
 }
+</file>
+
+<file path="frontend-react/index.html">
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>frontend-react</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+</file>
+
+<file path="frontend-react/package.json">
+{
+  "name": "frontend-react",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "eslint .",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@radix-ui/react-label": "^2.1.8",
+    "@radix-ui/react-slot": "^1.2.4",
+    "@tailwindcss/vite": "^4.1.18",
+    "@tanstack/react-query": "^5.90.16",
+    "axios": "^1.13.2",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.562.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "tailwind-merge": "^3.4.0",
+    "tailwindcss": "^4.1.18",
+    "wouter": "^3.9.0",
+    "zustand": "^5.0.9"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.1",
+    "@types/node": "^24.10.4",
+    "@types/react": "^19.2.5",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.1.1",
+    "eslint": "^9.39.1",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-react-refresh": "^0.4.24",
+    "globals": "^16.5.0",
+    "tw-animate-css": "^1.4.0",
+    "typescript": "~5.9.3",
+    "typescript-eslint": "^8.46.4",
+    "vite": "npm:rolldown-vite@7.2.5"
+  },
+  "overrides": {
+    "vite": "npm:rolldown-vite@7.2.5"
+  }
+}
+</file>
+
+<file path="frontend-react/src/App.tsx">
+import { Route } from "wouter";
+import {
+  QueryClient,
+  QueryClientProvider,
+} from "@tanstack/react-query"
+import LoginPage from "@/shared/pages/LoginPage";
+import HomePage from "@/shared/pages/HomePage";
+import { RequireAuth } from "@/shared/components/RequireAuth.tsx";
+import { useEffect } from "react";
+import { useAuthStore } from "@/store/authStore.ts";
+
+const queryClient = new QueryClient()
+
+function App() {
+    const checkSession = useAuthStore((state) => state.checkSession);
+
+    useEffect(() => {
+        // Run once on application mount
+        checkSession();
+    }, [checkSession]);
+
+    return (
+        <div className="h-screen w-screen">
+            <QueryClientProvider client={queryClient}>
+                <Route path="/">
+                    <LoginPage/>
+                </Route>
+                <Route path="/home">
+                    <RequireAuth>
+                        <HomePage/>
+                    </RequireAuth>
+                </Route>
+            </QueryClientProvider>
+        </div>
+    )
+}
+
+export default App
+</file>
+
+<file path="frontend-react/src/features/auth/components/LoginCardHeader.tsx">
+import { CardDescription, CardHeader, CardTitle } from "@/components/ui/card.tsx";
+
+function LoginCardHeader() {
+    return <CardHeader className="flex flex-col items-start">
+        <CardTitle>Entre em sua conta</CardTitle>
+        <CardDescription>
+            Insira seu e-mail para entrar
+        </CardDescription>
+    </CardHeader>;
+}
+
+export default LoginCardHeader;
+</file>
+
+<file path="frontend-react/src/features/auth/components/LoginEmailInput.tsx">
+import { Label } from "@/components/ui/label.tsx";
+import { Input } from "@/components/ui/input.tsx";
+
+function LoginEmailInput() {
+    return <div className="grid gap-2">
+        <Label htmlFor="email">E-mail</Label>
+        <Input
+            id="email"
+            type="email"
+            name="email"
+            placeholder="joao@ecofinance.com.br"
+            required
+        />
+    </div>;
+}
+
+export default LoginEmailInput
+</file>
+
+<file path="frontend-react/src/features/auth/components/LoginPasswordInput.tsx">
+import { Label } from "@/components/ui/label.tsx";
+import { Input } from "@/components/ui/input.tsx";
+
+function LoginPasswordInput() {
+    return <div className="grid gap-2">
+        <div className="flex items-center">
+            <Label htmlFor="password">Senha</Label>
+            <a
+                href="#"
+                className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
+            >
+                Esqueceu sua senha?
+            </a>
+        </div>
+        <Input id="password" type="password" name="password" required/>
+    </div>;
+}
+
+export default LoginPasswordInput;
+</file>
+
+<file path="frontend-react/src/shared/pages/LoginPage.tsx">
+import { useEffect } from "react";
+import { useLocation } from "wouter";
+import { useAuthStore } from "@/store/authStore.ts";
+import LoginCard from "@/features/auth/components/LoginCard.tsx";
+
+function LoginPage() {
+    // 1. Listen to the authentication state
+    const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+
+    // 2. Get the navigation function from Wouter
+    const [, setLocation] = useLocation();
+
+    // 3. React to state changes
+    useEffect(() => {
+        if (isAuthenticated) {
+            setLocation("/home");
+        }
+    }, [isAuthenticated, setLocation]);
+
+    // 4. Optional: Prevent "flash" of login form while redirecting
+    if (isAuthenticated) {
+        return null;
+    }
+
+    return (
+        <main className="flex h-full w-full flex-col items-center justify-center px-4 text-center">
+            <LoginCard />
+        </main>
+    );
+}
+
+export default LoginPage;
 </file>
 
 <file path="frontend/login.js">
@@ -6481,6 +9805,38 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 </file>
 
+<file path="frontend/register.html">
+<!--register.html-->
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Cadastro - Ecofinance</title>
+  <link rel="stylesheet" href="auth.css">
+</head>
+<body>
+  <div class="auth-container">
+    <h2>Cadastro</h2>
+    <form id="register-form">
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input type="email" id="email" required>
+      </div>
+      <div class="form-group">
+        <label for="password">Senha</label>
+        <input type="password" id="password" required>
+      </div>
+      <button type="submit">Cadastrar</button>
+    </form>
+    <p id="message"></p>
+    <p>Já tem uma conta? <a href="login.html">Faça Login</a></p>
+  </div>
+  <script src="register.js"></script>
+</body>
+</html>
+</file>
+
 <file path="frontend/register.js">
 // arquivo: frontend/register.js
 
@@ -6517,6 +9873,46 @@ form.addEventListener('submit', async (event) => {
     messageP.style.color = 'red';
   }
 });
+</file>
+
+<file path=".gitignore">
+# Dependencies
+node_modules/
+/backend/node_modules/
+/backend-new/node_modules/
+
+# Database file
+/backend/ecofinance.db
+/backend-new/dev.db
+
+# Misc
+.DS_Store
+npm-debug.log*
+
+# Frontend
+/frontend-react/logs
+/frontend-react/*.log
+/frontend-react/npm-debug.log*
+/frontend-react/yarn-debug.log*
+/frontend-react/yarn-error.log*
+/frontend-react/pnpm-debug.log*
+/frontend-react/lerna-debug.log*
+
+/frontend-react/node_modules
+/frontend-react/dist
+/frontend-react/dist-ssr
+/frontend-react/*.local
+
+# Editor directories and files
+/frontend-react/.vscode/*
+/frontend-react/!.vscode/extensions.json
+/frontend-react/.idea
+/frontend-react/.DS_Store
+/frontend-react/*.suo
+/frontend-react/*.ntvs*
+/frontend-react/*.njsproj
+/frontend-react/*.sln
+/frontend-react/*.sw?
 </file>
 
 <file path="frontend/admin.html">
@@ -10953,7 +14349,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 responsible_contact_id: { label: "Responsável pela Informação", type: "select", isContact: true }
             }
         },
-        // --- SPRINT 19: Floresta Plantada ---
         planted_forest: {
             displayName: "Área de Floresta Plantada",
             fields: {
@@ -10962,15 +14357,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 responsible_contact_id: { label: "Responsável pela Informação", type: "select", isContact: true }
             }
         },
-        // --- SPRINT 21: Área de Conservação (SEM DESCRIÇÃO MANUAL) ---
         conservation_area: {
             displayName: "Área de Conservação",
             fields: {
-                // Bioma agora atua como "Descrição" na lista
                 bioma: { label: "Bioma (Descrição)", type: "select" },
                 fitofisionomia: { label: "Fitofisionomia", type: "select" }, 
                 area_plantada: { label: "Área de conservação plantada?", type: "select" },
-                plantio: { label: "Plantio", type: "text", placeholder: "Ex: 2010", showIf: { field: "area_plantada", value: "Sim" } },
+                plantio: { label: "Plantio", type: "text", placeholder: "Ex: 2010 ou 'Nativo'", showIf: { field: "area_plantada", value: "Sim" } },
                 responsible_contact_id: { label: "Responsável pela Informação", type: "select", isContact: true }
             }
         },
@@ -11046,7 +14439,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 unidade_componente_organico: { label: "Unidade Padrão (Componente Orgânico)", type: "select" }
             }
         },
-        // --- ATUALIZADO AQUI (Efluentes Domésticos) ---
         efluentes_domesticos: {
             displayName: "Efluentes Domésticos",
             fields: {
@@ -11141,8 +14533,6 @@ document.addEventListener('DOMContentLoaded', () => {
         assetsThead.innerHTML = ''; 
         const headerRow = document.createElement('tr'); 
         
-        // --- Lista de Schemas que usam Descrição Customizada (ATUALIZADA) ---
-        // Adicionado 'efluentes_domesticos'
         const usesCustomDescription = ['solid_waste', 'electricity_purchase', 'downstream_transport', 'waste_transport', 'home_office', 'air_travel', 'employee_commuting', 'energy_generation', 'planted_forest', 'conservation_area', 'efluentes_controlados', 'efluentes_domesticos'].includes(currentSourceType);
         const mainDescriptionKey = usesCustomDescription ? Object.keys(schema.fields)[0] : 'description';
         const mainDescriptionLabel = usesCustomDescription ? schema.fields[mainDescriptionKey].label : 'Descrição';
@@ -11167,7 +14557,6 @@ document.addEventListener('DOMContentLoaded', () => {
             typologies.forEach(typo => { 
                 const tr = document.createElement('tr'); 
                 
-                // --- Lista de Schemas que usam Descrição Customizada (ATUALIZADA) ---
                 const usesCustomDescription = ['solid_waste', 'electricity_purchase', 'downstream_transport', 'waste_transport', 'home_office', 'air_travel', 'employee_commuting', 'energy_generation', 'planted_forest', 'conservation_area', 'efluentes_controlados', 'efluentes_domesticos'].includes(currentSourceType);
                 const mainDescriptionKey = usesCustomDescription ? Object.keys(assetSchemas[currentSourceType].fields)[0] : 'description';
 
@@ -11175,7 +14564,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     ? (typo.asset_fields[mainDescriptionKey] || typo.description) 
                     : typo.description;
                 
-                // Lógica de limpeza de dados para exibição
                 const displayFields = { ...typo.asset_fields };
                 if (currentSourceType === 'combustao_movel') {
                     const tipoEntrada = displayFields.tipo_entrada;
@@ -11188,7 +14576,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else if (currentSourceType === 'business_travel_land') {
                      const tipoReporte = displayFields.tipo_reporte;
                      if (tipoReporte === 'Consumo') {
-                         // modal e reembolso são globais
+                         
                      } else if (tipoReporte === 'Distância') {
                          displayFields.combustivel = '';
                          displayFields.unidade_consumo = '';
@@ -11205,7 +14593,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else if (currentSourceType === 'employee_commuting') {
                      const tipoReporte = displayFields.tipo_reporte;
                      if (tipoReporte === 'Consumo') {
-                         // Mantém combustível
+                         
                      } else if (tipoReporte === 'Distância') {
                          displayFields.tipo_combustivel = '';
                          displayFields.unidade_consumo = '';
@@ -11256,17 +14644,15 @@ document.addEventListener('DOMContentLoaded', () => {
              }
         });
 
-        // --- VALIDAÇÃO ESPECÍFICA PARA FERTILIZANTES ---
         if (currentSourceType === 'fertilizantes') {
             const percN = parseFloat(asset_fields.percentual_nitrogenio) || 0;
             const percC = parseFloat(asset_fields.percentual_carbonato) || 0;
             if ((percN + percC) > 100) {
                 alert(`A soma das porcentagens (${(percN + percC).toFixed(2)}%) excede 100%. Por favor, corrija os valores.`);
-                return; // Interrompe o salvamento
+                return; 
             }
         }
 
-        // --- Lista de Schemas que usam Descrição Customizada (ATUALIZADA) ---
         const usesCustomDescription = ['solid_waste', 'electricity_purchase', 'downstream_transport', 'waste_transport', 'home_office', 'air_travel', 'employee_commuting', 'energy_generation', 'planted_forest', 'conservation_area', 'efluentes_controlados', 'efluentes_domesticos'].includes(currentSourceType);
         const mainDescriptionKey = usesCustomDescription ? Object.keys(assetSchemas[currentSourceType].fields)[0] : null;
 
@@ -11319,7 +14705,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (typoToEdit) {
                 assetIdInput.value = typoToEdit.id;
                 
-                // --- Lista de Schemas que usam Descrição Customizada (ATUALIZADA) ---
                 const usesCustomDescription = ['solid_waste', 'electricity_purchase', 'downstream_transport', 'waste_transport', 'home_office', 'air_travel', 'employee_commuting', 'energy_generation', 'planted_forest', 'conservation_area', 'efluentes_controlados', 'efluentes_domesticos'].includes(currentSourceType);
                 if (!usesCustomDescription) {
                     document.getElementById('asset-description').value = typoToEdit.description;
@@ -11338,7 +14723,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     } else if (typoToEdit.asset_fields[key] !== undefined) {
                         input.value = typoToEdit.asset_fields[key];
                         
-                        // Lógica especial para checkbox-group
                         if (assetSchemas[currentSourceType].fields[key].type === 'checkbox-group') {
                             const selectedValues = (typoToEdit.asset_fields[key] || '').split(', ');
                             const container = input.closest('.form-group');
@@ -11380,7 +14764,6 @@ document.addEventListener('DOMContentLoaded', () => {
         cancelBtn.style.display = 'none';
 
         const descriptionGroup = document.getElementById('asset-description').parentElement;
-        // --- Lista de Schemas que usam Descrição Customizada (ATUALIZADA) ---
         const usesCustomDescription = ['solid_waste', 'electricity_purchase', 'downstream_transport', 'waste_transport', 'home_office', 'air_travel', 'employee_commuting', 'energy_generation', 'planted_forest', 'conservation_area', 'efluentes_controlados', 'efluentes_domesticos'].includes(currentSourceType);
 
         if (usesCustomDescription) {
@@ -11397,7 +14780,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (trigger) trigger.dispatchEvent(new Event('change'));
         });
         
-        // Resetar checkboxes
         form.querySelectorAll('input[type="checkbox"]').forEach(cb => cb.checked = false);
     }
 
@@ -11408,7 +14790,6 @@ document.addEventListener('DOMContentLoaded', () => {
         const fieldElements = {};
         const triggerFields = new Set();
         const autoFillTriggers = new Set();
-        // --- Lista de Schemas que usam Descrição Customizada (ATUALIZADA) ---
         const usesCustomDescription = ['solid_waste', 'electricity_purchase', 'downstream_transport', 'waste_transport', 'home_office', 'air_travel', 'employee_commuting', 'energy_generation', 'planted_forest', 'conservation_area', 'efluentes_controlados', 'efluentes_domesticos'].includes(currentSourceType);
         
         const firstRowContainer = document.querySelector('#asset-form .form-row');
@@ -11549,7 +14930,25 @@ document.addEventListener('DOMContentLoaded', () => {
                 firstRowContainer.insertBefore(wrapper, descriptionFieldGroup);
             } else {
                 let targetRow = Array.from(specificFieldsContainer.querySelectorAll('.form-row.dynamic-field')).pop();
-                if (!targetRow || targetRow.children.length >= 2) {
+                
+                let addToSameRow = false;
+                if (targetRow && targetRow.children.length > 0) {
+                    const lastInput = targetRow.lastElementChild.querySelector('input, select, textarea');
+                    const lastKey = lastInput ? lastInput.dataset.key : null;
+                    const lastFieldConfig = schema.fields[lastKey];
+                    
+                    // --- CORREÇÃO DE UX: Agrupar campos mutuamente exclusivos ---
+                    // Se o campo atual tem showIf e o anterior também tem, e dependem do mesmo campo pai,
+                    // mas com valores diferentes, eles nunca aparecerão juntos.
+                    // Portanto, permitimos adicionar mais um item na mesma linha para preencher o buraco visual.
+                    if (field.showIf && lastFieldConfig && lastFieldConfig.showIf) {
+                        if (field.showIf.field === lastFieldConfig.showIf.field && field.showIf.value !== lastFieldConfig.showIf.value) {
+                            addToSameRow = true;
+                        }
+                    }
+                }
+
+                if (!targetRow || (targetRow.children.length >= 2 && !addToSameRow)) {
                     targetRow = document.createElement('div');
                     targetRow.className = 'form-row dynamic-field';
                     specificFieldsContainer.appendChild(targetRow);
@@ -11563,7 +14962,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 input.addEventListener('change', () => {
                     const selectedValue = input.value;
                     
-                    // Lógica ShowIf
                     for (const fieldKey in fieldElements) {
                         const element = fieldElements[fieldKey];
                         const showIfConfig = element.config.showIf;
@@ -11577,7 +14975,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
                     }
 
-                    // Lógica AutoFill
                     if (autoFillTriggers.has(key)) {
                         const rule = validationSchema.autoFillMap[key];
                         const targetValue = rule.map[selectedValue];
@@ -11589,7 +14986,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         }
                     }
 
-                    // Lógica de Dependência (Dropdown Dinâmico)
                     if (dependencyConfig && dependencyConfig.triggerField === key) {
                         const targetFieldKey = dependencyConfig.targetField;
                         const targetElement = fieldElements[targetFieldKey];
