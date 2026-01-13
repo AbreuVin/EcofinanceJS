@@ -11,7 +11,6 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-// Helper to format dates consistently
 const formatDate = (dateString: string) => {
     if (!dateString) return "-";
     return new Date(dateString).toLocaleDateString("pt-BR");
@@ -23,24 +22,22 @@ export const generateColumns = (
     onDelete: (item: any) => void
 ): ColumnDef<any>[] => {
 
-    // 1. Map dynamic columns from config
     const generated: ColumnDef<any>[] = configColumns.map((col) => ({
-        accessorKey: col.key,
+        accessorKey: col.key, // This works for "company.name"
         header: col.label,
-        cell: ({ row }) => {
-            const value = row.getValue(col.key);
+        // FIX: Use 'info' to get the value, not 'row.getValue'
+        cell: (info) => {
+            const value = info.getValue() as string | boolean | number | null;
 
             switch (col.type) {
                 case 'boolean':
                     return value ? (
-                        <div className="flex justify-center"><Check className="size-4 text-green-600" /></div>
+                        <div className="flex justify-start"><Check className="size-4 text-green-600" /></div>
                     ) : (
-                        <div className="flex justify-center"><X className="size-4 text-red-400" /></div>
+                        <div className="flex justify-start"><X className="size-4 text-red-400" /></div>
                     );
 
                 case 'badge':
-                    // Simple logic: If value is 'ADMIN' or 'MASTER', color it.
-                    // You can make this smarter later.
                     return (
                         <Badge variant={value === 'USER' ? 'secondary' : 'default'}>
                             {String(value)}
@@ -59,7 +56,7 @@ export const generateColumns = (
         }
     }));
 
-    // 2. Add the "Actions" column automatically
+    // Actions Column
     generated.push({
         id: "actions",
         cell: ({ row }) => {

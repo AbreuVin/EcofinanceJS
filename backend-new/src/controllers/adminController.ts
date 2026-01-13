@@ -4,6 +4,8 @@ import * as adminService from '../services/adminService';
 // Generic error handler
 export const handle = (fn: Function) => async (req: Request, res: Response) => {
     try {
+        console.log(`Handling ${req.method} ${req.originalUrl}`);
+        console.log('Request Body:', req.body);
         const result = await fn(req);
         res.json(result);
     } catch (err: any) {

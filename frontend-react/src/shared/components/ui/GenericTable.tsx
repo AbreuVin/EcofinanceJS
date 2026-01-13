@@ -30,7 +30,7 @@ export function GenericTable<TData, TValue>({
 
     return (
         <div className="space-y-4">
-            <div className="rounded-md border">
+            <div className="rounded-md border shadow-sm">
                 <Table>
                     <TableHeader>
                         {table.getHeaderGroups().map((headerGroup) => (
