@@ -31,7 +31,20 @@ export const findById = async (id: string) => {
 }
 
 export const findUsers = () => prisma.user.findMany({
-    select: { id: true, name: true, email: true, role: true, unitId: true, companyId: true, createdAt: true }, // Exclude password
+    select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        unitId: true,
+        companyId: true,
+        createdAt: true,
+        // Eager load relations for Table display
+        company: { select: { name: true } },
+        unit: { select: { name: true } },
+        // Eager load permissions for Form editing
+        permissions: { select: { sourceType: true } }
+    },
     orderBy: { name: 'asc' }
 });
 
