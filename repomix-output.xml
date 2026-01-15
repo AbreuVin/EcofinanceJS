@@ -50,7 +50,7 @@ backend-new/prisma/migrations/migration_lock.toml
 backend-new/prisma/schema.prisma
 backend-new/prisma/seed.ts
 backend-new/repomix-output.xml
-backend-new/src/controllers/authController.ts
+backend-new/src/controllers/auth.controller.ts
 backend-new/src/controllers/configController.ts
 backend-new/src/controllers/esgDataController.ts
 backend-new/src/controllers/permissionController.ts
@@ -62,21 +62,21 @@ backend-new/src/repositories/configRepository.ts
 backend-new/src/repositories/permissionRepository.ts
 backend-new/src/repositories/prisma.ts
 backend-new/src/repositories/userRepository.ts
-backend-new/src/routes/authRoutes.ts
+backend-new/src/routes/auth.routes.ts
 backend-new/src/routes/esgRoutes.ts
 backend-new/src/routes/permissionRoutes.ts
 backend-new/src/routes/userRoutes.ts
-backend-new/src/schemas/esgSchemas.ts
+backend-new/src/schemas/esg.schemas.ts
 backend-new/src/schemas/userSchema.ts
-backend-new/src/services/authService.ts
+backend-new/src/services/auth.service.ts
 backend-new/src/services/configService.ts
 backend-new/src/services/esgGenericService.ts
 backend-new/src/services/permissionService.ts
 backend-new/src/services/userService.ts
-backend-new/src/types/auth.ts
-backend-new/src/utils/jwtUtils.ts
+backend-new/src/types/auth.types.ts
+backend-new/src/utils/jwt.utils.ts
 backend-new/src/utils/modelRegistry.ts
-backend-new/src/utils/passwordUtils.ts
+backend-new/src/utils/password.utils.ts
 backend-new/tsconfig.json
 backend/database.js
 backend/legacy-code.xml
@@ -3557,7 +3557,7 @@ prisma/migrations/20260107233753_init/migration.sql
 prisma/migrations/migration_lock.toml
 prisma/schema.prisma
 prisma/seed.ts
-src/controllers/authController.ts
+src/controllers/auth.controller.ts
 src/controllers/configController.ts
 src/controllers/esgDataController.ts
 src/controllers/permissionController.ts
@@ -3569,21 +3569,21 @@ src/repositories/configRepository.ts
 src/repositories/permissionRepository.ts
 src/repositories/prisma.ts
 src/repositories/userRepository.ts
-src/routes/authRoutes.ts
+src/routes/auth.routes.ts
 src/routes/esgRoutes.ts
 src/routes/permissionRoutes.ts
 src/routes/userRoutes.ts
-src/schemas/esgSchemas.ts
+src/schemas/esg.schemas.ts
 src/schemas/userSchema.ts
-src/services/authService.ts
+src/services/auth.service.ts
 src/services/configService.ts
 src/services/esgGenericService.ts
 src/services/permissionService.ts
 src/services/userService.ts
-src/types/auth.ts
-src/utils/jwtUtils.ts
+src/types/auth.types.ts
+src/utils/jwt.utils.ts
 src/utils/modelRegistry.ts
-src/utils/passwordUtils.ts
+src/utils/password.utils.ts
 tsconfig.json
 </directory_structure>
 
@@ -4967,7 +4967,7 @@ async function main() {
 main().catch(e => console.error(e)).finally(() => prisma.$disconnect());
 </file>
 
-<file path="src/controllers/authController.ts">
+<file path="src/controllers/auth.controller.ts">
 import { Request, Response } from 'express';
 import * as jwt from 'jsonwebtoken';
 import * as dotenv from 'dotenv';
@@ -5432,7 +5432,7 @@ export const findById = async (id: string) => {
 }
 </file>
 
-<file path="src/routes/authRoutes.ts">
+<file path="src/routes/auth.routes.ts">
 import { Router } from "express";
 import * as authController from "../controllers/authController";
 
@@ -5497,7 +5497,7 @@ router.get("/:userId", authenticate, userController.getLoggedUser)
 export default router
 </file>
 
-<file path="src/schemas/esgSchemas.ts">
+<file path="src/schemas/esg.schemas.ts">
 import { z } from 'zod';
 
 // --- 1. SHARED PATTERNS (DRY Principle) ---
@@ -5820,7 +5820,7 @@ export const createUserSchema = z.object({
 export type CreateUserDTO = z.infer<typeof createUserSchema>;
 </file>
 
-<file path="src/services/authService.ts">
+<file path="src/services/auth.service.ts">
 import * as userRepository from '../repositories/userRepository';
 import { comparePassword } from '../utils/passwordUtils';
 import { generateToken } from '../utils/jwtUtils';
@@ -5977,7 +5977,7 @@ export const fetchLoggedUser = async (userId: string) => {
 }
 </file>
 
-<file path="src/types/auth.ts">
+<file path="src/types/auth.types.ts">
 import { JwtPayload } from "jsonwebtoken";
 
 export interface AppJwtPayload extends JwtPayload {
@@ -5987,7 +5987,7 @@ export interface AppJwtPayload extends JwtPayload {
 }
 </file>
 
-<file path="src/utils/jwtUtils.ts">
+<file path="src/utils/jwt.utils.ts">
 import * as jwt from 'jsonwebtoken';
 import * as dotenv from 'dotenv';
 
@@ -6121,7 +6121,7 @@ export const getServiceOrThrow = (sourceType: string) => {
 };
 </file>
 
-<file path="src/utils/passwordUtils.ts">
+<file path="src/utils/password.utils.ts">
 import * as bcrypt from 'bcrypt';
 
 const SALT_ROUNDS = 10; // Standard balance between security and performance
@@ -6153,7 +6153,7 @@ export const comparePassword = async (password: string, hash: string): Promise<b
 </files>
 </file>
 
-<file path="backend-new/src/controllers/authController.ts">
+<file path="backend-new/src/controllers/auth.controller.ts">
 import { Request, Response } from 'express';
 import * as jwt from 'jsonwebtoken';
 import * as dotenv from 'dotenv';
@@ -6519,7 +6519,7 @@ const prisma = new PrismaClient({ adapter });
 export default prisma;
 </file>
 
-<file path="backend-new/src/routes/authRoutes.ts">
+<file path="backend-new/src/routes/auth.routes.ts">
 import { Router } from "express";
 import * as authController from "../controllers/authController";
 
@@ -6571,7 +6571,7 @@ router.delete('/:userId/:sourceType', authenticate, permissionController.removeP
 export default router;
 </file>
 
-<file path="backend-new/src/schemas/esgSchemas.ts">
+<file path="backend-new/src/schemas/esg.schemas.ts">
 import { z } from 'zod';
 
 // --- 1. SHARED PATTERNS (DRY Principle) ---
@@ -6894,7 +6894,7 @@ export const createUserSchema = z.object({
 export type CreateUserDTO = z.infer<typeof createUserSchema>;
 </file>
 
-<file path="backend-new/src/services/authService.ts">
+<file path="backend-new/src/services/auth.service.ts">
 import * as userRepository from '../repositories/userRepository';
 import { comparePassword } from '../utils/passwordUtils';
 import { generateToken } from '../utils/jwtUtils';
@@ -7021,7 +7021,7 @@ export const syncPermissions = async (userId: string, sourceTypes: string[]) => 
 };
 </file>
 
-<file path="backend-new/src/types/auth.ts">
+<file path="backend-new/src/types/auth.types.ts">
 import { JwtPayload } from "jsonwebtoken";
 
 export interface AppJwtPayload extends JwtPayload {
@@ -7031,7 +7031,7 @@ export interface AppJwtPayload extends JwtPayload {
 }
 </file>
 
-<file path="backend-new/src/utils/jwtUtils.ts">
+<file path="backend-new/src/utils/jwt.utils.ts">
 import * as jwt from 'jsonwebtoken';
 import * as dotenv from 'dotenv';
 
@@ -7165,7 +7165,7 @@ export const getServiceOrThrow = (sourceType: string) => {
 };
 </file>
 
-<file path="backend-new/src/utils/passwordUtils.ts">
+<file path="backend-new/src/utils/password.utils.ts">
 import * as bcrypt from 'bcrypt';
 
 const SALT_ROUNDS = 10; // Standard balance between security and performance
