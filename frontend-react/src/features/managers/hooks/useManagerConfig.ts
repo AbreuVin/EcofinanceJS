@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import type { User } from '@/types/User';
+import { ESG_MODULES } from "@/types/enums.ts";
 
 const BR_STATES = [
     { label: 'Acre', value: 'AC' }, { label: 'Alagoas', value: 'AL' }, { label: 'Amapá', value: 'AP' },
@@ -24,7 +25,7 @@ export interface ColumnConfig {
 export interface FieldConfig {
     name: string;
     label: string;
-    type: 'text' | 'email' | 'select' | 'password' | 'number' | 'boolean';
+    type: 'text' | 'email' | 'select' | 'password' | 'number' | 'boolean' | 'permissions-matrix';
     options?: { label: string; value: string | number }[]; // Static options
     dynamicOptions?: 'companies' | 'units'; // NEW: Dynamic Source
     required?: boolean;
@@ -109,16 +110,29 @@ export const useManagerConfig = (type: ManagerType, user: User | null): ManagerV
                         { key: 'name', label: 'Nome', type: 'text' },
                         { key: 'email', label: 'E-mail', type: 'email' },
                         { key: 'role', label: 'Perfil', type: 'badge' },
+                        { key: 'company.name', label: 'Empresa', type: 'text' },
+                        { key: 'unit.name', label: 'Unidade', type: 'text' },
                     ],
                     fields: [
                         { name: 'name', label: 'Nome', type: 'text', required: true },
                         { name: 'email', label: 'E-mail', type: 'email', required: true },
-                        { name: 'password', label: 'Senha', type: 'password', required: true },
+                        { name: 'password', label: 'Senha', type: 'password', required: false }, // Not required on edit
                         {
                             name: 'role', label: 'Perfil', type: 'select', options: [
                                 { label: 'Admin', value: 'ADMIN' },
                                 { label: 'User', value: 'USER' }
                             ], required: true
+                        },
+                        // Dynamic Selects
+                        { name: 'companyId', label: 'Empresa', type: 'select', dynamicOptions: 'companies', required: true },
+                        { name: 'unitId', label: 'Unidade', type: 'select', dynamicOptions: 'units', required: false },
+
+                        // The Matrix
+                        {
+                            name: 'permissions',
+                            label: 'Permissões de Módulos ESG',
+                            type: 'permissions-matrix',
+                            options: ESG_MODULES
                         }
                     ]
                 };
