@@ -9,6 +9,7 @@ export const createUserSchema = z.object({
     companyId: z.string().uuid().nullable().optional(),
     unitId: z.number().int().nullable().optional(),
     parentId: z.string().nullable().optional(),
+    permissions: z.array(z.string()).optional()
 });
 
 // Infer the DTO type from the schema (Single Source of Truth)
