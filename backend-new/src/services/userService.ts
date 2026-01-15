@@ -7,7 +7,8 @@ export const registerUser = async (userData: any, currentUser: AppJwtPayload) =>
     const exists = await userRepository.findByEmail(userData.email);
     if (exists) throw new Error('User already exists');
 
-    const hashedPassword = await hashPassword(userData.password);
+    const plainTextPassword = userData.password || "123456";
+    const hashedPassword = await hashPassword(plainTextPassword);
 
     return prisma.$transaction(async (tx) => {
         const user = await tx.user.create({
