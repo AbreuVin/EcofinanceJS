@@ -39,20 +39,39 @@ export const registerUser = async (userData: any, currentUser: AppJwtPayload) =>
 export const getUsers = async () => userRepository.findUsers();
 
 export const updateUser = async (id: string, data: any) => {
-    const payload: any = { ...data };
+    const { permissions, ...userData } = data;
+    const payload: any = { ...userData };
 
-    // Hash new password if provided
     if (payload.password) {
         payload.password = await hashPassword(payload.password);
     } else {
-        delete payload.password; // Don't wipe it if not sent
+        delete payload.password;
     }
 
-    // Handle relations
     if (payload.companyId) payload.company = { connect: { id: payload.companyId } };
     if (payload.unitId) payload.unit = { connect: { id: Number(payload.unitId) } };
 
-    return userRepository.updateUser(id, payload);
+    return prisma.$transaction(async (tx) => {
+        const user = await tx.user.update({
+            where: { id },
+            data: payload,
+            select: { id: true, name: true, email: true, role: true }
+        });
+
+        if (permissions && Array.isArray(permissions)) {
+            await tx.userPermission.deleteMany({ where: { userId: id } });
+
+            if (permissions.length > 0) {
+                await tx.userPermission.createMany({
+                    data: permissions.map((type: string) => ({
+                        userId: id,
+                        sourceType: type
+                    }))
+                });
+            }
+        }
+        return user;
+    });
 };
 
 export const fetchLoggedUser = async (userId: string) => {
