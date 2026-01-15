@@ -4,10 +4,10 @@ import type { ManagerType } from "./useManagerConfig";
 import { toast } from "sonner";
 
 const ENDPOINT_MAP: Record<ManagerType, string> = {
-    companies: "/admin/companies",
-    units: "/admin/units",
-    users: "/users",
-    sources: "/esg/config/typologies"
+    companies: "/companies",       // <--- NEW
+    units: "/units",               // <--- NEW
+    users: "/users",               // (Unchanged)
+    sources: "/config/typologies"  // <--- NEW
 };
 
 export const useManagerMutations = (type: ManagerType, onCloseModal?: () => void) => {

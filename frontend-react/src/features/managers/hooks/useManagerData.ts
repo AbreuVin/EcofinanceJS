@@ -5,10 +5,10 @@ import { toast } from "sonner";
 
 // 1. Map "Manager Types" to "API Endpoints"
 const ENDPOINT_MAP: Record<ManagerType, string> = {
-    companies: "/admin/companies",
-    units: "/admin/units",
-    users: "/users",
-    sources: "/esg/config/typologies" // Matches the endpoint we created earlier
+    companies: "/companies",       // <--- NEW
+    units: "/units",               // <--- NEW
+    users: "/users",               // (Unchanged)
+    sources: "/config/typologies"  // <--- NEW
 };
 
 export const useManagerData = (type: ManagerType) => {
