@@ -1,26 +1,39 @@
-import { CreateUserDTO } from "../schemas/userSchema";
 import * as userRepository from "../repositories/userRepository";
 import { hashPassword } from "../utils/passwordUtils";
 import { AppJwtPayload } from "../types/auth";
+import prisma from "../repositories/prisma";
 
-export const registerUser = async (userData: CreateUserDTO, currentUser: AppJwtPayload) => {
+export const registerUser = async (userData: any, currentUser: AppJwtPayload) => {
     const exists = await userRepository.findByEmail(userData.email);
     if (exists) throw new Error('User already exists');
 
-    const companyId = currentUser.role === 'ADMIN' ? currentUser.companyId : userData.companyId;
     const hashedPassword = await hashPassword(userData.password);
 
-    const payload: any = {
-        name: userData.name,
-        email: userData.email,
-        password: hashedPassword,
-        role: userData.role || 'USER',
-    };
+    return prisma.$transaction(async (tx) => {
+        const user = await tx.user.create({
+            data: {
+                name: userData.name,
+                email: userData.email,
+                password: hashedPassword,
+                role: userData.role || 'USER',
+                companyId: userData.companyId || null,
+                unitId: userData.unitId ? Number(userData.unitId) : null,
+                parentId: userData.parentId || null,
+            }
+        });
 
-    if (userData.companyId) payload.company = { connect: { id: userData.companyId } };
-    if (userData.unitId) payload.unit = { connect: { id: Number(userData.unitId) } };
+        // Handle Permissions Immediately
+        if (userData.permissions && Array.isArray(userData.permissions)) {
+            await tx.userPermission.createMany({
+                data: userData.permissions.map((sourceType: string) => ({
+                    userId: user.id,
+                    sourceType
+                }))
+            });
+        }
 
-    return userRepository.create(payload);
+        return user;
+    });
 }
 
 export const getUsers = async () => userRepository.findUsers();
