@@ -26,9 +26,12 @@ export const findByEmail = async (email: string) => {
 export const findById = async (id: string) => {
     return prisma.user.findUnique({
         where: { id },
-        include: { company: true }
-    })
-}
+        include: {
+            company: true,
+            permissions: { select: { sourceType: true } }
+        }
+    });
+};
 
 export const findUsers = () => prisma.user.findMany({
     select: {
