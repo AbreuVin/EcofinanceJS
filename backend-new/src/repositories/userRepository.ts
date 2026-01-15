@@ -39,6 +39,7 @@ export const findUsers = () => prisma.user.findMany({
         name: true,
         email: true,
         role: true,
+        phone: true,
         unitId: true,
         companyId: true,
         createdAt: true,

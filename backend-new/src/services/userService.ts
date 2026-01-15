@@ -16,6 +16,7 @@ export const registerUser = async (userData: any, currentUser: AppJwtPayload) =>
                 email: userData.email,
                 password: hashedPassword,
                 role: userData.role || 'USER',
+                phone: userData.phone || null,
                 companyId: userData.companyId || null,
                 unitId: userData.unitId ? Number(userData.unitId) : null,
                 parentId: userData.parentId || null,
