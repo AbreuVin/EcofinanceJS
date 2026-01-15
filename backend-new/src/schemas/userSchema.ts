@@ -3,12 +3,19 @@ import { z } from 'zod';
 // Define the schema strictly
 export const createUserSchema = z.object({
     email: z.string().email(),
-    password: z.string().min(8, "Password must be at least 8 characters"),
+    password: z.string().optional(),
     name: z.string().min(2),
+    phone: z.string().optional().nullable(),
     role: z.enum(['MASTER', 'ADMIN', 'USER']).default('USER'),
-    companyId: z.string().uuid().nullable().optional(),
-    unitId: z.number().int().nullable().optional(),
+
+    // FIX 1: Remove .uuid() to allow 'comp-001' from seed data
+    companyId: z.string().min(1).nullable().optional(),
+
+    // FIX 2: Use z.coerce.number() to handle "1" (string) -> 1 (number) conversion
+    unitId: z.coerce.number().int().nullable().optional(),
+
     parentId: z.string().nullable().optional(),
+    permissions: z.array(z.string()).optional()
 });
 
 // Infer the DTO type from the schema (Single Source of Truth)
