@@ -29,7 +29,6 @@ export function ManagerForm({
                                 isLoading,
                                 onCancel,
                             }: ManagerFormProps) {
-    // 1. Initialize Form
     const {
         register,
         handleSubmit,
@@ -41,27 +40,26 @@ export function ManagerForm({
         defaultValues: initialData || {},
     });
 
-    // 2. Load Dynamic Data (Companies & Units)
-    // We fetch these regardless of the current page to ensure dropdowns always have data.
-    // React Query will cache this, so it's efficient.
     const { data: companiesData } = useManagerData('companies');
     const { data: unitsData } = useManagerData('units');
 
-    // 3. Reset form when opening/closing or changing selection
     useEffect(() => {
         if (initialData) {
-            reset(initialData);
+            const formatted = { ...initialData };
+            if (formatted.permissions && Array.isArray(formatted.permissions)) {
+                formatted.permissions = formatted.permissions.map((p: any) =>
+                    typeof p === 'object' ? p.sourceType : p
+                );
+            }
+            reset(formatted);
         } else {
-            reset({}); // Clear form for "New" mode
+            reset({ permissions: [] });
         }
     }, [initialData, reset]);
 
-    // 4. Helper to resolve options
     const getOptions = (field: FieldConfig) => {
-        // Priority 1: Static Options (defined in config)
         if (field.options) return field.options;
 
-        // Priority 2: Dynamic Companies
         if (field.dynamicOptions === 'companies') {
             return companiesData?.map((c: any) => ({
                 label: c.name,
@@ -69,7 +67,6 @@ export function ManagerForm({
             })) || [];
         }
 
-        // Priority 3: Dynamic Units
         if (field.dynamicOptions === 'units') {
             return unitsData?.map((u: any) => ({
                 label: u.name,
@@ -80,7 +77,6 @@ export function ManagerForm({
         return [];
     };
 
-    // 5. Render Helper
     const renderField = (field: FieldConfig) => {
         const options = getOptions(field);
 
@@ -99,7 +95,7 @@ export function ManagerForm({
                         }
                     >
                         <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Selecione..." />
+                            <SelectValue placeholder="Selecione..."/>
                         </SelectTrigger>
                         <SelectContent>
                             {options.length > 0 ? (
@@ -129,7 +125,7 @@ export function ManagerForm({
                         }
                     >
                         <SelectTrigger>
-                            <SelectValue placeholder="Selecione..." />
+                            <SelectValue placeholder="Selecione..."/>
                         </SelectTrigger>
                         <SelectContent>
                             <SelectItem value="true">Sim (Ativo)</SelectItem>
@@ -148,6 +144,44 @@ export function ManagerForm({
                             valueAsNumber: true // Important for Zod validation
                         })}
                     />
+                );
+
+            case "permissions-matrix":
+                const currentPerms = (watch(field.name) as string[]) || [];
+
+                return (
+                    <div className="col-span-1 md:col-span-2 border rounded-md p-4 bg-muted/20">
+                        <Label className="mb-4 block text-base">{field.label}</Label>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                            {field.options?.map((option) => {
+                                const isChecked = currentPerms.includes(String(option.value));
+                                return (
+                                    <div key={option.value} className="flex items-center space-x-2">
+                                        <input
+                                            type="checkbox"
+                                            id={`perm-${option.value}`}
+                                            className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+                                            checked={isChecked}
+                                            onChange={(e) => {
+                                                const checked = e.target.checked;
+                                                const val = String(option.value);
+                                                const newPerms = checked
+                                                    ? [...currentPerms, val]
+                                                    : currentPerms.filter((p) => p !== val);
+                                                setValue(field.name, newPerms);
+                                            }}
+                                        />
+                                        <label
+                                            htmlFor={`perm-${option.value}`}
+                                            className="text-sm font-medium leading-none cursor-pointer"
+                                        >
+                                            {option.label}
+                                        </label>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
                 );
 
             default: // text, email, password
@@ -185,7 +219,7 @@ export function ManagerForm({
                     Cancelar
                 </Button>
                 <Button type="submit" disabled={isLoading}>
-                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
                     {isLoading ? "Salvando..." : "Salvar Registro"}
                 </Button>
             </div>
