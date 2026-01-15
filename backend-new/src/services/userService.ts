@@ -1,9 +1,19 @@
 import * as userRepository from "../repositories/userRepository";
 import { hashPassword } from "../utils/passwordUtils";
-import { AppJwtPayload } from "../types/auth";
 import prisma from "../repositories/prisma";
 
-export const registerUser = async (userData: any, currentUser: AppJwtPayload) => {
+export const registerUser = async (userData: any) => {
+    if (userData.unitId && !userData.companyId) {
+        const unit = await prisma.unit.findUnique({
+            where: { id: Number(userData.unitId) }
+        });
+
+        if (!unit) throw new Error('Unidade selecionada inválida');
+
+        // Assign the deduced company ID
+        userData.companyId = unit.companyId;
+    }
+
     const exists = await userRepository.findByEmail(userData.email);
     if (exists) throw new Error('User already exists');
 
@@ -44,25 +54,43 @@ export const updateUser = async (id: string, data: any) => {
     const { permissions, ...userData } = data;
     const payload: any = { ...userData };
 
+    // 1. AUTO-DEDUCE COMPANY ON UPDATE
+    // If the Unit changed, we must update the Company association too.
+    if (payload.unitId) {
+        const unit = await prisma.unit.findUnique({
+            where: { id: Number(payload.unitId) }
+        });
+        if (unit) {
+            // Force the company to match the new unit
+            payload.company = { connect: { id: unit.companyId } };
+            // Ensure we connect the unit properly as well
+            payload.unit = { connect: { id: Number(payload.unitId) } };
+
+            // Cleanup: remove raw IDs from payload since we are using 'connect' syntax
+            delete payload.companyId;
+            delete payload.unitId;
+        }
+    } else {
+        // If simply updating text fields, ensure we don't break relations
+        if (payload.companyId) payload.company = { connect: { id: payload.companyId } };
+        delete payload.unitId;
+    }
+
     if (payload.password) {
         payload.password = await hashPassword(payload.password);
     } else {
         delete payload.password;
     }
 
-    if (payload.companyId) payload.company = { connect: { id: payload.companyId } };
-    if (payload.unitId) payload.unit = { connect: { id: Number(payload.unitId) } };
-
     return prisma.$transaction(async (tx) => {
         const user = await tx.user.update({
             where: { id },
             data: payload,
-            select: { id: true, name: true, email: true, role: true }
+            select: { id: true, name: true, email: true, phone: true, role: true }
         });
 
         if (permissions && Array.isArray(permissions)) {
             await tx.userPermission.deleteMany({ where: { userId: id } });
-
             if (permissions.length > 0) {
                 await tx.userPermission.createMany({
                     data: permissions.map((type: string) => ({

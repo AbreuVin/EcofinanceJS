@@ -131,32 +131,22 @@ export const useManagerConfig = (type: ManagerType, user: User | null): ManagerV
                     fields: [
                         { name: 'name', label: 'Nome Completo', type: 'text', required: true },
                         { name: 'email', label: 'E-mail', type: 'email', required: true },
-
-                        // Password removed. Phone added.
                         { name: 'phone', label: 'Telefone', type: 'text', required: false },
-
                         {
                             name: 'role', label: 'Perfil de Acesso', type: 'select', options: [
                                 { label: 'Administrador', value: 'ADMIN' },
                                 { label: 'Usuário Padrão', value: 'USER' }
                             ], required: true
                         },
-                        {
-                            name: 'companyId',
-                            label: 'Empresa',
-                            type: 'select',
-                            dynamicOptions: 'companies',
-                            required: true
-                        },
+
                         {
                             name: 'unitId',
                             label: 'Unidade Operacional',
                             type: 'select',
                             dynamicOptions: 'units',
-                            required: false
+                            required: true
                         },
 
-                        // Matrix
                         {
                             name: 'permissions',
                             label: 'Permissões de Módulos ESG',
