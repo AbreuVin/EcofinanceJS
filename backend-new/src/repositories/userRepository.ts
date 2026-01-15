@@ -2,7 +2,7 @@ import prisma from "./prisma";
 import { Prisma } from "../../generated/prisma";
 import { CreateUserDTO } from "../schemas/userSchema";
 
-export const create = async (userData: CreateUserDTO) => {
+export const create = async (userData: any) => {
     return prisma.user.create({
         data: {
             email: userData.email,
@@ -26,12 +26,29 @@ export const findByEmail = async (email: string) => {
 export const findById = async (id: string) => {
     return prisma.user.findUnique({
         where: { id },
-        include: { company: true }
-    })
-}
+        include: {
+            company: true,
+            permissions: { select: { sourceType: true } }
+        }
+    });
+};
 
 export const findUsers = () => prisma.user.findMany({
-    select: { id: true, name: true, email: true, role: true, unitId: true, companyId: true, createdAt: true }, // Exclude password
+    select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        phone: true,
+        unitId: true,
+        companyId: true,
+        createdAt: true,
+        // Eager load relations for Table display
+        company: { select: { name: true } },
+        unit: { select: { name: true } },
+        // Eager load permissions for Form editing
+        permissions: { select: { sourceType: true } }
+    },
     orderBy: { name: 'asc' }
 });
 
