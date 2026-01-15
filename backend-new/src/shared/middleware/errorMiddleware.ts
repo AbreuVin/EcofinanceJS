@@ -5,9 +5,9 @@ import { Prisma } from "../../../generated/prisma"
 
 export const globalErrorHandler = (
     err: Error,
-    req: Request,
+    _req: Request,
     res: Response,
-    next: NextFunction
+    _next: NextFunction
 ) => {
     if (err instanceof AppError) {
         return res.status(err.statusCode).json({
