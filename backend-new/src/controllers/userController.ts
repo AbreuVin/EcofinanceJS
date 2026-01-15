@@ -5,6 +5,8 @@ import { handle } from "./adminController";
 
 export const createUser = async (req: Request, res: Response) => {
     try {
+        console.log(`Handling ${req.method} ${req.originalUrl}`);
+        console.log('Request Body:', req.body);
         const validatedData = createUserSchema.parse(req.body);
 
         const newUser = await userService.registerUser(validatedData, req.user!);
@@ -12,6 +14,8 @@ export const createUser = async (req: Request, res: Response) => {
         const { password, ...safeUser } = newUser;
         res.status(201).json(safeUser);
     } catch (error: any) {
+        console.log(`Error in ${req.method} ${req.originalUrl}:`, error);
+
         if (error.name === 'ZodError') {
             return res.status(400).json({ errors: error.errors });
         }

@@ -2,7 +2,7 @@ import prisma from "./prisma";
 import { Prisma } from "../../generated/prisma";
 import { CreateUserDTO } from "../schemas/userSchema";
 
-export const create = async (userData: CreateUserDTO) => {
+export const create = async (userData: any) => {
     return prisma.user.create({
         data: {
             email: userData.email,
