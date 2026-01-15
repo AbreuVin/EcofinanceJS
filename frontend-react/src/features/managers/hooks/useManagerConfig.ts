@@ -5,11 +5,20 @@ import { ESG_MODULES } from "@/types/enums.ts";
 const BR_STATES = [
     { label: 'Acre', value: 'AC' }, { label: 'Alagoas', value: 'AL' }, { label: 'Amapá', value: 'AP' },
     { label: 'Amazonas', value: 'AM' }, { label: 'Bahia', value: 'BA' }, { label: 'Ceará', value: 'CE' },
-    { label: 'Distrito Federal', value: 'DF' }, { label: 'Espírito Santo', value: 'ES' }, { label: 'Goiás', value: 'GO' },
-    { label: 'Maranhão', value: 'MA' }, { label: 'Mato Grosso', value: 'MT' }, { label: 'Mato Grosso do Sul', value: 'MS' },
+    { label: 'Distrito Federal', value: 'DF' }, { label: 'Espírito Santo', value: 'ES' }, {
+        label: 'Goiás',
+        value: 'GO'
+    },
+    { label: 'Maranhão', value: 'MA' }, { label: 'Mato Grosso', value: 'MT' }, {
+        label: 'Mato Grosso do Sul',
+        value: 'MS'
+    },
     { label: 'Minas Gerais', value: 'MG' }, { label: 'Pará', value: 'PA' }, { label: 'Paraíba', value: 'PB' },
     { label: 'Paraná', value: 'PR' }, { label: 'Pernambuco', value: 'PE' }, { label: 'Piauí', value: 'PI' },
-    { label: 'Rio de Janeiro', value: 'RJ' }, { label: 'Rio Grande do Norte', value: 'RN' }, { label: 'Rio Grande do Sul', value: 'RS' },
+    { label: 'Rio de Janeiro', value: 'RJ' }, {
+        label: 'Rio Grande do Norte',
+        value: 'RN'
+    }, { label: 'Rio Grande do Sul', value: 'RS' },
     { label: 'Rondônia', value: 'RO' }, { label: 'Roraima', value: 'RR' }, { label: 'Santa Catarina', value: 'SC' },
     { label: 'São Paulo', value: 'SP' }, { label: 'Sergipe', value: 'SE' }, { label: 'Tocantins', value: 'TO' }
 ];
@@ -89,7 +98,13 @@ export const useManagerConfig = (type: ManagerType, user: User | null): ManagerV
                     fields: [
                         { name: 'name', label: 'Nome da Unidade', type: 'text', required: true },
                         // Dynamic Select for Company
-                        { name: 'companyId', label: 'Empresa', type: 'select', dynamicOptions: 'companies', required: true },
+                        {
+                            name: 'companyId',
+                            label: 'Empresa',
+                            type: 'select',
+                            dynamicOptions: 'companies',
+                            required: true
+                        },
                         { name: 'city', label: 'Cidade', type: 'text', required: true },
                         { name: 'state', label: 'Estado (UF)', type: 'select', options: BR_STATES, required: true },
                         { name: 'country', label: 'País', type: 'text', required: true }, // Added Country
@@ -98,36 +113,50 @@ export const useManagerConfig = (type: ManagerType, user: User | null): ManagerV
                 };
 
             case 'users':
-                // RULE: MASTER or ADMIN
                 if (!isMaster && !isAdmin) {
                     return { title: 'Restrito', description: '', isAllowed: false, columns: [], fields: [] };
                 }
                 return {
-                    title: 'Usuários',
-                    description: 'Gerencie acesso e permissões.',
+                    title: 'Gerenciamento de Usuários',
+                    description: 'Gerencie o acesso, telefones e permissões.',
                     isAllowed: true,
                     columns: [
                         { key: 'name', label: 'Nome', type: 'text' },
                         { key: 'email', label: 'E-mail', type: 'email' },
+                        { key: 'phone', label: 'Telefone', type: 'text' }, // <--- New Column
                         { key: 'role', label: 'Perfil', type: 'badge' },
                         { key: 'company.name', label: 'Empresa', type: 'text' },
                         { key: 'unit.name', label: 'Unidade', type: 'text' },
                     ],
                     fields: [
-                        { name: 'name', label: 'Nome', type: 'text', required: true },
+                        { name: 'name', label: 'Nome Completo', type: 'text', required: true },
                         { name: 'email', label: 'E-mail', type: 'email', required: true },
-                        { name: 'password', label: 'Senha', type: 'password', required: false }, // Not required on edit
+
+                        // Password removed. Phone added.
+                        { name: 'phone', label: 'Telefone', type: 'text', required: false },
+
                         {
-                            name: 'role', label: 'Perfil', type: 'select', options: [
-                                { label: 'Admin', value: 'ADMIN' },
-                                { label: 'User', value: 'USER' }
+                            name: 'role', label: 'Perfil de Acesso', type: 'select', options: [
+                                { label: 'Administrador', value: 'ADMIN' },
+                                { label: 'Usuário Padrão', value: 'USER' }
                             ], required: true
                         },
-                        // Dynamic Selects
-                        { name: 'companyId', label: 'Empresa', type: 'select', dynamicOptions: 'companies', required: true },
-                        { name: 'unitId', label: 'Unidade', type: 'select', dynamicOptions: 'units', required: false },
+                        {
+                            name: 'companyId',
+                            label: 'Empresa',
+                            type: 'select',
+                            dynamicOptions: 'companies',
+                            required: true
+                        },
+                        {
+                            name: 'unitId',
+                            label: 'Unidade Operacional',
+                            type: 'select',
+                            dynamicOptions: 'units',
+                            required: false
+                        },
 
-                        // The Matrix
+                        // Matrix
                         {
                             name: 'permissions',
                             label: 'Permissões de Módulos ESG',
