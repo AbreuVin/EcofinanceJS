@@ -16,7 +16,6 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                     <div className="flex items-center gap-2">
                         <SidebarTrigger className="-ml-1" />
                         <Separator orientation="vertical" className="mr-2 h-4" />
-                        {/* Add Breadcrumbs here if needed */}
                     </div>
                 </header>
                 <main className="flex flex-1 flex-col gap-4 p-4 pt-0 mt-4">

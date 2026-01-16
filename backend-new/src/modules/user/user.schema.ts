@@ -15,7 +15,7 @@ export const createUserSchema = z.object({
     phone: z.string().nullable().optional(),
     role: z.enum(['MASTER', 'ADMIN', 'USER']).default('USER'),
     unitId: z.coerce.number().int().nullable().optional(),
-    companyId: z.string().uuid().nullable().optional(),
+    companyId: z.string().nullable().optional(),
     parentId: z.string().nullable().optional(),
     permissions: z.array(z.string()).optional(),
 });

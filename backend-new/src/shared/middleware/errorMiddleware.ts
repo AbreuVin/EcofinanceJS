@@ -1,7 +1,9 @@
 import { Request, Response, NextFunction } from "express";
 import { AppError } from "../error/AppError";
-import { ZodError } from "zod/v3/ZodError";
+
 import { Prisma } from "../../../generated/prisma"
+import { ZodError } from "zod";
+
 
 export const globalErrorHandler = (
     err: Error,
@@ -20,7 +22,7 @@ export const globalErrorHandler = (
         return res.status(400).json({
             status: 'fail',
             message: 'Validation failed',
-            errors: err.errors.map(e => ({
+            errors: err.issues.map(e => ({
                 field: e.path.join('.'),
                 message: e.message
             }))
