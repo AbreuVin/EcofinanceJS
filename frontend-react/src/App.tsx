@@ -6,10 +6,11 @@ import { useAuthStore } from "@/store/authStore";
 // Pages
 import LoginPage from "@/shared/pages/LoginPage";
 import HomePage from "@/shared/pages/HomePage";
-import ManagerPage from "@/shared/pages/ManagerPage"; // The Generic Body
 import { RequireAuth } from "@/shared/components/RequireAuth";
-import DashboardLayout from "@/shared/layouts/DashboardLayout";
 import { Toaster } from "@/components/ui/sonner.tsx";
+import CompaniesPage from "@/features/companies/pages/CompaniesPage.tsx";
+import UnitsPage from "@/features/units/pages/UnitPage.tsx";
+import UsersPage from "./features/users/pages/UsersPage";
 
 const queryClient = new QueryClient();
 
@@ -24,28 +25,32 @@ function App() {
         <div className="h-screen w-screen">
             <QueryClientProvider client={queryClient}>
                 <Switch>
-                    {/* Public Routes */}
-                    <Route path="/" component={LoginPage} />
+                    <Route path="/" component={LoginPage}/>
 
-                    {/* Protected Routes */}
                     <Route path="/home">
                         <RequireAuth>
-                            <HomePage />
+                            <HomePage/>
                         </RequireAuth>
                     </Route>
 
-                    {/* THE MAGIC ROUTE: Handles Units, Users, and Sources dynamically */}
-                    <Route path="/managers/:type">
-                        {(_params) => (
-                            <RequireAuth>
-                                <DashboardLayout>
-                                    <ManagerPage />
-                                </DashboardLayout>
-                            </RequireAuth>
-                        )}
+                    <Route path="/managers/companies">
+                        <RequireAuth>
+                            <CompaniesPage/>
+                        </RequireAuth>
                     </Route>
 
-                    {/* Fallback 404 (Optional) */}
+                    <Route path="/managers/units">
+                        <RequireAuth>
+                            <UnitsPage/>
+                        </RequireAuth>
+                    </Route>
+
+                    <Route path="/managers/users">
+                        <RequireAuth>
+                            <UsersPage/>
+                        </RequireAuth>
+                    </Route>
+
                     <Route>404 - Not Found</Route>
                     <Toaster/>
                 </Switch>
