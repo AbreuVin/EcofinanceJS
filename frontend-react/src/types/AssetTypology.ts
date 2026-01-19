@@ -6,7 +6,7 @@ export interface AssetTypology {
     unitId: number;
     sourceType: string;
     description: string;
-    assetFields: string; // JSON string
+    assetFields: string | Record<string, any>; // JSON string
     isActive: boolean;
     responsibleContactId: string | undefined;
     reportingFrequency: "Mensal" | "Anual";
