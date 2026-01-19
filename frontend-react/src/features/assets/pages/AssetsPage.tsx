@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Leaf, Plus } from "lucide-react";
 
 import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible";
@@ -10,15 +10,16 @@ import { useCrud } from "@/shared/hooks/useCrud";
 import { useAssets } from "../hooks/useAssets";
 
 import { AssetForm } from "../components/AssetForm";
-import { getAssetColumns } from "../components/AssetColumns";
+import { getAssetColumns, SPECIFIC_COLUMNS } from "../components/AssetColumns";
 import { useAssetMutations } from "../hooks/useAssetMutations";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { ESG_MODULES } from "@/types/enums";
 
 export default function AssetsPage() {
-    // 1. Fetch Data
-    const { data: assets = [], isLoading } = useAssets();
+    const { data: rawAssets = [], isLoading } = useAssets();
     const { createAsset, updateAsset, deleteAsset, isSaving } = useAssetMutations();
+    const [selectedType, setSelectedType] = useState<string | "all">("all");
 
-    // 2. Setup CRUD Logic
     const {
         isFormOpen,
         editingItem,
@@ -34,11 +35,40 @@ export default function AssetsPage() {
         itemLabel: "a fonte de emissão",
     });
 
-    // 3. Configure Columns
-    const columns = useMemo(
-        () => getAssetColumns({ onEdit: handleEdit, onDelete: handleDelete }),
-        [handleEdit, handleDelete]
-    );
+    const assets = useMemo(() => {
+        return rawAssets.map(asset => {
+            let parsed = {};
+            try {
+                parsed = typeof asset.assetFields === 'string'
+                    ? JSON.parse(asset.assetFields)
+                    : asset.assetFields;
+            } catch (e) { console.error(e); }
+
+            return { ...asset, assetFields: parsed };
+        });
+    }, [rawAssets]);
+
+    const filteredData = useMemo(() => {
+        if (selectedType === "all") return assets;
+        return assets.filter(a => a.sourceType === selectedType);
+    }, [assets, selectedType]);
+
+    const columns = useMemo(() => {
+        const base = getAssetColumns({ onEdit: handleEdit, onDelete: handleDelete });
+
+        if (selectedType !== "all" && SPECIFIC_COLUMNS[selectedType]) {
+            const specific = SPECIFIC_COLUMNS[selectedType];
+
+            return [
+                base[0], // Description
+                base[1], // Unit
+                ...specific,
+                ...base.slice(2) // The rest
+            ];
+        }
+
+        return base;
+    }, [selectedType, handleEdit, handleDelete]);
 
     return (
         <DashboardLayout>
@@ -54,12 +84,6 @@ export default function AssetsPage() {
                             Cadastre e configure os ativos que geram emissões (veículos, máquinas, uso do solo, etc.).
                         </p>
                     </div>
-
-                    {!isFormOpen && (
-                        <Button onClick={toggleForm}>
-                            <Plus className="mr-2 size-4"/> Nova Fonte
-                        </Button>
-                    )}
                 </div>
 
                 {/* Collapsible Form Area */}
@@ -74,10 +98,28 @@ export default function AssetsPage() {
                     </CollapsibleContent>
                 </Collapsible>
 
+                <div className="flex justify-between mb-4">
+                    <Select value={selectedType} onValueChange={setSelectedType}>
+                        <SelectTrigger className="w-[500px]">
+                            <SelectValue placeholder="Filtrar por Tipo de Fonte" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">Visão Geral (Todas)</SelectItem>
+                            {ESG_MODULES.map(m => <SelectItem value={m.value}>{m.label}</SelectItem>)}
+                        </SelectContent>
+                    </Select>
+
+                    {!isFormOpen && (
+                        <Button onClick={toggleForm}>
+                            <Plus className="mr-2 size-4"/> Nova Fonte
+                        </Button>
+                    )}
+                </div>
+
                 {/* Data Table */}
                 <GenericTable
                     columns={columns}
-                    data={assets}
+                    data={filteredData}
                     isLoading={isLoading}
                 />
             </div>
