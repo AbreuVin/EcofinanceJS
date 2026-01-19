@@ -18,7 +18,7 @@ export function useAssetForm({ initialData, onSubmit }: UseAssetFormProps) {
             unitId: 0,
             reportingFrequency: "mensal",
             isActive: true,
-            responsibleContactId: null,
+            responsibleContactId: undefined,
             assetFields: {},
         },
     });
@@ -40,7 +40,7 @@ export function useAssetForm({ initialData, onSubmit }: UseAssetFormProps) {
                 unitId: Number(initialData.unitId),
                 reportingFrequency: initialData.reportingFrequency as "mensal" | "anual",
                 isActive: initialData.isActive,
-                responsibleContactId: initialData.responsibleContactId ? Number(initialData.responsibleContactId) : null,
+                responsibleContactId: initialData.responsibleContactId,
                 assetFields: parsedFields,
             });
         } else {
@@ -50,7 +50,7 @@ export function useAssetForm({ initialData, onSubmit }: UseAssetFormProps) {
                 unitId: 0,
                 reportingFrequency: "mensal",
                 isActive: true,
-                responsibleContactId: null,
+                responsibleContactId: undefined,
                 assetFields: {},
             });
         }

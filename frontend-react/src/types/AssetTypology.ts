@@ -8,7 +8,7 @@ export interface AssetTypology {
     description: string;
     assetFields: string; // JSON string
     isActive: boolean;
-    responsibleContactId: number | null;
+    responsibleContactId: string | undefined;
     reportingFrequency: "Mensal" | "Anual";
     userContact: User;
     unit?: Unit;
