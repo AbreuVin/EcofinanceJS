@@ -1,0 +1,16 @@
+import { z } from 'zod';
+
+export const createOptionSchema = z.object({
+    fieldKey: z.string().min(1),
+    value: z.string().min(1),
+});
+
+export const createTypologySchema = z.object({
+    unitId: z.number().int().positive(),
+    sourceType: z.string().min(1),
+    description: z.string().min(1),
+    assetFields: z.record(z.string(), z.any()).transform((val) => JSON.stringify(val)),
+    isActive: z.boolean().default(true),
+    responsibleContactId: z.number().int().optional().nullable(),
+    reportingFrequency: z.enum(['mensal', 'anual']).default('anual'),
+});
