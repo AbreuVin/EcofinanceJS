@@ -3,7 +3,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { useAuthStore } from "@/store/authStore";
 
-// Pages
 import LoginPage from "@/shared/pages/LoginPage";
 import HomePage from "@/shared/pages/HomePage";
 import { RequireAuth } from "@/shared/components/RequireAuth";
@@ -11,6 +10,7 @@ import { Toaster } from "@/components/ui/sonner.tsx";
 import CompaniesPage from "@/features/companies/pages/CompaniesPage.tsx";
 import UnitsPage from "@/features/units/pages/UnitPage.tsx";
 import UsersPage from "./features/users/pages/UsersPage";
+import AssetsPage from "./features/assets/pages/AssetsPage";
 
 const queryClient = new QueryClient();
 
@@ -48,6 +48,12 @@ function App() {
                     <Route path="/managers/users">
                         <RequireAuth>
                             <UsersPage/>
+                        </RequireAuth>
+                    </Route>
+
+                    <Route path="/managers/sources">
+                        <RequireAuth>
+                            <AssetsPage />
                         </RequireAuth>
                     </Route>
 

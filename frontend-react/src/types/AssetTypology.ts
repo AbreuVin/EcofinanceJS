@@ -1,5 +1,5 @@
-import type { ReportingFrequency } from "@/types/enums.ts";
 import type { Unit } from "@/types/Unit.ts";
+import type { User } from "@/types/User.ts";
 
 export interface AssetTypology {
     id: number;
@@ -9,6 +9,7 @@ export interface AssetTypology {
     assetFields: string; // JSON string
     isActive: boolean;
     responsibleContactId: number | null;
-    reportingFrequency: ReportingFrequency;
+    reportingFrequency: "Mensal" | "Anual";
+    userContact: User;
     unit?: Unit;
 }

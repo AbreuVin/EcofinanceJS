@@ -21,6 +21,11 @@ export const deleteTypology = async (req: Request, res: Response) => {
     res.status(204).send();
 };
 
+export const updateTypology = async (req: Request, res: Response) => {
+    const result = await configService.updateTypology(Number(req.params.id), req.body);
+    res.status(201).json(result);
+}
+
 // Options
 export const listOptions = async (req: Request, res: Response) => {
     const { fieldKey } = req.query;
