@@ -39,7 +39,7 @@ export default function CompaniesPage() {
 
     return (
         <DashboardLayout>
-            <div className="space-y-6">
+            <div className="space-y-6 container mx-auto max-w-8xl">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <div className="space-y-1">
                         <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">

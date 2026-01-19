@@ -141,7 +141,7 @@ function a(o$1, a$1, u) {
 			return Promise.reject(r$1);
 		}
 	};
-	throw new Error("Invalid input: not a Zod schema");
+	throw new Error("Invalid input: not a Zod schemas");
 }
 
 //#endregion

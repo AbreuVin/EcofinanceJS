@@ -2857,7 +2857,7 @@ const $ZodEnum = /* @__PURE__ */ $constructor("$ZodEnum", (inst, def) => {
 });
 const $ZodLiteral = /* @__PURE__ */ $constructor("$ZodLiteral", (inst, def) => {
 	$ZodType.init(inst, def);
-	if (def.values.length === 0) throw new Error("Cannot create literal schema with no valid values");
+	if (def.values.length === 0) throw new Error("Cannot create literal schemas with no valid values");
 	const values = new Set(def.values);
 	inst._zod.values = values;
 	inst._zod.pattern = /* @__PURE__ */ new RegExp(`^(${def.values.map((o) => typeof o === "string" ? escapeRegex(o) : o ? escapeRegex(o.toString()) : String(o)).join("|")})$`);
@@ -2963,7 +2963,7 @@ const $ZodDefault = /* @__PURE__ */ $constructor("$ZodDefault", (inst, def) => {
 			payload.value = def.defaultValue;
 			/**
 			* $ZodDefault returns the default value immediately in forward direction.
-			* It doesn't pass the default value into the validator ("prefault"). There's no reason to pass the default value through validation. The validity of the default is enforced by TypeScript statically. Otherwise, it's the responsibility of the user to ensure the default is valid. In the case of pipes with divergent in/out types, you can specify the default on the `in` schema of your ZodPipe to set a "prefault" for the pipe.   */
+			* It doesn't pass the default value into the validator ("prefault"). There's no reason to pass the default value through validation. The validity of the default is enforced by TypeScript statically. Otherwise, it's the responsibility of the user to ensure the default is valid. In the case of pipes with divergent in/out types, you can specify the default on the `in` schemas of your ZodPipe to set a "prefault" for the pipe.   */
 			return payload;
 		}
 		const result = def.innerType._zod.run(payload, ctx);
@@ -9758,7 +9758,7 @@ function _stringFormat(Class$1, format, fnOrRegex, _params = {}) {
 }
 
 //#endregion
-//#region node_modules/zod/v4/core/to-json-schema.js
+//#region node_modules/zod/v4/core/to-json-schemas.js
 function initializeContext(params) {
 	let target = params?.target ?? "draft-2020-12";
 	if (target === "draft-4") target = "draft-04";
@@ -9830,7 +9830,7 @@ function process(schema, ctx, _params = {
 }
 function extractDefs(ctx, schema) {
 	const root = ctx.seen.get(schema);
-	if (!root) throw new Error("Unprocessed schema. This is a bug in Zod.");
+	if (!root) throw new Error("Unprocessed schemas. This is a bug in Zod.");
 	const idToSchema = /* @__PURE__ */ new Map();
 	for (const entry of ctx.seen.entries()) {
 		const id = ctx.metadataRegistry.get(entry[0])?.id;
@@ -9908,7 +9908,7 @@ Set the \`cycles\` parameter to \`"ref"\` to resolve cyclical schemas with defs.
 }
 function finalize(ctx, schema) {
 	const root = ctx.seen.get(schema);
-	if (!root) throw new Error("Unprocessed schema. This is a bug in Zod.");
+	if (!root) throw new Error("Unprocessed schemas. This is a bug in Zod.");
 	const flattenRef = (zodSchema) => {
 		const seen = ctx.seen.get(zodSchema);
 		if (seen.ref === null) return;
@@ -9986,7 +9986,7 @@ function finalize(ctx, schema) {
 		});
 		return finalized;
 	} catch (_err) {
-		throw new Error("Error converting schema to JSON.");
+		throw new Error("Error converting schemas to JSON.");
 	}
 }
 function isTransforming(_schema, _ctx) {
@@ -10018,7 +10018,7 @@ function isTransforming(_schema, _ctx) {
 	return false;
 }
 /**
-* Creates a toJSONSchema method for a schema instance.
+* Creates a toJSONSchema method for a schemas instance.
 * This encapsulates the logic of initializing context, processing, extracting defs, and finalizing.
 */
 const createToJSONSchemaMethod = (schema, processors = {}) => (params) => {
@@ -10044,7 +10044,7 @@ const createStandardJSONSchemaMethod = (schema, io, processors = {}) => (params)
 };
 
 //#endregion
-//#region node_modules/zod/v4/core/json-schema-processors.js
+//#region node_modules/zod/v4/core/json-schemas-processors.js
 var formatMap = {
 	guid: "uuid",
 	url: "uri",
@@ -10501,7 +10501,7 @@ function toJSONSchema(input, params) {
 }
 
 //#endregion
-//#region node_modules/zod/v4/core/json-schema-generator.js
+//#region node_modules/zod/v4/core/json-schemas-generator.js
 /**
 * Legacy class-based interface for JSON Schema generation.
 * This class wraps the new functional implementation to provide backward compatibility.
@@ -10512,11 +10512,11 @@ function toJSONSchema(input, params) {
 * ```typescript
 * // Legacy usage (still supported)
 * const gen = new JSONSchemaGenerator({ target: "draft-07" });
-* gen.process(schema);
-* const result = gen.emit(schema);
+* gen.process(schemas);
+* const result = gen.emit(schemas);
 *
 * // Preferred modern usage
-* const result = toJSONSchema(schema, { target: "draft-07" });
+* const result = toJSONSchema(schemas, { target: "draft-07" });
 * ```
 */
 var JSONSchemaGenerator = class {
@@ -10565,7 +10565,7 @@ var JSONSchemaGenerator = class {
 		});
 	}
 	/**
-	* Process a schema to prepare it for JSON Schema generation.
+	* Process a schemas to prepare it for JSON Schema generation.
 	* This must be called before emit().
 	*/
 	process(schema, _params = {
@@ -10591,7 +10591,7 @@ var JSONSchemaGenerator = class {
 };
 
 //#endregion
-//#region node_modules/zod/v4/core/json-schema.js
+//#region node_modules/zod/v4/core/json-schemas.js
 var json_schema_exports = {};
 
 //#endregion
