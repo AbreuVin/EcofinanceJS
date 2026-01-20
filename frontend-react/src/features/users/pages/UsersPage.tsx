@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Plus, Users } from "lucide-react";
+import { Plus, UserPen } from "lucide-react";
 
 import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible";
 import { Button } from "@/components/ui/button";
@@ -40,11 +40,11 @@ export default function UsersPage() {
 
     return (
         <DashboardLayout>
-            <div className="space-y-6">
+            <div className="space-y-6 container mx-auto max-w-8xl">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <div className="space-y-1">
                         <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-                            <Users className="size-6 text-primary"/>
+                            <UserPen className="size-6 text-primary"/>
                             Gerenciamento de Usuários
                         </h1>
                         <p className="text-muted-foreground">

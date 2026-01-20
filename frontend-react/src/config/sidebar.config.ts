@@ -1,7 +1,4 @@
-import {
-    SquareTerminal,
-    type LucideIcon, Building2, UserPen, Grid2x2Plus, FilePlusCorner, Building,
-} from "lucide-react"
+import { Building, Building2, FilePlusCorner, Leaf, type LucideIcon, SquareTerminal, UserPen, } from "lucide-react"
 import type { UserRole } from "@/types/enums.ts";
 
 export interface NavItem {
@@ -55,7 +52,7 @@ export const sidebarConfig = {
         {
             title: "Cadastro de Fontes",
             url: "/managers/sources", // Matches 'sources' case
-            icon: Grid2x2Plus,
+            icon: Leaf,
             allowedRoles: ['MASTER', 'ADMIN'],
         },
 

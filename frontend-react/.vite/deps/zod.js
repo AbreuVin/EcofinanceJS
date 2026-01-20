@@ -1036,7 +1036,7 @@ const ZodLiteral = /* @__PURE__ */ $constructor("ZodLiteral", (inst, def) => {
 	inst._zod.processJSONSchema = (ctx, json$1, params) => literalProcessor(inst, ctx, json$1, params);
 	inst.values = new Set(def.values);
 	Object.defineProperty(inst, "value", { get() {
-		if (def.values.length > 1) throw new Error("This schema contains multiple valid literal values. Use `.values` instead.");
+		if (def.values.length > 1) throw new Error("This schemas contains multiple valid literal values. Use `.values` instead.");
 		return def.values[0];
 	} });
 });
@@ -1381,12 +1381,12 @@ function setErrorMap(map$1) {
 function getErrorMap() {
 	return config().customError;
 }
-/** @deprecated Do not use. Stub definition, only included for zod-to-json-schema compatibility. */
+/** @deprecated Do not use. Stub definition, only included for zod-to-json-schemas compatibility. */
 var ZodFirstPartyTypeKind;
 (function(ZodFirstPartyTypeKind$1) {})(ZodFirstPartyTypeKind || (ZodFirstPartyTypeKind = {}));
 
 //#endregion
-//#region node_modules/zod/v4/classic/from-json-schema.js
+//#region node_modules/zod/v4/classic/from-json-schemas.js
 var z = {
 	...schemas_exports,
 	...checks_exports,
@@ -1697,7 +1697,7 @@ function convertSchema(schema, ctx) {
 	return baseSchema;
 }
 /**
-* Converts a JSON Schema to a Zod schema. This function should be considered semi-experimental. It's behavior is liable to change. */
+* Converts a JSON Schema to a Zod schemas. This function should be considered semi-experimental. It's behavior is liable to change. */
 function fromJSONSchema(schema, params) {
 	if (typeof schema === "boolean") return schema ? z.any() : z.never();
 	return convertSchema(schema, {

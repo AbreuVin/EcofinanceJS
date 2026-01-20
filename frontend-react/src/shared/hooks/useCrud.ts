@@ -1,68 +1,59 @@
 import { useState } from "react";
 
-interface CrudOptions<_TData, TFormValues> {
-    createFn: (data: TFormValues) => Promise<any>;
-    updateFn: (args: { id: string; data: TFormValues }) => Promise<any>;
-    deleteFn: (id: string) => Promise<any>;
+interface BaseItem {
+    id: string | number;
+}
+
+interface CrudOptions<T extends BaseItem, TCreate, TUpdate = TCreate> {
+    createFn: (data: TCreate) => Promise<T>;
+    updateFn: (args: { id: T['id']; data: TUpdate }) => Promise<T>;
+    deleteFn: (id: T['id']) => Promise<void>;
     itemLabel?: string;
 }
 
-export function useCrud<TData extends { id: string }, TFormValues>(
-    {
-        createFn,
-        updateFn,
-        deleteFn,
-        itemLabel = "registro",
-    }: CrudOptions<TData, TFormValues>
-) {
+export function useCrud<T extends BaseItem, TCreate, TUpdate = TCreate>({
+                                                                            createFn,
+                                                                            updateFn,
+                                                                            deleteFn,
+                                                                            itemLabel = "o item",
+                                                                        }: CrudOptions<T, TCreate, TUpdate>) {
     const [isFormOpen, setIsFormOpen] = useState(false);
-    const [editingItem, setEditingItem] = useState<TData | null>(null);
+    const [editingItem, setEditingItem] = useState<T | null>(null);
 
-    const closeForm = () => {
+    const toggleForm = () => {
+        setIsFormOpen((prev) => !prev);
+        setEditingItem(null);
+    };
+
+    const handleCancel = () => {
         setIsFormOpen(false);
         setEditingItem(null);
     };
 
-    const openCreate = () => {
-        setEditingItem(null);
-        setIsFormOpen(true);
-    };
-
-    const toggleForm = () => {
-        if (isFormOpen && !editingItem) {
-            closeForm();
-        } else {
-            openCreate();
-        }
-    };
-
-    const handleCancel = () => {
-        closeForm();
-    };
-
-    const handleEdit = (item: TData) => {
+    const handleEdit = (item: T) => {
         setEditingItem(item);
         setIsFormOpen(true);
-        window.scrollTo({ top: 0, behavior: "smooth" });
     };
 
-    const handleDelete = async (item: TData) => {
-        const name = (item as any).name || (item as any).description || itemLabel;
-
-        if (confirm(`Tem certeza que deseja excluir ${itemLabel} "${name}"?`)) {
-            await deleteFn(item.id);
-            if (editingItem?.id === item.id) closeForm();
+    const handleDelete = async (item: T) => {
+        try {
+            if (confirm(`Tem certeza que deseja excluir ${itemLabel}?`)) {
+                await deleteFn(item.id);
+            }
+        } catch (error) {
+            console.error(error);
         }
     };
 
-    const handleSubmit = async (values: TFormValues) => {
+    const handleSubmit = async (data: TCreate) => {
         try {
             if (editingItem) {
-                await updateFn({ id: editingItem.id, data: values });
+                await updateFn({ id: editingItem.id, data: data as unknown as TUpdate });
             } else {
-                await createFn(values);
+                await createFn(data);
             }
-            closeForm();
+            setIsFormOpen(false);
+            setEditingItem(null);
         } catch (error) {
             console.error(error);
         }
@@ -76,6 +67,5 @@ export function useCrud<TData extends { id: string }, TFormValues>(
         handleEdit,
         handleDelete,
         handleSubmit,
-        setIsFormOpen,
     };
 }
