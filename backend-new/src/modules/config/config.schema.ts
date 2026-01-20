@@ -11,6 +11,8 @@ export const createTypologySchema = z.object({
     description: z.string().min(1),
     assetFields: z.record(z.string(), z.any()).transform((val) => JSON.stringify(val)),
     isActive: z.boolean().default(true),
-    responsibleContactId: z.number().int().optional().nullable(),
+    responsibleContactId: z.string().optional().nullable(),
     reportingFrequency: z.enum(['mensal', 'anual']).default('anual'),
 });
+
+export const updateTypologySchema = createTypologySchema.partial();
