@@ -1,52 +1,48 @@
 import { useFormContext, useWatch } from "react-hook-form";
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ELECTRICITY_UNITS, ENERGY_SOURCES, SPECIFIC_ENERGY_SOURCES } from "../../constants/esg-options";
+import { ELECTRICITY_SOURCE_TYPES, ELECTRICITY_UNITS, GENERATION_SOURCES } from "../../constants/esg-options";
 
 export function ElectricityFields() {
     const { control } = useFormContext();
-    const energySource = useWatch({ control, name: "assetFields.energySource" });
-    const showSpecification = energySource && energySource !== "Sistema Interligado Nacional";
+    const sourceType = useWatch({ control, name: "assetFields.sourceType" });
+
+    const isGrid = sourceType === "GRID";
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField
                 control={control}
-                name="assetFields.energySource"
+                name="assetFields.sourceType"
                 render={({ field }) => (
                     <FormItem>
-                        <FormLabel>Fonte de Energia</FormLabel>
+                        <FormLabel>Fonte de Energia (Descrição)</FormLabel>
                         <Select onValueChange={field.onChange} value={field.value}>
-                            <FormControl><SelectTrigger><SelectValue
-                                placeholder="Selecione..."/></SelectTrigger></FormControl>
+                            <FormControl><SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger></FormControl>
                             <SelectContent>
-                                {ENERGY_SOURCES.map(opt => (
-                                    <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                                ))}
+                                {ELECTRICITY_SOURCE_TYPES.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
                             </SelectContent>
                         </Select>
-                        <FormMessage/>
+                        <FormMessage />
                     </FormItem>
                 )}
             />
 
-            {showSpecification && (
+            {!isGrid && sourceType && (
                 <FormField
                     control={control}
                     name="assetFields.specificSource"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Especificação da Fonte</FormLabel>
+                            <FormLabel>Especificar Fonte Padrão</FormLabel>
                             <Select onValueChange={field.onChange} value={field.value}>
-                                <FormControl><SelectTrigger><SelectValue
-                                    placeholder="Selecione..."/></SelectTrigger></FormControl>
+                                <FormControl><SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger></FormControl>
                                 <SelectContent>
-                                    {SPECIFIC_ENERGY_SOURCES.map(opt => (
-                                        <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                                    ))}
+                                    {GENERATION_SOURCES.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
+                                    {sourceType === "ACL_CONV" && <SelectItem value="Outros tipos de fonte">Outros tipos de fonte</SelectItem>}
                                 </SelectContent>
                             </Select>
-                            <FormMessage/>
+                            <FormMessage />
                         </FormItem>
                     )}
                 />
@@ -57,17 +53,14 @@ export function ElectricityFields() {
                 name="assetFields.unitMeasure"
                 render={({ field }) => (
                     <FormItem>
-                        <FormLabel>Unidade de Medida</FormLabel>
+                        <FormLabel>Unidade de Medida Padrão</FormLabel>
                         <Select onValueChange={field.onChange} value={field.value}>
-                            <FormControl><SelectTrigger><SelectValue
-                                placeholder="Selecione..."/></SelectTrigger></FormControl>
+                            <FormControl><SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger></FormControl>
                             <SelectContent>
-                                {ELECTRICITY_UNITS.map(opt => (
-                                    <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                                ))}
+                                {ELECTRICITY_UNITS.map(u => <SelectItem key={u.value} value={u.value}>{u.label}</SelectItem>)}
                             </SelectContent>
                         </Select>
-                        <FormMessage/>
+                        <FormMessage />
                     </FormItem>
                 )}
             />
