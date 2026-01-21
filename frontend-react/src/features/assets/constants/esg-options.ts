@@ -15,10 +15,6 @@ export const MONTHS = [
     "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
 ];
 
-export const PERIOD_OPTIONS = [
-    "Anual", ...MONTHS
-].map(p => ({ label: p, value: p }));
-
 export const BIOMES = [
     "Amazônia", "Cerrado", "Mata_Atlântica", "Caatinga", "Pampa", "Pantanal"
 ].map(b => ({ label: b.replace('_', ' '), value: b }));
@@ -261,7 +257,7 @@ export const MOBILE_REPORT_TYPES = [
     { label: 'Por Distância (km)', value: 'distancia' },
 ];
 
-export const VEHICLE_FUELS = [
+export const MOBILE_FUELS = [
     "Gasolina Automotiva", "Óleo Diesel", "Gás Natural Veicular (GNV)", "Gás Natural Liquefeito (GNL)",
     "Gás Liquefeito de Petróleo (GLP)", "Querosene de Aviação", "Gasolina de Aviação", "Lubrificantes",
     "Metanol", "Óleo Combustível", "Etanol Hidratado", "Biodiesel (B100)", "Biometano",
@@ -278,6 +274,26 @@ export const DISTANCE_UNITS = [
     { label: "Km", value: "Km" },
     { label: "Milhas", value: "Milhas" }
 ];
+
+export const MOBILE_FUEL_UNITS_MAP: Record<string, string> = {
+    "Gasolina Automotiva": "Litros",
+    "Óleo Diesel": "Litros",
+    "Gás Natural Veicular (GNV)": "m³",
+    "Gás Natural Liquefeito (GNL)": "Litros",
+    "Gás Liquefeito de Petróleo (GLP)": "kg",
+    "Querosene de Aviação": "Litros",
+    "Gasolina de Aviação": "Litros",
+    "Lubrificantes": "Litros",
+    "Metanol": "Litros",
+    "Óleo Combustível": "Litros",
+    "Etanol Hidratado": "Litros",
+    "Biodiesel (B100)": "Litros",
+    "Biometano": "m³",
+    "Bioquerosene (SAF)": "Litros",
+    "HVO (diesel verde)": "Litros",
+    "Biometanol": "Litros",
+    "Etanol Anidro": "Litros"
+};
 
 export const VEHICLE_TYPES = [
     "Automóvel a gasolina", "Automóvel a etanol", "Automóvel flex a gasolina", "Automóvel flex a etanol",
@@ -451,6 +467,13 @@ export const COMMUTING_REPORT_TYPES = [
 ];
 
 // 15. Geração de Energia
+export const ELECTRICITY_SOURCE_TYPES = [
+    { label: "Sistema Interligado Nacional", value: "GRID" },
+    { label: "Mercado Livre Convencional", value: "ACL_CONV" },
+    { label: "Mercado Livre Incentivado", value: "ACL_INC" },
+    { label: "Fonte Energética Específica", value: "SPECIFIC" }
+];
+
 export const GENERATION_SOURCES = [
     "Eólica", "Solar", "Hidro", "Biomassa", "Carvão"
 ].map(s => ({ label: s, value: s }));
