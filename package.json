@@ -4,8 +4,8 @@
   "scripts": {
     "dev": "concurrently \"npm run dev --prefix backend-new\" \"npm run dev --prefix frontend-react\"",
     "install-all": "npm install && npm install --prefix backend-new && npm install --prefix frontend-react",
-    "prisma:generate": "npx prisma generate --schema backend-new/prisma/schema.prisma",
-    "build": "npm run prisma:generate && npm run build --prefix frontend-react && npm run build --prefix backend-new",
+    "prisma:generate": "cd backend-new && npx prisma generate && cd ..",
+    "build": "npm run install-all && npm run prisma:generate && npm run build --prefix frontend-react && npm run build --prefix backend-new",
     "start": "node backend-new/dist/index.js"
   },
   "devDependencies": {
