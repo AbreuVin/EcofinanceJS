@@ -12,11 +12,11 @@ export const create = async (req: Request, res: Response) => {
 };
 
 export const update = async (req: Request, res: Response) => {
-    const result = await companyService.update(req.params.id, req.body);
+    const result = await companyService.update(req.params.id as string, req.body);
     res.json(result);
 };
 
 export const remove = async (req: Request, res: Response) => {
-    await companyService.remove(req.params.id);
+    await companyService.remove(req.params.id as string);
     res.status(204).send();
 };
