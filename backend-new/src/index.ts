@@ -34,11 +34,17 @@ app.get('/health', (_req, res) => res.json({ status: 'OK' }));
 
 // Serve static files from frontend build in production
 const frontendBuildPath = path.join(__dirname, '../../frontend-react/dist');
+console.log('Frontend build path:', frontendBuildPath);
 app.use(express.static(frontendBuildPath));
 
 // Fallback to index.html for client-side routing
 app.get(/.*/,(_req, res) => {
-    res.sendFile(path.join(frontendBuildPath, 'index.html'));
+    res.sendFile(path.join(frontendBuildPath, 'index.html'), (err) => {
+        if (err) {
+            console.error('Error serving index.html:', err);
+            res.status(500).json({ status: 'error', message: 'Failed to load frontend' });
+        }
+    });
 });
 
 app.use(globalErrorHandler);
