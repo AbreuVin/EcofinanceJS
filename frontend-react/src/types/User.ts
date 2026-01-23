@@ -1,3 +1,4 @@
+import type { UserRole } from "@/types/enums.ts";
 import type { Company } from "@/types/Company.ts";
 import type { Unit } from "@/types/Unit.ts";
 
@@ -6,7 +7,7 @@ export interface User {
     email: string;
     name: string;
     phone: string | null;
-    role: string;
+    role: UserRole;
 
     // Multi-tenancy & Hierarchy
     companyId: string | null;
