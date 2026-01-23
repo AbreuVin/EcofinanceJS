@@ -28,7 +28,7 @@ export function useAssetForm({ initialData, onSubmit }: UseAssetFormProps) {
             let parsedFields = {};
 
             try {
-                parsedFields = JSON.parse(initialData.assetFields);
+                parsedFields = JSON.parse(initialData.assetFields as string);
             } catch (e) {
                 console.error("Failed to parse assetFields:", e);
                 parsedFields = {};

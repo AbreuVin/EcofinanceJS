@@ -1,3 +1,14 @@
+// frontend-react/src/types/enums.ts
+
+export const UserRole = {
+  MASTER: 'MASTER',
+  ADMIN: 'ADMIN',
+  USER: 'USER'
+} as const;
+
+export type UserRole = typeof UserRole[keyof typeof UserRole];
+
+
 export const ESG_MODULES = [
     { label: 'Combustão Móvel', value: 'mobile_combustion' },
     { label: 'Combustão Estacionária', value: 'stationary_combustion' },

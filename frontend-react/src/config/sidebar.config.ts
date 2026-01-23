@@ -1,15 +1,36 @@
-import { Building, Building2, FilePlusCorner, Leaf, type LucideIcon, SquareTerminal, UserPen, } from "lucide-react"
-import type { UserRole } from "@/types/enums.ts";
+import {
+    Building,
+    Building2,
+    FilePlusCorner,
+    Leaf,
+    type LucideIcon,
+    SquareTerminal,
+    UserPen
+} from "lucide-react"
+import { UserRole } from "@/types/enums.ts";
+
+export interface SubItem {
+
+    title: string
+
+    url: string
+
+}
+
+
 
 export interface NavItem {
+
     title: string
+
     url: string
+
     icon?: LucideIcon
+
     allowedRoles?: UserRole[]
-    items?: {
-        title: string
-        url: string
-    }[]
+
+    items?: SubItem[]
+
 }
 
 export const sidebarConfig = {
@@ -33,7 +54,7 @@ export const sidebarConfig = {
             title: "Empresas",
             url: "/managers/companies", // Matches 'units' case in useManagerConfig
             icon: Building,
-            allowedRoles: ['MASTER'],
+            allowedRoles: [UserRole.MASTER],
         },
 
         // Master and Admin
@@ -41,19 +62,19 @@ export const sidebarConfig = {
             title: "Unidades Empresariais",
             url: "/managers/units", // Matches 'units' case in useManagerConfig
             icon: Building2,
-            allowedRoles: ['MASTER', 'ADMIN'],
+            allowedRoles: [UserRole.MASTER, UserRole.ADMIN],
         },
         {
             title: "Cadastro de Responsáveis",
             url: "/managers/users", // Matches 'users' case
             icon: UserPen,
-            allowedRoles: ['MASTER', 'ADMIN'],
+            allowedRoles: [UserRole.MASTER, UserRole.ADMIN],
         },
         {
             title: "Cadastro de Fontes",
             url: "/managers/sources", // Matches 'sources' case
             icon: Leaf,
-            allowedRoles: ['MASTER', 'ADMIN'],
+            allowedRoles: [UserRole.MASTER, UserRole.ADMIN],
         },
 
         // Everyone
@@ -85,7 +106,7 @@ export const sidebarConfig = {
                 { title: "Transporte de Funcionários", url: "/reports/employee-commuting" },
                 { title: "Viagens Aéreas", url: "/reports/air-travel" },
                 { title: "Viagens a Negócios Terrestres", url: "/reports/business-travel-land" },
-            ],                
+            ],
         },
     ] as NavItem[],
 }

@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
+import { UserRole } from '@/types/enums';
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -48,7 +49,7 @@ export function UserForm({ initialData, onSubmit, onCancel, isLoading }: UserFor
                 name: initialData.name,
                 email: initialData.email,
                 phone: initialData.phone || "",
-                role: initialData.role,
+                role: initialData.role as UserRole,
                 companyId: initialData.companyId || "",
                 unitId: initialData.unitId || 0,
                 permissions: perms,

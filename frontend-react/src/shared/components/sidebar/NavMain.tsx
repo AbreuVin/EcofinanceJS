@@ -14,7 +14,7 @@ import {
     SidebarMenuItem,
     useSidebar,
 } from "@/components/ui/sidebar"
-import type { NavItem } from "@/config/sidebar.config.ts"
+import type { NavItem, SubItem } from "@/config/sidebar.config.ts"
 
 export function NavMain({ items }: { items: NavItem[] }) {
     const { isMobile } = useSidebar()
@@ -33,7 +33,7 @@ export function NavMain({ items }: { items: NavItem[] }) {
         <SidebarGroup>
             <SidebarMenu>
                 {filteredItems.map((item) => { // 4. Map the filtered list
-                    const isActive = location === item.url || item.items?.some(sub => sub.url === location)
+                    const isActive = location === item.url || item.items?.some((sub: SubItem) => sub.url === location)
 
                     return (
                         <SidebarMenuItem key={item.title}>
@@ -54,7 +54,7 @@ export function NavMain({ items }: { items: NavItem[] }) {
                                         align={isMobile ? "end" : "start"}
                                         className="min-w-56 rounded-lg"
                                     >
-                                        {item.items.map((subItem) => (
+                                        {item.items.map((subItem: SubItem) => (
                                             <DropdownMenuItem asChild key={subItem.title}>
                                                 <Link href={subItem.url} className="cursor-pointer">
                                                     {subItem.title}
