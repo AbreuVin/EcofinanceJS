@@ -39,6 +39,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
 const dotenv = __importStar(require("dotenv"));
+const path_1 = __importDefault(require("path"));
 const errorMiddleware_1 = require("./shared/middleware/errorMiddleware");
 const auth_routes_1 = __importDefault(require("./modules/auth/auth.routes"));
 const user_routes_1 = __importDefault(require("./modules/user/user.routes"));
@@ -52,6 +53,7 @@ const app = (0, express_1.default)();
 const PORT = process.env.PORT || 3000;
 app.use((0, cors_1.default)());
 app.use(express_1.default.json());
+// API Routes
 app.use('/api/auth', auth_routes_1.default);
 app.use('/api/users', user_routes_1.default);
 app.use('/api/permissions', permission_routes_1.default);
@@ -60,6 +62,19 @@ app.use('/api/units', unit_routes_1.default);
 app.use('/api/config', config_routes_1.default);
 app.use('/api/esg/data', esg_routes_1.default);
 app.get('/health', (_req, res) => res.json({ status: 'OK' }));
+// Serve static files from frontend build in production
+const frontendBuildPath = path_1.default.join(__dirname, '../../frontend-react/dist');
+console.log('Frontend build path:', frontendBuildPath);
+app.use(express_1.default.static(frontendBuildPath));
+// Fallback to index.html for client-side routing
+app.get(/.*/, (_req, res) => {
+    res.sendFile(path_1.default.join(frontendBuildPath, 'index.html'), (err) => {
+        if (err) {
+            console.error('Error serving index.html:', err);
+            res.status(500).json({ status: 'error', message: 'Failed to load frontend' });
+        }
+    });
+});
 app.use(errorMiddleware_1.globalErrorHandler);
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
