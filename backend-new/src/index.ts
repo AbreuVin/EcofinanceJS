@@ -37,7 +37,7 @@ const frontendBuildPath = path.join(__dirname, '../../frontend-react/dist');
 app.use(express.static(frontendBuildPath));
 
 // Fallback to index.html for client-side routing
-app.get('*', (_req, res) => {
+app.get(/.*/,(_req, res) => {
     res.sendFile(path.join(frontendBuildPath, 'index.html'));
 });
 
