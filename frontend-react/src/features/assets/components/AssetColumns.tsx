@@ -179,6 +179,7 @@ export const SPECIFIC_COLUMNS: Record<string, ColumnDef<AssetTypology>[]> = {
     fertilizers: [
         { header: "Tipo", accessorFn: (row) => getField(row, "fertilizerType") },
         { header: "% Nitrogênio", accessorFn: (row) => getField(row, "nitrogenPercent") ? `${getField(row, "nitrogenPercent")}%` : "-" },
+        { header: "% Carbonato", accessorFn: (row) => getField(row, "carbonatePercent") ? `${getField(row, "carbonatePercent")}%` : "-" },
         { header: "Controlado?", accessorFn: (row) => getBoolean(row, "isCompanyControlled") }
     ],
 
