@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import * as dotenv from 'dotenv';
+import path from 'path';
 
 import { globalErrorHandler } from "./shared/middleware/errorMiddleware";
 
@@ -20,6 +21,7 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
+// API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/permissions', permissionRoutes);
@@ -29,6 +31,15 @@ app.use('/api/config', configRoutes);
 app.use('/api/esg/data', esgRoutes);
 
 app.get('/health', (_req, res) => res.json({ status: 'OK' }));
+
+// Serve static files from frontend build in production
+const frontendBuildPath = path.join(__dirname, '../../frontend-react/dist');
+app.use(express.static(frontendBuildPath));
+
+// Fallback to index.html for client-side routing
+app.get('*', (_req, res) => {
+    res.sendFile(path.join(frontendBuildPath, 'index.html'));
+});
 
 app.use(globalErrorHandler);
 
