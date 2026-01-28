@@ -11,6 +11,7 @@ import CompaniesPage from "@/features/companies/pages/CompaniesPage.tsx";
 import UnitsPage from "@/features/units/pages/UnitPage.tsx";
 import UsersPage from "./features/users/pages/UsersPage";
 import AssetsPage from "./features/assets/pages/AssetsPage";
+import DataEntryPage from "@/features/data-entry/pages/DataEntryPage.tsx";
 
 const queryClient = new QueryClient();
 
@@ -55,6 +56,14 @@ function App() {
                         <RequireAuth>
                             <AssetsPage />
                         </RequireAuth>
+                    </Route>
+
+                    <Route path="/reports/:module">
+                        {(_params) => (
+                            <RequireAuth>
+                                <DataEntryPage/>
+                            </RequireAuth>
+                        )}
                     </Route>
 
                     <Route>404 - Not Found</Route>

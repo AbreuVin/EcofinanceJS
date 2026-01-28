@@ -37,7 +37,7 @@ npm-debug.log*
 /frontend-react/*.sw?
 
 repomix-output.xml
-/backend-new/repomix-output.xml
 /backend-new/backend.xml
-/frontend-react/repomix-output.xml
+/backend-new/backend.xml
+/frontend-react/frontend.xml
 /frontend-react/frontend.xml
