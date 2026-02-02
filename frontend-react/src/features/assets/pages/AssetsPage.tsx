@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
+import { useParams } from "wouter";
 import { Leaf, Plus } from "lucide-react";
 
 import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible";
@@ -14,8 +15,13 @@ import { getAssetColumns, SPECIFIC_COLUMNS } from "../components/AssetColumns";
 import { useAssetMutations } from "../hooks/useAssetMutations";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ESG_MODULES } from "@/types/enums";
+import { normalizeSlugToType } from "../../data-entry/utils/module-mapping";
 
 export default function AssetsPage() {
+    const params = useParams();
+    const moduleSlug = params.module || "";
+    const moduleType = moduleSlug ? normalizeSlugToType(moduleSlug) : null;
+
     const { data: rawAssets = [], isLoading } = useAssets();
     const { createAsset, updateAsset, deleteAsset, isSaving } = useAssetMutations();
     const [selectedType, setSelectedType] = useState<string | "all">("all");
@@ -34,6 +40,17 @@ export default function AssetsPage() {
         deleteFn: deleteAsset,
         itemLabel: "a fonte de emissão",
     });
+
+    // Se vir da URL com um módulo específico, pre-seleciona e abre o formulário
+    useEffect(() => {
+        if (moduleType) {
+            setSelectedType(moduleType);
+            // Abre o formulário para cadastro da fonte específica
+            if (!isFormOpen) {
+                toggleForm();
+            }
+        }
+    }, [moduleType, isFormOpen, toggleForm]);
 
     const assets = useMemo(() => {
         return rawAssets.map(asset => {
@@ -94,6 +111,7 @@ export default function AssetsPage() {
                             onSubmit={handleSubmit}
                             onCancel={handleCancel}
                             isLoading={isSaving}
+                            preSelectedSourceType={!editingItem && moduleType ? moduleType : undefined}
                         />
                     </CollapsibleContent>
                 </Collapsible>

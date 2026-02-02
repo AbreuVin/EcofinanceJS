@@ -28,9 +28,19 @@ export const getUnitColumns = ({ onEdit, onDelete }: UnitColumnsProps): ColumnDe
         cell: ({ row }) => row.original.company?.name || <span className="text-muted-foreground">-</span>,
     },
     {
+        accessorKey: "country",
+        header: "País",
+        cell: ({ row }) => row.original.country || <span className="text-muted-foreground">-</span>,
+    },
+    {
+        accessorKey: "state",
+        header: "Estado",
+        cell: ({ row }) => row.original.state || <span className="text-muted-foreground">-</span>,
+    },
+    {
         accessorKey: "city",
-        header: "Localização",
-        cell: ({ row }) => `${row.original.city}/${row.original.state}`,
+        header: "Cidade",
+        cell: ({ row }) => row.original.city || <span className="text-muted-foreground">-</span>,
     },
     {
         accessorKey: "numberOfWorkers",

@@ -21,10 +21,11 @@ interface AssetFormProps {
     onSubmit: (values: AssetFormValues) => Promise<void>;
     onCancel: () => void;
     isLoading: boolean;
+    preSelectedSourceType?: string;
 }
 
-export function AssetForm({ initialData, onSubmit, onCancel, isLoading }: AssetFormProps) {
-    const { form, handleSubmit } = useAssetForm({ initialData, onSubmit });
+export function AssetForm({ initialData, onSubmit, onCancel, isLoading, preSelectedSourceType }: AssetFormProps) {
+    const { form, handleSubmit } = useAssetForm({ initialData, onSubmit, preSelectedSourceType });
 
     const { data: units = [], isLoading: loadingUnits } = useUnits();
     const { data: users = [], isLoading: loadingUsers } = useUsers();

@@ -7,14 +7,15 @@ import type { AssetTypology } from "@/types/AssetTypology";
 interface UseAssetFormProps {
     initialData?: AssetTypology | null;
     onSubmit: (values: AssetFormValues) => Promise<void>;
+    preSelectedSourceType?: string;
 }
 
-export function useAssetForm({ initialData, onSubmit }: UseAssetFormProps) {
+export function useAssetForm({ initialData, onSubmit, preSelectedSourceType }: UseAssetFormProps) {
     const form = useForm({
         resolver: zodResolver(assetFormSchema),
         defaultValues: {
             description: "",
-            sourceType: "",
+            sourceType: preSelectedSourceType || "",
             unitId: 0,
             reportingFrequency: "mensal",
             isActive: true,
@@ -46,7 +47,7 @@ export function useAssetForm({ initialData, onSubmit }: UseAssetFormProps) {
         } else {
             form.reset({
                 description: "",
-                sourceType: "",
+                sourceType: preSelectedSourceType || "",
                 unitId: 0,
                 reportingFrequency: "mensal",
                 isActive: true,
@@ -54,7 +55,7 @@ export function useAssetForm({ initialData, onSubmit }: UseAssetFormProps) {
                 assetFields: {},
             });
         }
-    }, [initialData, form]);
+    }, [initialData, form, preSelectedSourceType]);
 
     const handleSubmit = form.handleSubmit(async (values) => {
         await onSubmit(values);

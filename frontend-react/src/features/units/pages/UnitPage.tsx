@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { Building2, Plus } from "lucide-react";
 import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible.tsx";
 import { Button } from "@/components/ui/button.tsx";
@@ -15,32 +15,35 @@ import type { Unit } from "@/types/Unit.ts";
 import type { UnitFormValues } from "@/features/units/schemas/unit.schema.ts";
 
 export default function UnitsPage() {
-    const { data: units = [], isLoading } = useUnits();
-    const { createUnit, updateUnit, deleteUnit, isSaving } = useUnitMutations();
+    const [error, setError] = useState<string | null>(null);
+    
+    try {
+        const { data: units = [], isLoading } = useUnits();
+        const { createUnit, updateUnit, deleteUnit, isSaving } = useUnitMutations();
 
-    const {
-        isFormOpen,
-        editingItem,
-        toggleForm,
-        handleCancel,
-        handleEdit,
-        handleDelete,
-        handleSubmit,
-    } = useCrud<Unit, UnitFormValues>({
-        createFn: createUnit,
-        updateFn: updateUnit,
-        deleteFn: deleteUnit,
-        itemLabel: "a unidade",
-    });
+        const {
+            isFormOpen,
+            editingItem,
+            toggleForm,
+            handleCancel,
+            handleEdit,
+            handleDelete,
+            handleSubmit,
+        } = useCrud<Unit, UnitFormValues>({
+            createFn: createUnit,
+            updateFn: updateUnit,
+            deleteFn: deleteUnit,
+            itemLabel: "a unidade",
+        });
 
-    const columns = useMemo(
-        () => getUnitColumns({ onEdit: handleEdit, onDelete: handleDelete }),
-        [handleEdit, handleDelete]
-    );
+        const columns = useMemo(
+            () => getUnitColumns({ onEdit: handleEdit, onDelete: handleDelete }),
+            [handleEdit, handleDelete]
+        );
 
-    return (
-        <DashboardLayout>
-            <div className="space-y-6 container mx-auto max-w-8xl">
+        return (
+            <DashboardLayout>
+                <div className="space-y-6 container mx-auto max-w-8xl">
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <div className="space-y-1">
                         <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
@@ -73,5 +76,19 @@ export default function UnitsPage() {
                 <GenericTable columns={columns} data={units} isLoading={isLoading} />
             </div>
         </DashboardLayout>
-    );
+        );
+    } catch (err) {
+        console.error("Erro ao renderizar página de unidades:", err);
+        setError(err instanceof Error ? err.message : "Erro desconhecido");
+        return (
+            <DashboardLayout>
+                <div className="space-y-6 container mx-auto max-w-8xl">
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                        <h2 className="text-red-800 font-bold">Erro ao carregar página</h2>
+                        <p className="text-red-700">{error || "Erro desconhecido"}</p>
+                    </div>
+                </div>
+            </DashboardLayout>
+        );
+    }
 }

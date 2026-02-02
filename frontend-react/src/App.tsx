@@ -58,6 +58,22 @@ function App() {
                         </RequireAuth>
                     </Route>
 
+                    <Route path="/managers/sources/:module">
+                        {(_params) => (
+                            <RequireAuth>
+                                <AssetsPage />
+                            </RequireAuth>
+                        )}
+                    </Route>
+
+                    <Route path="/data-entry/:module">
+                        {(_params) => (
+                            <RequireAuth>
+                                <DataEntryPage/>
+                            </RequireAuth>
+                        )}
+                    </Route>
+
                     <Route path="/reports/:module">
                         {(_params) => (
                             <RequireAuth>
