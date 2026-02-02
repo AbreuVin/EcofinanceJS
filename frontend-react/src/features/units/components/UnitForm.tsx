@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
@@ -11,6 +11,17 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from "
 import { unitFormSchema, type UnitFormValues } from "../schemas/unit.schema";
 import type { Unit } from "@/types/Unit";
 import { useCompanies } from "@/features/companies/hooks/useCompanies";
+
+const COUNTRIES = [
+    { label: 'Brasil', value: 'Brasil' },
+    { label: 'Argentina', value: 'Argentina' },
+    { label: 'Canadá', value: 'Canadá' },
+    { label: 'Chile', value: 'Chile' },
+    { label: 'Colômbia', value: 'Colômbia' },
+    { label: 'Estados Unidos', value: 'Estados Unidos' },
+    { label: 'México', value: 'México' },
+    { label: 'Outros', value: 'Outros' },
+];
 
 const BR_STATES = [
     { label: 'Acre', value: 'AC' },
@@ -50,41 +61,85 @@ interface UnitFormProps {
 }
 
 export function UnitForm({ initialData, onSubmit, onCancel, isLoading }: UnitFormProps) {
-    const { data: companies = [], isLoading: isLoadingCompanies } = useCompanies();
+    const [hasError, setHasError] = useState(false);
+    const { data: companies = [], isLoading: isLoadingCompanies, error: companiesError } = useCompanies();
 
-    const form = useForm({
-        resolver: zodResolver(unitFormSchema),
-        defaultValues: {
-            name: "",
-            companyId: "",
-            city: "",
-            state: "",
-            country: "Brasil",
-            numberOfWorkers: 0,
-        },
-    });
+    if (companiesError) {
+        return (
+            <div className="bg-red-50 p-6 rounded-md border border-red-200 shadow-sm mb-6">
+                <h3 className="text-lg font-semibold mb-4 text-red-800">Erro ao carregar formulário</h3>
+                <p className="text-red-700">Não foi possível carregar a lista de empresas.</p>
+                <Button onClick={onCancel} className="mt-4">Fechar</Button>
+            </div>
+        );
+    }
 
-    useEffect(() => {
-        if (initialData) {
-            form.reset({
-                name: initialData.name,
-                companyId: initialData.companyId || "",
-                city: initialData.city,
-                state: initialData.state,
-                country: initialData.country,
-                numberOfWorkers: initialData.numberOfWorkers,
-            });
-        } else {
-            form.reset({
+    if (hasError) {
+        return (
+            <div className="bg-red-50 p-6 rounded-md border border-red-200 shadow-sm mb-6">
+                <h3 className="text-lg font-semibold mb-4 text-red-800">Erro ao renderizar formulário</h3>
+                <p className="text-red-700">Houve um erro ao inicializar o formulário.</p>
+                <Button onClick={() => {
+                    setHasError(false);
+                    onCancel();
+                }} className="mt-4">Fechar</Button>
+            </div>
+        );
+    }
+
+    let form;
+    try {
+        form = useForm({
+            resolver: zodResolver(unitFormSchema),
+            defaultValues: {
                 name: "",
                 companyId: "",
-                city: "",
-                state: "",
                 country: "Brasil",
-                numberOfWorkers: 0,
-            });
+                state: "",
+                city: "",
+                numberOfWorkers: undefined,
+            },
+        });
+    } catch (err) {
+        setHasError(true);
+        return null;
+    }
+
+    const selectedCountry = form.watch("country");
+
+    useEffect(() => {
+        try {
+            if (initialData) {
+                form.reset({
+                    name: initialData.name || "",
+                    companyId: initialData.companyId || "",
+                    country: initialData.country || "Brasil",
+                    state: initialData.state || "",
+                    city: initialData.city || "",
+                    numberOfWorkers: initialData.numberOfWorkers || undefined,
+                });
+            } else {
+                form.reset({
+                    name: "",
+                    companyId: "",
+                    country: "Brasil",
+                    state: "",
+                    city: "",
+                    numberOfWorkers: undefined,
+                });
+            }
+        } catch (err) {
+            setHasError(true);
         }
     }, [initialData, form]);
+
+    const handleSubmitWrapper = async (values: UnitFormValues) => {
+        try {
+            await onSubmit(values);
+        } catch (err) {
+            setHasError(true);
+        }
+    };
 
     return (
         <div className="bg-card p-6 rounded-md border shadow-sm mb-6">
@@ -93,7 +148,7 @@ export function UnitForm({ initialData, onSubmit, onCancel, isLoading }: UnitFor
             </h3>
 
             <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <form onSubmit={form.handleSubmit(handleSubmitWrapper)} className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
                         <FormField
@@ -139,32 +194,20 @@ export function UnitForm({ initialData, onSubmit, onCancel, isLoading }: UnitFor
 
                         <FormField
                             control={form.control}
-                            name="city"
+                            name="country"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Cidade</FormLabel>
-                                    <FormControl><Input {...field} /></FormControl>
-                                    <FormMessage/>
-                                </FormItem>
-                            )}
-                        />
-
-                        <FormField
-                            control={form.control}
-                            name="state"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Estado</FormLabel>
+                                    <FormLabel>País</FormLabel>
                                     <Select onValueChange={field.onChange} value={field.value}>
                                         <FormControl>
                                             <SelectTrigger className="w-full">
-                                                <SelectValue placeholder="UF"/>
+                                                <SelectValue placeholder="Selecione o país"/>
                                             </SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
-                                            {BR_STATES.map((state) => (
-                                                <SelectItem key={state.value} value={state.value}>
-                                                    {state.label}
+                                            {COUNTRIES.map((country) => (
+                                                <SelectItem key={country.value} value={country.value}>
+                                                    {country.label}
                                                 </SelectItem>
                                             ))}
                                         </SelectContent>
@@ -174,15 +217,43 @@ export function UnitForm({ initialData, onSubmit, onCancel, isLoading }: UnitFor
                             )}
                         />
 
+                        {selectedCountry === 'Brasil' && (
+                            <FormField
+                                control={form.control}
+                                name="state"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Estado</FormLabel>
+                                        <Select 
+                                            onValueChange={field.onChange}
+                                            value={field.value || ""}
+                                        >
+                                            <FormControl>
+                                                <SelectTrigger className="w-full">
+                                                    <SelectValue placeholder="Selecione o estado"/>
+                                                </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                                {BR_STATES.map((state) => (
+                                                    <SelectItem key={state.value} value={state.value}>
+                                                        {state.label}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                        <FormMessage/>
+                                    </FormItem>
+                                )}
+                            />
+                        )}
+
                         <FormField
                             control={form.control}
-                            name="country"
+                            name="city"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>País</FormLabel>
-                                    <FormControl>
-                                        <Input {...field} />
-                                    </FormControl>
+                                    <FormLabel>Cidade</FormLabel>
+                                    <FormControl><Input {...field} /></FormControl>
                                     <FormMessage/>
                                 </FormItem>
                             )}
@@ -198,11 +269,15 @@ export function UnitForm({ initialData, onSubmit, onCancel, isLoading }: UnitFor
                                         <Input
                                             type="number"
                                             placeholder="0"
-                                            {...field}
-                                            value={(field.value as number) ?? ''}
+                                            value={field.value ? String(field.value) : ''}
                                             onChange={(e) => {
-                                                const val = e.target.valueAsNumber;
-                                                field.onChange(isNaN(val) ? 0 : val);
+                                                const val = e.target.value;
+                                                if (val === '') {
+                                                    field.onChange(undefined);
+                                                } else {
+                                                    const numVal = parseInt(val, 10);
+                                                    field.onChange(isNaN(numVal) ? undefined : numVal);
+                                                }
                                             }}
                                         />
                                     </FormControl>
