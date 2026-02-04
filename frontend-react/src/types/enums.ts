@@ -8,7 +8,6 @@ export const UserRole = {
 
 export type UserRole = typeof UserRole[keyof typeof UserRole];
 
-
 export const ESG_MODULES = [
     { label: 'Combustão Móvel', value: 'mobile_combustion' },
     { label: 'Combustão Estacionária', value: 'stationary_combustion' },
