@@ -44,10 +44,10 @@ export default function CompaniesPage() {
                     <div className="space-y-1">
                         <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
                             <Building className="size-6 text-primary" />
-                            Gerenciamento de Empresas
+                            Empresas
                         </h1>
                         <p className="text-muted-foreground">
-                            Visualize e gerencie as empresas (Tenants) registradas no sistema.
+                            Visualize e gerencie as empresas registradas no sistema.
                         </p>
                     </div>
 
