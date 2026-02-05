@@ -103,14 +103,14 @@ model Unit {
 
 model AssetTypology {
   id                   Int     @id @default(autoincrement())
-  unitId               Int
-  unit                 Unit    @relation(fields: [unitId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  unitId               Int?
+  unit                 Unit?   @relation(fields: [unitId], references: [id], onUpdate: Cascade, onDelete: Cascade)
   sourceType           String
   description          String
   assetFields          String // JSON string
   isActive             Boolean @default(true)
-  responsibleContactId String
-  userContact          User    @relation(fields: [responsibleContactId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  responsibleContactId String?
+  userContact          User?   @relation(fields: [responsibleContactId], references: [id], onUpdate: Cascade, onDelete: Cascade)
   reportingFrequency   String  @default("anual")
 }
 
