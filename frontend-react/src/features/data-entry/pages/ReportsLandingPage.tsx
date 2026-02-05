@@ -97,7 +97,8 @@ export default function ReportsLandingPage() {
                                         {module.label}
                                     </CardTitle>
                                     <CardDescription>
-                                        Gerenciar reportes e visualizar indicadores.
+                                        {module?.description || "Gerenciar reportes e visualizar indicadores."}
+
                                     </CardDescription>
                                 </CardHeader>
                                 <CardFooter className="mt-auto pt-0">
