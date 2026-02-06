@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { Building2, Plus } from "lucide-react";
 import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible.tsx";
 import { Button } from "@/components/ui/button.tsx";
-import { GenericTable } from "@/shared/components/ui/GenericTable.tsx";
+import { UnitsTable } from "../components/UnitsTable.tsx";
 import DashboardLayout from "@/shared/layouts/DashboardLayout.tsx";
 import { useCrud } from "@/shared/hooks/useCrud.ts";
 
@@ -73,7 +73,7 @@ export default function UnitsPage() {
                     </CollapsibleContent>
                 </Collapsible>
 
-                <GenericTable columns={columns} data={units} isLoading={isLoading} />
+                <UnitsTable columns={columns} data={units} isLoading={isLoading} />
             </div>
         </DashboardLayout>
         );
