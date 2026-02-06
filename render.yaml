@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: ecofinance
+    runtime: node
+    plan: starter
+    branch: feature/frontend-new
+    buildCommand: npm run build
+    startCommand: npm start
+    autoDeploy: true
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
