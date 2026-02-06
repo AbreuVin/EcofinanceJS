@@ -11,6 +11,7 @@ import { userFormSchema } from "../schemas/user.schema";
 import { PermissionsMatrix } from "./PermissionsMatrix";
 import type { User } from "@/types/User";
 import { useUnits } from "@/features/units/hooks/useUnits";
+import { useAuthStore } from "@/store/authStore";
 
 
 interface UserFormProps {
@@ -22,6 +23,9 @@ interface UserFormProps {
 
 export function UserForm({ initialData, onSubmit, onCancel, isLoading }: UserFormProps) {
     const { data: units = [], isLoading: loadingUnits } = useUnits();
+
+    const user = useAuthStore(state => state.user);
+    const isMaster = user?.role === UserRole.MASTER;
 
     const form = useForm({
         resolver: zodResolver(userFormSchema),
@@ -37,6 +41,8 @@ export function UserForm({ initialData, onSubmit, onCancel, isLoading }: UserFor
     });
 
     useEffect(() => {
+        const defaultCompanyId = !isMaster && user?.companyId ? user.companyId : "";
+
         if (initialData) {
             let perms: string[] = [];
             if (Array.isArray(initialData.permissions)) {
@@ -50,7 +56,7 @@ export function UserForm({ initialData, onSubmit, onCancel, isLoading }: UserFor
                 email: initialData.email,
                 phone: initialData.phone || "",
                 role: initialData.role as UserRole,
-                companyId: initialData.companyId || "",
+                companyId: initialData.companyId || defaultCompanyId,
                 unitId: initialData.unitId || 0,
                 permissions: perms,
             });
@@ -60,7 +66,7 @@ export function UserForm({ initialData, onSubmit, onCancel, isLoading }: UserFor
                 email: "",
                 phone: "",
                 role: "USER",
-                companyId: "",
+                companyId: defaultCompanyId,
                 unitId: 0,
                 permissions: [],
             });
