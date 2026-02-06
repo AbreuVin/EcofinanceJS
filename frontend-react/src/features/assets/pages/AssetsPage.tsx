@@ -95,7 +95,7 @@ export default function AssetsPage() {
                     <div className="space-y-1">
                         <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
                             <Leaf className="size-6 text-primary"/>
-                            Fontes de Emissão
+                            Cadastro de Fontes
                         </h1>
                         <p className="text-muted-foreground">
                             Cadastre e configure os ativos que geram emissões (veículos, máquinas, uso do solo, etc.).

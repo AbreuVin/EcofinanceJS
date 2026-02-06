@@ -41,7 +41,7 @@ export const getAssetColumns = ({ onEdit, onDelete }: AssetColumnsProps): Column
     {
         accessorKey: "unit.name",
         header: "Unidade",
-        cell: ({ row }) => row.original.unit?.name || <span className="text-muted-foreground">-</span>,
+        cell: ({ row }) => row.original.unit?.name || <span>Global</span>,
     },
     {
         accessorKey: "userContact.name",

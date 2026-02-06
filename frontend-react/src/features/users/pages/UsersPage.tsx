@@ -45,7 +45,7 @@ export default function UsersPage() {
                     <div className="space-y-1">
                         <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
                             <UserPen className="size-6 text-primary"/>
-                            Gerenciamento de Usuários
+                            Cadastro de Responsáveis
                         </h1>
                         <p className="text-muted-foreground">
                             Cadastre usuários, defina perfis de acesso e permissões.

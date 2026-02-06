@@ -12,6 +12,7 @@ import UnitsPage from "@/features/units/pages/UnitPage.tsx";
 import UsersPage from "./features/users/pages/UsersPage";
 import AssetsPage from "./features/assets/pages/AssetsPage";
 import DataEntryPage from "@/features/data-entry/pages/DataEntryPage.tsx";
+import ReportsLandingPage from "@/features/data-entry/pages/ReportsLandingPage.tsx";
 
 const queryClient = new QueryClient();
 
@@ -72,6 +73,12 @@ function App() {
                                 <DataEntryPage/>
                             </RequireAuth>
                         )}
+                    </Route>
+
+                    <Route path="/reports">
+                        <RequireAuth>
+                            <ReportsLandingPage />
+                        </RequireAuth>
                     </Route>
 
                     <Route path="/reports/:module">
