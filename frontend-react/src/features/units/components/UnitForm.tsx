@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
+import { useAuthStore } from "@/store/authStore";
+import { UserRole } from "@/types/enums";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -64,6 +66,9 @@ export function UnitForm({ initialData, onSubmit, onCancel, isLoading }: UnitFor
     const [hasError, setHasError] = useState(false);
     const { data: companies = [], isLoading: isLoadingCompanies, error: companiesError } = useCompanies();
 
+    const user = useAuthStore(state => state.user);
+    const isMaster = user?.role === UserRole.MASTER;
+
     if (companiesError) {
         return (
             <div className="bg-red-50 p-6 rounded-md border border-red-200 shadow-sm mb-6">
@@ -109,10 +114,12 @@ export function UnitForm({ initialData, onSubmit, onCancel, isLoading }: UnitFor
 
     useEffect(() => {
         try {
+            const defaultCompanyId = !isMaster && user?.companyId ? user.companyId : "";
+
             if (initialData) {
                 form.reset({
                     name: initialData.name || "",
-                    companyId: initialData.companyId || "",
+                    companyId: initialData.companyId || defaultCompanyId,
                     country: initialData.country || "Brasil",
                     state: initialData.state || "",
                     city: initialData.city || "",
@@ -121,7 +128,7 @@ export function UnitForm({ initialData, onSubmit, onCancel, isLoading }: UnitFor
             } else {
                 form.reset({
                     name: "",
-                    companyId: "",
+                    companyId: defaultCompanyId,
                     country: "Brasil",
                     state: "",
                     city: "",
@@ -131,7 +138,7 @@ export function UnitForm({ initialData, onSubmit, onCancel, isLoading }: UnitFor
         } catch (err) {
             setHasError(true);
         }
-    }, [initialData, form]);
+    }, [initialData, form, isMaster, user]);
 
     const handleSubmitWrapper = async (values: UnitFormValues) => {
         try {
@@ -172,7 +179,7 @@ export function UnitForm({ initialData, onSubmit, onCancel, isLoading }: UnitFor
                                     <Select
                                         onValueChange={field.onChange}
                                         value={field.value}
-                                        disabled={isLoadingCompanies}
+                                        disabled={isLoadingCompanies || !isMaster}
                                     >
                                         <FormControl>
                                             <SelectTrigger className="w-full">
