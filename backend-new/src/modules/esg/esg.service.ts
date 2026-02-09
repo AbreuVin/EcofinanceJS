@@ -13,13 +13,21 @@ export class EsgGenericService<T> {
         private schema: ZodSchema
     ) {}
 
-    async getByUnitAndYear(unitId: number, year?: number) {
-        const where: any = { unitId };
-        if (year) where.year = year;
+    async getByUnitAndYear(unitId?: number, year?: number) {
+        const where: any = {};
+
+        if (unitId) {
+            where.unitId = unitId;
+        }
+
+        if (year) {
+            where.year = year;
+        }
 
         return this.delegate.findMany({
             where,
-            orderBy: { createdAt: 'desc' }
+            orderBy: { createdAt: 'desc' },
+            include: { unit: true }
         });
     }
 

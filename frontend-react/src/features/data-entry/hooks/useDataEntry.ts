@@ -4,39 +4,41 @@ import type { EsgModuleType } from "@/types/enums";
 import { toast } from "sonner";
 
 export const dataEntryKeys = {
-    byContext: (module: string, unitId: number, year: number) =>
+    // Aceita number ou undefined para a chave de cache
+    byContext: (module: string, unitId: number | undefined, year: number) =>
         ["data-entry", module, unitId, year] as const,
 };
 
-export function useDataEntries(module: EsgModuleType, unitId: number, year: number) {
+export function useDataEntries(module: EsgModuleType, unitId: number | undefined, year: number) {
     return useQuery({
         queryKey: dataEntryKeys.byContext(module, unitId, year),
         queryFn: () => DataEntryService.getByContext(module, unitId, year),
-        enabled: !!module && !!unitId && !!year,
+        // CORREÇÃO: Removemos '!!unitId' para permitir busca global (quando unitId é undefined)
+        enabled: !!module && !!year,
     });
 }
 
-export function useDataEntryMutation(module: EsgModuleType, unitId: number, year: number) {
+export function useDataEntryMutation(module: EsgModuleType, unitId: number | undefined, year: number) {
     const queryClient = useQueryClient();
 
     return useMutation({
         mutationFn: async (values: {
             assetDescription: string;
-            entries: Record<string, any> // Key is period (e.g., "Janeiro"), Value is the data object
-            existingRecords: EsgDataRecord[]
+            entries: Record<string, any>; // Key is period, Value is data object
+            existingRecords: EsgDataRecord[];
         }) => {
             const { assetDescription, entries, existingRecords } = values;
             const promises: Promise<any>[] = [];
 
-            // Loop through the form entries (e.g., 12 months)
             for (const [period, formData] of Object.entries(entries)) {
 
-                // Find if we already have a record for this Period + Description
                 const existing = existingRecords.find(r =>
                     r.period === period &&
                     r.sourceDescription === assetDescription
                 );
 
+                // Nota: Se unitId for undefined aqui, o backend pode rejeitar dependendo da validação.
+                // Mas isso geralmente é resolvido pelo DataEntrySheet passando o ID da unidade do Ativo, não do Filtro.
                 const payload = {
                     ...formData,
                     year,
@@ -46,10 +48,8 @@ export function useDataEntryMutation(module: EsgModuleType, unitId: number, year
                 };
 
                 if (existing) {
-                    // Update existing
                     promises.push(DataEntryService.update(module, existing.id, payload));
                 } else {
-                    // Create new
                     promises.push(DataEntryService.create(module, payload));
                 }
             }
@@ -58,6 +58,7 @@ export function useDataEntryMutation(module: EsgModuleType, unitId: number, year
         },
         onSuccess: () => {
             toast.success("Dados salvos com sucesso!");
+            // Invalida a query atual para forçar recarregamento
             queryClient.invalidateQueries({
                 queryKey: dataEntryKeys.byContext(module, unitId, year)
             });

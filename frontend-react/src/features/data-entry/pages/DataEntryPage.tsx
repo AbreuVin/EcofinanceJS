@@ -16,13 +16,13 @@ export default function DataEntryPage() {
     const moduleType = normalizeSlugToType(moduleSlug);
 
     const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
-    const [selectedUnitId, setSelectedUnitId] = useState<string>("");
+    const [selectedUnitId, setSelectedUnitId] = useState<string>("all_units");
 
     const [selectedAsset, setSelectedAsset] = useState<AssetTypology | null>(null);
 
     const { data: rawAssets = [], isLoading: loadingAssets } = useAssets();
 
-    const queryUnitId = Number(selectedUnitId) || 0;
+    const queryUnitId = selectedUnitId === "all_units" ? undefined : Number(selectedUnitId);
     const { data: entries = [] } = useDataEntries(
         moduleType!,
         queryUnitId,
@@ -36,7 +36,12 @@ export default function DataEntryPage() {
             .filter(asset => {
                 if (asset.sourceType !== moduleType) return false;
                 if (!asset.isActive) return false;
-                return !(selectedUnitId && String(asset.unitId) !== selectedUnitId);
+
+                if (selectedUnitId === "all_units") return true;
+
+                const assetUnitId = asset.unitId ? String(asset.unitId) : "0";
+
+                return !(assetUnitId !== selectedUnitId && assetUnitId !== "0");
             })
             .map(asset => {
                 let parsedFields = {};
@@ -108,7 +113,7 @@ export default function DataEntryPage() {
                     <DataEntrySheet
                         asset={selectedAsset}
                         year={selectedYear}
-                        unitId={selectedAsset.unitId}
+                        unitId={selectedAsset.unitId ?? undefined}
                         open={!!selectedAsset}
                         onOpenChange={(open) => !open && setSelectedAsset(null)}
                     />
