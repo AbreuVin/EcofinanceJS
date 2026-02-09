@@ -16,7 +16,7 @@ export const DataEntryService = {
     // Fetch all records for a specific Module, Unit, and Year
     getByContext: async (
         module: EsgModuleType,
-        unitId: number,
+        unitId: number | undefined,
         year: number
     ): Promise<EsgDataRecord[]> => {
         const params = new URLSearchParams({
