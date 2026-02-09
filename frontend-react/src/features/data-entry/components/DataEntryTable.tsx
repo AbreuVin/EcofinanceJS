@@ -26,11 +26,7 @@ interface DataEntryTableProps {
 
 export function DataEntryTable({ assets, onReport, module }: DataEntryTableProps) {
     const columns = useMemo<ColumnDef<AssetWithProgress>[]>(() => {
-        // 1. Get specific columns for this module (if any)
-        // We cast to 'any' to avoid strict covariance issues between AssetTypology and AssetWithProgress
         const sourceCols = (SPECIFIC_COLUMNS[module] || []) as ColumnDef<AssetWithProgress>[];
-
-        console.log(sourceCols)
 
         return [
             {
