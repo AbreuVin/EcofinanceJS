@@ -21,6 +21,21 @@ interface UserFormProps {
     isLoading: boolean;
 }
 
+const formatPhone = (value: string | undefined) => {
+    if (!value) return ""
+
+    // 1. Remove tudo que não é número
+    let cleanValue = value.replace(/\D/g, "")
+
+    // 2. Limita a 11 dígitos (DDD + 9 dígitos)
+    cleanValue = cleanValue.substring(0, 11)
+
+    // 3. Aplica a formatação
+    return cleanValue
+        .replace(/^(\d{2})(\d)/g, "($1) $2") // Coloca parênteses em volta dos dois primeiros dígitos
+        .replace(/(\d)(\d{4})$/, "$1-$2")    // Coloca hífen antes dos últimos 4 dígitos
+}
+
 export function UserForm({ initialData, onSubmit, onCancel, isLoading }: UserFormProps) {
     const { data: units = [], isLoading: loadingUnits } = useUnits();
 
@@ -112,7 +127,17 @@ export function UserForm({ initialData, onSubmit, onCancel, isLoading }: UserFor
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Telefone</FormLabel>
-                                    <FormControl><Input {...field} /></FormControl>
+                                    <FormControl>
+                                        <Input
+                                            placeholder="(00) 00000-0000"
+                                            {...field}
+                                            maxLength={15}
+                                            onChange={(e) => {
+                                                const { value } = e.target
+                                                field.onChange(formatPhone(value))
+                                            }}
+                                        />
+                                    </FormControl>
                                     <FormMessage/>
                                 </FormItem>
                             )}
