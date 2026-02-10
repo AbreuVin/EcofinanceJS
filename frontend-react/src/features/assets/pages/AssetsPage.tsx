@@ -4,7 +4,6 @@ import { Leaf, Plus } from "lucide-react";
 
 import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible";
 import { Button } from "@/components/ui/button";
-import { GenericTable } from "@/shared/components/ui/GenericTable";
 import DashboardLayout from "@/shared/layouts/DashboardLayout";
 import { useCrud } from "@/shared/hooks/useCrud";
 
@@ -12,10 +11,58 @@ import { useAssets } from "../hooks/useAssets";
 
 import { AssetForm } from "../components/AssetForm";
 import { getAssetColumns, SPECIFIC_COLUMNS } from "../components/AssetColumns";
+import { AssetsTable } from "../components/AssetsTable";
 import { useAssetMutations } from "../hooks/useAssetMutations";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { ESG_MODULES } from "@/types/enums";
 import { normalizeSlugToType } from "../../data-entry/utils/module-mapping";
+
+// Scope groupings for modules
+const SCOPE_MODULES: Record<string, string[]> = {
+    escopo_1: [
+        'production_sales',
+        'stationary_combustion',
+        'mobile_combustion',
+        'lubricants_ippu',
+        'fugitive_emissions',
+        'fertilizers',
+        'effluents_controlled',
+        'domestic_effluents',
+        'land_use_change',
+        'solid_waste',
+    ],
+    escopo_2: [
+        'electricity_purchase',
+    ],
+    escopo_3: [
+        'purchased_goods',
+        'capital_goods',
+        'upstream_transport',
+        'business_travel_land',
+        'downstream_transport',
+        'waste_transport',
+        'home_office',
+        'air_travel',
+        'employee_commuting',
+        'energy_generation',
+        'planted_forest',
+        'conservation_area',
+    ],
+};
+
+const SCOPE_LABELS: Record<string, string> = {
+    escopo_1: "Escopo 1",
+    escopo_2: "Escopo 2",
+    escopo_3: "Escopo 3",
+};
+
+// Get modules for a specific scope, sorted alphabetically
+function getScopeModules(scopeKey: string) {
+    const moduleValues = SCOPE_MODULES[scopeKey] || [];
+    return ESG_MODULES
+        .filter(mod => moduleValues.includes(mod.value))
+        .sort((a, b) => a.label.localeCompare(b.label));
+}
 
 export default function AssetsPage() {
     const params = useParams();
@@ -121,9 +168,19 @@ export default function AssetsPage() {
                         <SelectTrigger className="w-[500px]">
                             <SelectValue placeholder="Filtrar por Tipo de Fonte" />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="max-h-[400px]">
                             <SelectItem value="all">Visão Geral (Todas)</SelectItem>
-                            {ESG_MODULES.map(m => <SelectItem value={m.value}>{m.label}</SelectItem>)}
+                            
+                            {Object.entries(SCOPE_LABELS).map(([scopeKey, scopeLabel]) => (
+                                <SelectGroup key={scopeKey}>
+                                    <SelectLabel className="font-semibold text-primary">{scopeLabel}</SelectLabel>
+                                    {getScopeModules(scopeKey).map((mod) => (
+                                        <SelectItem key={mod.value} value={mod.value}>
+                                            {mod.label}
+                                        </SelectItem>
+                                    ))}
+                                </SelectGroup>
+                            ))}
                         </SelectContent>
                     </Select>
 
@@ -135,7 +192,7 @@ export default function AssetsPage() {
                 </div>
 
                 {/* Data Table */}
-                <GenericTable
+                <AssetsTable
                     columns={columns}
                     data={filteredData}
                     isLoading={isLoading}

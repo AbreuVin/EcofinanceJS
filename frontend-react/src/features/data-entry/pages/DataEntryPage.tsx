@@ -15,42 +15,35 @@ export default function DataEntryPage() {
     const moduleSlug = params.module || "";
     const moduleType = normalizeSlugToType(moduleSlug);
 
-    // Filter State
     const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
-    const [selectedUnitId, setSelectedUnitId] = useState<string>("");
+    const [selectedUnitId, setSelectedUnitId] = useState<string>("all_units");
 
-    // Sheet State
     const [selectedAsset, setSelectedAsset] = useState<AssetTypology | null>(null);
 
-    // 1. Fetch Assets
     const { data: rawAssets = [], isLoading: loadingAssets } = useAssets();
 
-    // 2. Fetch Entries (Only for Progress Bars)
-    // If no unit selected (all units), we might not get data depending on backend.
-    // This fetch is strictly for the Table's visual progress.
-    const queryUnitId = Number(selectedUnitId) || 0;
+    const queryUnitId = selectedUnitId === "all_units" ? undefined : Number(selectedUnitId);
     const { data: entries = [] } = useDataEntries(
         moduleType!,
         queryUnitId,
         selectedYear
     );
 
-    // 3. Filter & Parse Assets
     const processedAssets = useMemo(() => {
         if (!moduleType) return [];
 
         return rawAssets
             .filter(asset => {
-                // Filter by Module
                 if (asset.sourceType !== moduleType) return false;
-                // Filter by Active
                 if (!asset.isActive) return false;
-                // Filter by Unit (if selected)
-                if (selectedUnitId && String(asset.unitId) !== selectedUnitId) return false;
-                return true;
+
+                if (selectedUnitId === "all_units") return true;
+
+                const assetUnitId = asset.unitId ? String(asset.unitId) : "0";
+
+                return !(assetUnitId !== selectedUnitId && assetUnitId !== "0");
             })
             .map(asset => {
-                // CRITICAL: Robust JSON Parsing
                 let parsedFields = {};
                 try {
                     parsedFields = typeof asset.assetFields === 'string'
@@ -62,19 +55,17 @@ export default function DataEntryPage() {
 
                 return {
                     ...asset,
-                    assetFields: parsedFields // Ensure Table receives an Object, not String
+                    assetFields: parsedFields
                 };
             });
     }, [rawAssets, moduleType, selectedUnitId]);
 
-    // 4. Calculate Progress
     const assetsWithProgress = useMemo(() => {
         return processedAssets.map(asset => {
             const assetEntries = entries.filter(e => e.sourceDescription === asset.description);
             const isMensal = asset.reportingFrequency?.toLowerCase() === 'mensal';
             const requiredCount = isMensal ? 12 : 1;
 
-            // Count unique periods filled
             const filledMonths = [...new Set(assetEntries.map(e => e.period))];
 
             return {
@@ -118,13 +109,11 @@ export default function DataEntryPage() {
                     />
                 )}
 
-                {/* Sheet manages its own data fetching now */}
                 {selectedAsset && (
                     <DataEntrySheet
                         asset={selectedAsset}
                         year={selectedYear}
-                        // Use Asset's Unit ID directly, fallback to filter if needed
-                        unitId={selectedAsset.unitId}
+                        unitId={selectedAsset.unitId ?? undefined}
                         open={!!selectedAsset}
                         onOpenChange={(open) => !open && setSelectedAsset(null)}
                     />
