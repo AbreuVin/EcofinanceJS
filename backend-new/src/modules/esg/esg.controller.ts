@@ -5,10 +5,13 @@ export const list = async (req: Request, res: Response) => {
     const { sourceType } = req.params;
     const { unitId, year } = req.query;
 
-    if (!unitId) throw new Error("unitId is required"); // Will be caught 500, or use AppError
+    const parsedUnitId = unitId && unitId !== 'undefined' && unitId !== 'null' && unitId !== '0'
+        ? Number(unitId)
+        : undefined;
 
     const { service } = getRegistryEntry(sourceType as string);
-    const data = await service.getByUnitAndYear(Number(unitId), year ? Number(year) : undefined);
+
+    const data = await service.getByUnitAndYear(parsedUnitId, year ? Number(year) : undefined);
 
     res.json(data);
 };
