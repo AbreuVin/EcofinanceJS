@@ -12,7 +12,56 @@ import { useUsers } from "@/features/users/hooks/useUsers";
 import { useAssetForm } from "../hooks/useAssetForm";
 import { AssetDynamicFields } from "./AssetDynamicFields";
 import { useWatch } from "react-hook-form";
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
+
+// Scope groupings for modules
+const SCOPE_MODULES: Record<string, string[]> = {
+    escopo_1: [
+        'production_sales',
+        'stationary_combustion',
+        'mobile_combustion',
+        'lubricants_ippu',
+        'fugitive_emissions',
+        'fertilizers',
+        'effluents_controlled',
+        'domestic_effluents',
+        'land_use_change',
+        'solid_waste',
+    ],
+    escopo_2: [
+        'electricity_purchase',
+    ],
+    escopo_3: [
+        'purchased_goods',
+        'capital_goods',
+        'upstream_transport',
+        'business_travel_land',
+        'downstream_transport',
+        'waste_transport',
+        'home_office',
+        'air_travel',
+        'employee_commuting',
+        'energy_generation',
+        'planted_forest',
+        'conservation_area',
+    ],
+};
+
+const SCOPE_LABELS: Record<string, string> = {
+    escopo_1: "Escopo 1",
+    escopo_2: "Escopo 2",
+    escopo_3: "Escopo 3",
+};
+
+// Helper to find scope from module value
+function getScopeFromModule(moduleValue: string): string | null {
+    for (const [scope, modules] of Object.entries(SCOPE_MODULES)) {
+        if (modules.includes(moduleValue)) {
+            return scope;
+        }
+    }
+    return null;
+}
 
 interface AssetFormProps {
     initialData?: AssetTypology | null;
@@ -29,6 +78,36 @@ export function AssetForm({ initialData, onSubmit, onCancel, isLoading, preSelec
     const { data: users = [], isLoading: loadingUsers } = useUsers();
 
     const selectedUnitId = useWatch({ control: form.control, name: "unitId" });
+    const currentSourceType = useWatch({ control: form.control, name: "sourceType" });
+
+    // State for scope selection
+    const [selectedScope, setSelectedScope] = useState<string>(() => {
+        // Initialize from existing data or preSelectedSourceType
+        const moduleValue = initialData?.sourceType || preSelectedSourceType;
+        if (moduleValue) {
+            return getScopeFromModule(moduleValue) || "";
+        }
+        return "";
+    });
+
+    // Update scope when source type changes externally
+    useEffect(() => {
+        if (currentSourceType) {
+            const scope = getScopeFromModule(currentSourceType);
+            if (scope && scope !== selectedScope) {
+                setSelectedScope(scope);
+            }
+        }
+    }, [currentSourceType]);
+
+    // Get modules for the selected scope
+    const scopeModules = useMemo(() => {
+        if (!selectedScope) return [];
+        const moduleValues = SCOPE_MODULES[selectedScope] || [];
+        return ESG_MODULES
+            .filter(mod => moduleValues.includes(mod.value))
+            .sort((a, b) => a.label.localeCompare(b.label));
+    }, [selectedScope]);
 
     // Lógica para filtrar usuários: Se ID for 0 ou undefined, mostra todos.
     const unitUsers = useMemo(() => {
@@ -61,11 +140,39 @@ export function AssetForm({ initialData, onSubmit, onCancel, isLoading, preSelec
                 {/* O formulário agora chama o wrapper, não o handleSubmit direto */}
                 <form onSubmit={form.handleSubmit(handleSubmitWrapper)} className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {/* Scope selection dropdown */}
+                        <FormItem>
+                            <FormLabel>Escopo</FormLabel>
+                            <Select
+                                onValueChange={(val) => {
+                                    setSelectedScope(val);
+                                    // Clear sourceType when scope changes
+                                    form.setValue("sourceType", "" as any);
+                                    form.setValue("assetFields", {});
+                                }}
+                                value={selectedScope}
+                            >
+                                <FormControl>
+                                    <SelectTrigger className="w-full">
+                                        <SelectValue placeholder="Selecione o escopo..."/>
+                                    </SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    {Object.entries(SCOPE_LABELS).map(([value, label]) => (
+                                        <SelectItem key={value} value={value}>
+                                            {label}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </FormItem>
+
+                        {/* Module selection dropdown - only shows when scope is selected */}
                         <FormField
                             control={form.control}
                             name="sourceType"
                             render={({ field }) => (
-                                <FormItem className="col-span-2">
+                                <FormItem>
                                     <FormLabel>Tipo de Fonte (Módulo ESG)</FormLabel>
                                     <Select
                                         onValueChange={(val) => {
@@ -73,20 +180,19 @@ export function AssetForm({ initialData, onSubmit, onCancel, isLoading, preSelec
                                             form.setValue("assetFields", {});
                                         }}
                                         value={field.value}
+                                        disabled={!selectedScope}
                                     >
                                         <FormControl>
                                             <SelectTrigger className="w-full">
-                                                <SelectValue placeholder="Selecione o tipo..."/>
+                                                <SelectValue placeholder={selectedScope ? "Selecione o tipo..." : "Selecione o escopo primeiro"}/>
                                             </SelectTrigger>
                                         </FormControl>
                                         <SelectContent className="max-h-[300px]">
-                                            {[...ESG_MODULES]
-                                                .sort((a, b) => a.label.localeCompare(b.label))
-                                                .map((mod) => (
-                                                    <SelectItem key={mod.value} value={mod.value}>
-                                                        {mod.label}
-                                                    </SelectItem>
-                                                ))}
+                                            {scopeModules.map((mod) => (
+                                                <SelectItem key={mod.value} value={mod.value}>
+                                                    {mod.label}
+                                                </SelectItem>
+                                            ))}
                                         </SelectContent>
                                     </Select>
                                     <FormMessage/>
