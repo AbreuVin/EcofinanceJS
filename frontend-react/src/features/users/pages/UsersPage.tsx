@@ -3,13 +3,13 @@ import { Plus, UserPen } from "lucide-react";
 
 import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible";
 import { Button } from "@/components/ui/button";
-import { GenericTable } from "@/shared/components/ui/GenericTable";
 import DashboardLayout from "@/shared/layouts/DashboardLayout";
 import { useCrud } from "@/shared/hooks/useCrud";
 
 import { useUsers } from "../hooks/useUsers";
 import { UserForm } from "../components/UserForm";
 import { getUserColumns } from "../components/UserColumns";
+import { UsersTable } from "../components/UsersTable";
 import { useUserMutations } from "@/features/users/hooks/useUserMutations.ts";
 import type { User } from "@/types/User.ts";
 import type { UserFormValues } from "@/features/users/schemas/user.schema.ts";
@@ -70,7 +70,7 @@ export default function UsersPage() {
                     </CollapsibleContent>
                 </Collapsible>
 
-                <GenericTable columns={columns} data={users} isLoading={isLoading}/>
+                <UsersTable columns={columns} data={users} isLoading={isLoading}/>
             </div>
         </DashboardLayout>
     );
