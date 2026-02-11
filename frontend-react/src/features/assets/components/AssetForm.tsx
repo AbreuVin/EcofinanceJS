@@ -132,9 +132,14 @@ export function AssetForm({ initialData, onSubmit, onCancel, isLoading, preSelec
 
     return (
         <div className="bg-card p-6 rounded-md border shadow-sm mb-6">
-            <h3 className="text-lg font-semibold mb-4">
+            <h3 className="text-lg font-semibold mb-2">
                 {initialData ? "Editar Fonte de Emissão" : "Nova Fonte de Emissão"}
             </h3>
+            <h4 className="text-sm text-muted-foreground mb-6 w-3/4">
+                {currentSourceType
+                    ? ESG_MODULES.find(m => m.value === currentSourceType)?.assetDesc
+                    : "Configurações Gerais"}
+            </h4>
 
             <Form {...form}>
                 {/* O formulário agora chama o wrapper, não o handleSubmit direto */}
