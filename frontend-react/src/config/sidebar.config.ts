@@ -10,27 +10,17 @@ import {
 import { UserRole } from "@/types/enums.ts";
 
 export interface SubItem {
-
     title: string
-
-    url: string
-
+    url?: string
+    items?: SubItem[] // Support nested items
 }
 
-
-
 export interface NavItem {
-
     title: string
-
     url: string
-
     icon?: LucideIcon
-
     allowedRoles?: UserRole[]
-
     items?: SubItem[]
-
 }
 
 export const sidebarConfig = {
@@ -83,29 +73,44 @@ export const sidebarConfig = {
             url: "/reports",
             icon: FilePlusCorner,
             items: [
-                { title: "Área de Conservação", url: "/reports/conservation-area" },
-                { title: "Área de Floresta Plantada", url: "/reports/planted-forest" },
-                { title: "Bens de Capital", url: "/reports/capital-goods" },
-                { title: "Bens e Serviços Comprados", url: "/reports/purchased-goods" },
-                { title: "Combustão Estacionária", url: "/reports/stationary-combustion" },
-                { title: "Combustão Móvel", url: "/reports/mobile-combustion" },
-                { title: "Compra de Eletricidade", url: "/reports/electricity-purchase" },
-                { title: "Dados de Produção e Venda", url: "/reports/production-sales" },
-                { title: "Efluentes Controlados", url: "/reports/effluents-controlled" },
-                { title: "Efluentes Domésticos", url: "/reports/domestic-effluents" },
-                { title: "Emissões Fugitivas", url: "/reports/fugitive-emissions" },
-                { title: "Fertilizantes", url: "/reports/fertilizers" },
-                { title: "Geração de Energia", url: "/reports/energy-generation" },
-                { title: "Home Office", url: "/reports/home-office" },
-                { title: "IPPU - Lubrificantes", url: "/reports/lubricants-ippu" },
-                { title: "Logística de Insumo", url: "/reports/upstream-transport" },
-                { title: "Logística de Produto Final", url: "/reports/downstream-transport" },
-                { title: "Logística de Resíduos", url: "/reports/waste-transport" },
-                { title: "Mudança do Uso do Solo", url: "/reports/land-use-change" },
-                { title: "Resíduos Sólidos", url: "/reports/solid-waste" },
-                { title: "Transporte de Funcionários", url: "/reports/employee-commuting" },
-                { title: "Viagens Aéreas", url: "/reports/air-travel" },
-                { title: "Viagens a Negócios Terrestres", url: "/reports/business-travel-land" },
+                {
+                    title: "Escopo 1",
+                    items: [
+                        { title: "Combustão Estacionária", url: "/reports/stationary-combustion" },
+                        { title: "Combustão Móvel", url: "/reports/mobile-combustion" },
+                        { title: "Dados de Produção e Venda", url: "/reports/production-sales" },
+                        { title: "Efluentes Controlados", url: "/reports/effluents-controlled" },
+                        { title: "Efluentes Domésticos", url: "/reports/domestic-effluents" },
+                        { title: "Emissões Fugitivas", url: "/reports/fugitive-emissions" },
+                        { title: "Fertilizantes", url: "/reports/fertilizers" },
+                        { title: "IPPU - Lubrificantes", url: "/reports/lubricants-ippu" },
+                        { title: "Mudança do Uso do Solo", url: "/reports/land-use-change" },
+                        { title: "Resíduos Sólidos", url: "/reports/solid-waste" },
+                    ],
+                },
+                {
+                    title: "Escopo 2",
+                    items: [
+                        { title: "Compra de Eletricidade", url: "/reports/electricity-purchase" },
+                    ],
+                },
+                {
+                    title: "Escopo 3",
+                    items: [
+                        { title: "Área de Conservação", url: "/reports/conservation-area" },
+                        { title: "Área de Floresta Plantada", url: "/reports/planted-forest" },
+                        { title: "Bens de Capital", url: "/reports/capital-goods" },
+                        { title: "Bens e Serviços Comprados", url: "/reports/purchased-goods" },
+                        { title: "Geração de Energia", url: "/reports/energy-generation" },
+                        { title: "Home Office", url: "/reports/home-office" },
+                        { title: "Logística de Insumo", url: "/reports/upstream-transport" },
+                        { title: "Logística de Produto Final", url: "/reports/downstream-transport" },
+                        { title: "Logística de Resíduos", url: "/reports/waste-transport" },
+                        { title: "Transporte de Funcionários", url: "/reports/employee-commuting" },
+                        { title: "Viagens Aéreas", url: "/reports/air-travel" },
+                        { title: "Viagens a Negócios Terrestres", url: "/reports/business-travel-land" },
+                    ],
+                },
             ],
         },
     ] as NavItem[],
