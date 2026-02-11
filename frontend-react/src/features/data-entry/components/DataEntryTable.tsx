@@ -142,6 +142,7 @@ function DynamicColumnFilter({
 
 export function DataEntryTable({ assets, onReport, module }: DataEntryTableProps) {
     const [frequencyFilter, setFrequencyFilter] = useState<string[]>([]);
+    const [dynamicFilters, setDynamicFilters] = useState<Record<string, string[]>>({});
 
     // Get the source columns for this module
     const sourceCols = useMemo(() => {
@@ -154,20 +155,79 @@ export function DataEntryTable({ assets, onReport, module }: DataEntryTableProps
         return [...new Set(assets.map(a => a.reportingFrequency))].filter(Boolean).sort();
     }, [assets]);
 
-    // Filter data based on frequency filter only
+    // Safely get column value using accessorFn
+    const getColumnValue = (col: ColumnDef<AssetWithProgress>, item: AssetWithProgress): string | null => {
+        try {
+            const accessorFn = (col as any).accessorFn;
+            if (typeof accessorFn === 'function') {
+                const value = accessorFn(item);
+                if (value != null && value !== "-" && value !== "undefined" && value !== "null") {
+                    return String(value);
+                }
+            }
+        } catch {
+            // Ignore errors
+        }
+        return null;
+    };
+
+    // Pre-compute unique values for each dynamic column
+    const dynamicColumnValues = useMemo(() => {
+        const result: Record<string, string[]> = {};
+        if (!assets || assets.length === 0) return result;
+        
+        sourceCols.forEach((col) => {
+            const header = typeof col.header === 'string' ? col.header : '';
+            if (!header) return;
+            
+            const values = new Set<string>();
+            assets.forEach((item) => {
+                const value = getColumnValue(col, item);
+                if (value) values.add(value);
+            });
+            
+            if (values.size > 0 && values.size <= 50) { // Only enable filter if reasonable number of values
+                result[header] = Array.from(values).sort();
+            }
+        });
+        
+        return result;
+    }, [sourceCols, assets]);
+
+    // Handle dynamic filter changes
+    const handleDynamicFilterChange = (columnHeader: string, values: string[]) => {
+        setDynamicFilters(prev => ({ ...prev, [columnHeader]: values }));
+    };
+
+    // Filter data based on all filters
     const filteredData = useMemo(() => {
         if (!assets || assets.length === 0) return [];
         
         return assets.filter((item) => {
+            // Check frequency filter
             if (frequencyFilter.length > 0 && !frequencyFilter.includes(item.reportingFrequency)) {
                 return false;
             }
+            
+            // Check dynamic column filters
+            for (const col of sourceCols) {
+                const header = typeof col.header === 'string' ? col.header : '';
+                const selectedValues = dynamicFilters[header];
+                if (selectedValues && selectedValues.length > 0) {
+                    const value = getColumnValue(col, item);
+                    if (!value || !selectedValues.includes(value)) {
+                        return false;
+                    }
+                }
+            }
+            
             return true;
         });
-    }, [assets, frequencyFilter]);
+    }, [assets, frequencyFilter, dynamicFilters, sourceCols]);
 
     // Check if any filters are active
-    const hasActiveFilters = frequencyFilter.length > 0;
+    const hasActiveFilters = frequencyFilter.length > 0 || 
+        Object.values(dynamicFilters).some(v => v.length > 0);
 
     // Get active filter labels for display
     const activeFilterLabels = useMemo(() => {
@@ -177,18 +237,27 @@ export function DataEntryTable({ assets, onReport, module }: DataEntryTableProps
             labels.push({ key: "frequency", label: "Frequência", count: frequencyFilter.length });
         }
         
+        Object.entries(dynamicFilters).forEach(([key, values]) => {
+            if (values.length > 0) {
+                labels.push({ key, label: key, count: values.length });
+            }
+        });
+        
         return labels;
-    }, [frequencyFilter]);
+    }, [frequencyFilter, dynamicFilters]);
 
     // Clear all filters
     const clearAllFilters = () => {
         setFrequencyFilter([]);
+        setDynamicFilters({});
     };
 
     // Clear a specific filter
     const clearFilter = (filterKey: string) => {
         if (filterKey === "frequency") {
             setFrequencyFilter([]);
+        } else {
+            setDynamicFilters(prev => ({ ...prev, [filterKey]: [] }));
         }
     };
 
@@ -204,13 +273,28 @@ export function DataEntryTable({ assets, onReport, module }: DataEntryTableProps
                 )
             },
 
-            // Dynamic columns without filters
-            ...sourceCols.map((col) => {
+            // Dynamic columns with filters
+            ...sourceCols.map((col, index) => {
+                const header = typeof col.header === 'string' ? col.header : '';
+                const uniqueValues = dynamicColumnValues[header] || [];
+                const hasFilterableValues = uniqueValues.length > 0;
+                // Generate a unique id for columns using accessorFn
+                const colId = col.id || `dynamic_col_${index}_${header.replace(/\s+/g, '_').toLowerCase()}`;
+                
                 return {
                     ...col,
+                    id: colId,
+                    header: hasFilterableValues ? () => (
+                        <DynamicColumnFilter
+                            columnLabel={header}
+                            uniqueValues={uniqueValues}
+                            selectedValues={dynamicFilters[header] || []}
+                            onFilterChange={(values) => handleDynamicFilterChange(header, values)}
+                        />
+                    ) : header,
                     cell: (info: CellContext<AssetWithProgress, unknown>) => {
                         const value = info.getValue();
-                        const rawValue = value ?? (info.row.original.assetFields as any)?.[col.id as string];
+                        const rawValue = value ?? (info.row.original.assetFields as any)?.[colId];
 
                         return (
                             <span className="text-sm text-muted-foreground">
@@ -301,7 +385,7 @@ export function DataEntryTable({ assets, onReport, module }: DataEntryTableProps
                 )
             }
         ];
-    }, [sourceCols, onReport, frequencyFilter, frequencyValues]);
+    }, [sourceCols, onReport, frequencyFilter, frequencyValues, dynamicFilters, dynamicColumnValues]);
 
     const table = useReactTable({
         data: filteredData,

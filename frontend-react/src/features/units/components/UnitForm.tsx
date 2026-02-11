@@ -9,21 +9,19 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from "@/components/ui/select";
+import {
+    Combobox,
+    ComboboxInput,
+    ComboboxContent,
+    ComboboxList,
+    ComboboxItem,
+    ComboboxEmpty,
+} from "@/components/ui/combobox";
 
 import { unitFormSchema, type UnitFormValues } from "../schemas/unit.schema";
 import type { Unit } from "@/types/Unit";
 import { useCompanies } from "@/features/companies/hooks/useCompanies";
-
-const COUNTRIES = [
-    { label: 'Brasil', value: 'Brasil' },
-    { label: 'Argentina', value: 'Argentina' },
-    { label: 'Canadá', value: 'Canadá' },
-    { label: 'Chile', value: 'Chile' },
-    { label: 'Colômbia', value: 'Colômbia' },
-    { label: 'Estados Unidos', value: 'Estados Unidos' },
-    { label: 'México', value: 'México' },
-    { label: 'Outros', value: 'Outros' },
-];
+import { WORLD_COUNTRIES } from "@/constants/countries";
 
 const BR_STATES = [
     { label: 'Acre', value: 'AC' },
@@ -203,22 +201,32 @@ export function UnitForm({ initialData, onSubmit, onCancel, isLoading }: UnitFor
                             control={form.control}
                             name="country"
                             render={({ field }) => (
-                                <FormItem>
+                                <FormItem className="flex flex-col">
                                     <FormLabel>País</FormLabel>
-                                    <Select onValueChange={field.onChange} value={field.value}>
+                                    <Combobox
+                                        value={field.value || ''}
+                                        onValueChange={(value) => field.onChange(value as string)}
+                                    >
                                         <FormControl>
-                                            <SelectTrigger className="w-full">
-                                                <SelectValue placeholder="Selecione o país"/>
-                                            </SelectTrigger>
+                                            <ComboboxInput
+                                                placeholder="Pesquisar país..."
+                                                className="w-full"
+                                            />
                                         </FormControl>
-                                        <SelectContent>
-                                            {COUNTRIES.map((country) => (
-                                                <SelectItem key={country.value} value={country.value}>
-                                                    {country.label}
-                                                </SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
+                                        <ComboboxContent>
+                                            <ComboboxList>
+                                                <ComboboxEmpty>Nenhum país encontrado</ComboboxEmpty>
+                                                {WORLD_COUNTRIES.map((country) => (
+                                                    <ComboboxItem
+                                                        key={country.value}
+                                                        value={country.value}
+                                                    >
+                                                        {country.label}
+                                                    </ComboboxItem>
+                                                ))}
+                                            </ComboboxList>
+                                        </ComboboxContent>
+                                    </Combobox>
                                     <FormMessage/>
                                 </FormItem>
                             )}

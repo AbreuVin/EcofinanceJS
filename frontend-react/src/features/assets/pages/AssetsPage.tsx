@@ -1,6 +1,6 @@
 import { useMemo, useState, useEffect } from "react";
 import { useParams } from "wouter";
-import { Leaf, Plus } from "lucide-react";
+import { ChevronDown, Leaf, Plus } from "lucide-react";
 
 import { Collapsible, CollapsibleContent } from "@/components/ui/collapsible";
 import { Button } from "@/components/ui/button";
@@ -13,7 +13,15 @@ import { AssetForm } from "../components/AssetForm";
 import { getAssetColumns, SPECIFIC_COLUMNS } from "../components/AssetColumns";
 import { AssetsTable } from "../components/AssetsTable";
 import { useAssetMutations } from "../hooks/useAssetMutations";
-import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuSub,
+    DropdownMenuSubContent,
+    DropdownMenuSubTrigger,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { ESG_MODULES } from "@/types/enums";
 import { normalizeSlugToType } from "../../data-entry/utils/module-mapping";
 
@@ -62,6 +70,13 @@ function getScopeModules(scopeKey: string) {
     return ESG_MODULES
         .filter(mod => moduleValues.includes(mod.value))
         .sort((a, b) => a.label.localeCompare(b.label));
+}
+
+// Get label for selected type
+function getSelectedTypeLabel(selectedType: string) {
+    if (selectedType === "all") return "Visão Geral (Todas)";
+    const module = ESG_MODULES.find(m => m.value === selectedType);
+    return module?.label || selectedType;
 }
 
 export default function AssetsPage() {
@@ -164,25 +179,37 @@ export default function AssetsPage() {
                 </Collapsible>
 
                 <div className="flex justify-between mb-4">
-                    <Select value={selectedType} onValueChange={setSelectedType}>
-                        <SelectTrigger className="w-[500px]">
-                            <SelectValue placeholder="Filtrar por Tipo de Fonte" />
-                        </SelectTrigger>
-                        <SelectContent className="max-h-[400px]">
-                            <SelectItem value="all">Visão Geral (Todas)</SelectItem>
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="outline" className="w-[500px] justify-between">
+                                {getSelectedTypeLabel(selectedType)}
+                                <ChevronDown className="ml-2 h-4 w-4 opacity-50" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent className="w-[500px]">
+                            <DropdownMenuItem onClick={() => setSelectedType("all")}>
+                                Visão Geral (Todas)
+                            </DropdownMenuItem>
                             
                             {Object.entries(SCOPE_LABELS).map(([scopeKey, scopeLabel]) => (
-                                <SelectGroup key={scopeKey}>
-                                    <SelectLabel className="font-semibold text-primary">{scopeLabel}</SelectLabel>
-                                    {getScopeModules(scopeKey).map((mod) => (
-                                        <SelectItem key={mod.value} value={mod.value}>
-                                            {mod.label}
-                                        </SelectItem>
-                                    ))}
-                                </SelectGroup>
+                                <DropdownMenuSub key={scopeKey}>
+                                    <DropdownMenuSubTrigger>
+                                        {scopeLabel}
+                                    </DropdownMenuSubTrigger>
+                                    <DropdownMenuSubContent className="max-h-[300px] overflow-y-auto">
+                                        {getScopeModules(scopeKey).map((mod) => (
+                                            <DropdownMenuItem 
+                                                key={mod.value} 
+                                                onClick={() => setSelectedType(mod.value)}
+                                            >
+                                                {mod.label}
+                                            </DropdownMenuItem>
+                                        ))}
+                                    </DropdownMenuSubContent>
+                                </DropdownMenuSub>
                             ))}
-                        </SelectContent>
-                    </Select>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
 
                     {!isFormOpen && (
                         <Button onClick={toggleForm}>
