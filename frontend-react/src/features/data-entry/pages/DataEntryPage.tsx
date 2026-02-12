@@ -113,7 +113,7 @@ export default function DataEntryPage() {
                     <DataEntrySheet
                         asset={selectedAsset}
                         year={selectedYear}
-                        unitId={selectedAsset.unitId ?? undefined}
+                        unitId={selectedAsset.unitId}
                         open={!!selectedAsset}
                         onOpenChange={(open) => !open && setSelectedAsset(null)}
                     />

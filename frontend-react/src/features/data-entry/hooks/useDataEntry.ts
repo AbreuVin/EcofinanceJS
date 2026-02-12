@@ -4,12 +4,12 @@ import type { EsgModuleType } from "@/types/enums";
 import { toast } from "sonner";
 
 export const dataEntryKeys = {
-    // Aceita number ou undefined para a chave de cache
-    byContext: (module: string, unitId: number | undefined, year: number) =>
+    // Aceita number, null ou undefined para a chave de cache
+    byContext: (module: string, unitId: number | null | undefined, year: number) =>
         ["data-entry", module, unitId, year] as const,
 };
 
-export function useDataEntries(module: EsgModuleType, unitId: number | undefined, year: number) {
+export function useDataEntries(module: EsgModuleType, unitId: number | null | undefined, year: number) {
     return useQuery({
         queryKey: dataEntryKeys.byContext(module, unitId, year),
         queryFn: () => DataEntryService.getByContext(module, unitId, year),
@@ -18,7 +18,7 @@ export function useDataEntries(module: EsgModuleType, unitId: number | undefined
     });
 }
 
-export function useDataEntryMutation(module: EsgModuleType, unitId: number | undefined, year: number) {
+export function useDataEntryMutation(module: EsgModuleType, unitId: number | null | undefined, year: number) {
     const queryClient = useQueryClient();
 
     return useMutation({
