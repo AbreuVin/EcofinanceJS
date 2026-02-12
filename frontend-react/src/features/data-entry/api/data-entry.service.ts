@@ -16,13 +16,16 @@ export const DataEntryService = {
     // Fetch all records for a specific Module, Unit, and Year
     getByContext: async (
         module: EsgModuleType,
-        unitId: number | undefined,
+        unitId: number | null | undefined,
         year: number
     ): Promise<EsgDataRecord[]> => {
         const params = new URLSearchParams({
-            unitId: String(unitId),
             year: String(year)
         });
+        // Only add unitId if it's defined and not null
+        if (unitId != null) {
+            params.set('unitId', String(unitId));
+        }
         // Endpoint structure matches src/modules/esg/esg.routes.ts
         const { data } = await api.get(`${BASE_URL}/${module}?${params.toString()}`);
         return data;
