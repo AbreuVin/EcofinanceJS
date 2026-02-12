@@ -18,7 +18,8 @@ export const useAssets = () => {
             if (user?.role === UserRole.MASTER) return data;
             
             if (user?.companyId) {
-                return data.filter(a => a.unit?.companyId === user.companyId);
+                // Filter by asset's companyId (works for both unit-specific and global assets)
+                return data.filter(a => a.companyId === user.companyId);
             }
             return [];
         }

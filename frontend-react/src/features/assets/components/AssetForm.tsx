@@ -13,6 +13,7 @@ import { useAssetForm } from "../hooks/useAssetForm";
 import { AssetDynamicFields } from "./AssetDynamicFields";
 import { useWatch } from "react-hook-form";
 import { useMemo, useState, useEffect } from "react";
+import { useAuthStore } from "@/store/authStore";
 
 // Scope groupings for modules
 const SCOPE_MODULES: Record<string, string[]> = {
@@ -73,6 +74,7 @@ interface AssetFormProps {
 
 export function AssetForm({ initialData, onSubmit, onCancel, isLoading, preSelectedSourceType }: AssetFormProps) {
     const { form } = useAssetForm({ initialData, onSubmit, preSelectedSourceType });
+    const user = useAuthStore((state) => state.user);
 
     const { data: units = [], isLoading: loadingUnits } = useUnits();
     const { data: users = [], isLoading: loadingUsers } = useUsers();
@@ -117,12 +119,14 @@ export function AssetForm({ initialData, onSubmit, onCancel, isLoading, preSelec
         return users.filter((user) => Number(user.unitId) === Number(selectedUnitId));
     }, [users, selectedUnitId]);
 
-    // WRAPPER DE ENVIO: Intercepta o submit para converter 0 -> null
+    // WRAPPER DE ENVIO: Intercepta o submit para converter 0 -> null e adicionar companyId
     const handleSubmitWrapper = async (values: AssetFormValues) => {
-        // Cria uma cópia dos valores tratando o unitId
+        // Cria uma cópia dos valores tratando o unitId e adicionando companyId
         const payload = {
             ...values,
-            unitId: values.unitId === 0 ? null : values.unitId
+            unitId: values.unitId === 0 ? null : values.unitId,
+            // Use existing companyId when editing, or user's companyId for new assets
+            companyId: initialData?.companyId || user?.companyId
         };
 
         // Envia para a função original (que chama a API)

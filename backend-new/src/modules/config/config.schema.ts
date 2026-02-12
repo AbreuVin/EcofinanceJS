@@ -6,6 +6,7 @@ export const createOptionSchema = z.object({
 });
 
 export const createTypologySchema = z.object({
+    companyId: z.string().min(1),
     unitId: z.number().int().positive().nullable(),
     sourceType: z.string().min(1),
     description: z.string().min(1),
