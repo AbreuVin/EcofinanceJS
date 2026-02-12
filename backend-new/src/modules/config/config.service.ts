@@ -8,7 +8,7 @@ export const getTypologies = async (unitId?: number, sourceType?: string) => {
     return prisma.assetTypology.findMany({
         where,
         orderBy: { description: 'asc' },
-        include: { unit: true, userContact: true },
+        include: { unit: true, userContact: true, company: true },
     });
 };
 

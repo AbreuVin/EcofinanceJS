@@ -14,8 +14,9 @@ model Company {
   cnpj String? @unique
 
   // Relations
-  users User[]
-  units Unit[]
+  users           User[]
+  units           Unit[]
+  assetTypologies AssetTypology[]
 
   createdAt DateTime @default(now())
 }
@@ -103,16 +104,18 @@ model Unit {
 // --- CONFIGURATION & METADATA ---
 
 model AssetTypology {
-  id                   Int     @id @default(autoincrement())
+  id                   Int      @id @default(autoincrement())
+  companyId            String
+  company              Company  @relation(fields: [companyId], references: [id], onUpdate: Cascade, onDelete: Cascade)
   unitId               Int?
-  unit                 Unit?   @relation(fields: [unitId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  unit                 Unit?    @relation(fields: [unitId], references: [id], onUpdate: Cascade, onDelete: Cascade)
   sourceType           String
   description          String
   assetFields          String // JSON string
-  isActive             Boolean @default(true)
+  isActive             Boolean  @default(true)
   responsibleContactId String?
-  userContact          User?   @relation(fields: [responsibleContactId], references: [id], onUpdate: Cascade, onDelete: Cascade)
-  reportingFrequency   String  @default("anual")
+  userContact          User?    @relation(fields: [responsibleContactId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  reportingFrequency   String   @default("anual")
 }
 
 model ManagedOption {
