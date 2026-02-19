@@ -64,7 +64,7 @@ export const sidebarConfig = {
             title: "Cadastro de Fontes",
             url: "/managers/sources", // Matches 'sources' case
             icon: Leaf,
-            allowedRoles: [UserRole.MASTER, UserRole.ADMIN],
+            allowedRoles: [UserRole.MASTER, UserRole.ADMIN, UserRole.USER],
         },
 
         // Everyone
