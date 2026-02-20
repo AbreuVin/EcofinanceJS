@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
 import { useAuthStore } from "@/store/authStore";
@@ -67,6 +67,7 @@ export function UnitForm({ initialData, onSubmit, onCancel, isLoading }: UnitFor
 
     const defaultCompanyId = !isMaster && user?.companyId ? user.companyId : "";
 
+    // Inicialização Síncrona Rigorosa. React Hook Form assume o estado exato da propriedade `initialData` no primeiro render.
     const form = useForm<UnitFormValues>({
         resolver: zodResolver(unitFormSchema),
         defaultValues: {
@@ -79,30 +80,16 @@ export function UnitForm({ initialData, onSubmit, onCancel, isLoading }: UnitFor
         },
     });
 
-    const selectedCountry = form.watch("country");
+    const selectedCountry = useWatch({ control: form.control, name: "country" });
 
-    // Hydrate companyId safely if user data arrives asynchronously
+    // Hidratação segura SOMENTE para novos registros (fallback caso a store de auth atrase no mount)
     useEffect(() => {
         if (!initialData && defaultCompanyId && !form.getValues("companyId")) {
             form.setValue("companyId", defaultCompanyId);
         }
     }, [defaultCompanyId, initialData, form]);
 
-    // Reset form solely when editing a new record context
-    useEffect(() => {
-        if (initialData) {
-            form.reset({
-                name: initialData.name || "",
-                companyId: initialData.companyId || defaultCompanyId,
-                country: initialData.country || "Brasil",
-                state: initialData.state || "",
-                city: initialData.city || "",
-                numberOfWorkers: initialData.numberOfWorkers || undefined,
-            });
-        }
-    }, [initialData, defaultCompanyId, form]);
-
-    // Controlled Combobox filtering
+    // Filtragem Controlada do Combobox
     const [countryQuery, setCountryQuery] = useState("");
     const filteredCountries = useMemo(() => {
         if (!countryQuery) return WORLD_COUNTRIES;
@@ -152,7 +139,7 @@ export function UnitForm({ initialData, onSubmit, onCancel, isLoading }: UnitFor
                                     <FormLabel>Empresa</FormLabel>
                                     <Select
                                         onValueChange={field.onChange}
-                                        value={field.value}
+                                        value={field.value || ""}
                                         disabled={isLoadingCompanies || !isMaster}
                                     >
                                         <FormControl>
@@ -177,10 +164,10 @@ export function UnitForm({ initialData, onSubmit, onCancel, isLoading }: UnitFor
                             control={form.control}
                             name="country"
                             render={({ field }) => (
-                                <FormItem className="flex flex-col">
+                                <FormItem className="flex flex-col mt-2">
                                     <FormLabel>País</FormLabel>
                                     <Combobox
-                                        value={field.value || ''}
+                                        value={field.value || ""}
                                         onValueChange={(value) => {
                                             field.onChange(value as string);
                                             setCountryQuery("");
