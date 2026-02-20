@@ -28,7 +28,8 @@ interface UsersTableProps {
 }
 
 // Columns that should have Excel-like filters
-const FILTERABLE_COLUMNS = ["role", "unit.name"] as const;
+// TODO: "unit.name" removido a pedido do cliente - descomentar se necessário
+const FILTERABLE_COLUMNS = ["role"] as const;
 
 type FilterableColumn = typeof FILTERABLE_COLUMNS[number];
 
@@ -81,10 +82,6 @@ function ColumnFilter({
         onFilterChange(columnId, []);
     };
 
-    const handleSelectAll = () => {
-        onFilterChange(columnId, uniqueValues);
-    };
-
     if (uniqueValues.length === 0) {
         return <span>{columnLabel}</span>;
     }
@@ -121,15 +118,6 @@ function ColumnFilter({
                         )}
                     </div>
                     <DropdownMenuSeparator />
-                    <div className="flex gap-1 px-2 py-1">
-                        <Button variant="outline" size="sm" className="h-6 text-xs flex-1" onClick={handleSelectAll}>
-                            Todos
-                        </Button>
-                        <Button variant="outline" size="sm" className="h-6 text-xs flex-1" onClick={handleClearAll}>
-                            Nenhum
-                        </Button>
-                    </div>
-                    <DropdownMenuSeparator />
                     {uniqueValues.map((value) => (
                         <DropdownMenuCheckboxItem
                             key={value}
@@ -148,7 +136,7 @@ function ColumnFilter({
 export function UsersTable({ columns, data, isLoading }: UsersTableProps) {
     const [columnFilters, setColumnFilters] = useState<Record<FilterableColumn, string[]>>({
         role: [],
-        "unit.name": [],
+        // "unit.name": [], // Oculto a pedido do cliente
     });
 
     // Handle filter changes
@@ -178,7 +166,7 @@ export function UsersTable({ columns, data, isLoading }: UsersTableProps) {
     const clearAllFilters = () => {
         setColumnFilters({
             role: [],
-            "unit.name": [],
+            // "unit.name": [], // Oculto a pedido do cliente
         });
     };
 
@@ -222,7 +210,7 @@ export function UsersTable({ columns, data, isLoading }: UsersTableProps) {
                     {FILTERABLE_COLUMNS.map((columnId) => {
                         const values = columnFilters[columnId];
                         if (values.length === 0) return null;
-                        const label = columnId === "role" ? "Perfil" : "Unidade";
+                        const label = columnId === "role" ? "Perfil" : columnId;
                         return (
                             <Badge key={columnId} variant="secondary" className="gap-1">
                                 {label}: {values.length}
