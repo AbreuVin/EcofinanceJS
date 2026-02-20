@@ -12,6 +12,12 @@ export interface AssetTypology {
     isActive: boolean;
     responsibleContactId: string | undefined;
     reportingFrequency: "Mensal" | "Anual";
+    // Rastreabilidade Interna
+    traceabilityResponsible?: string;
+    traceabilityEmail?: string;
+    traceabilitySector?: string;
+    traceabilityLocation?: string;
+    // Relacionamentos
     userContact: User;
     unit?: Unit;
     company?: Company;

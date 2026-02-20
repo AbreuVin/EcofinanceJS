@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from "
 import { userFormSchema } from "../schemas/user.schema";
 import { PermissionsMatrix } from "./PermissionsMatrix";
 import type { User } from "@/types/User";
-import { useUnits } from "@/features/units/hooks/useUnits";
+// import { useUnits } from "@/features/units/hooks/useUnits"; // Oculto a pedido do cliente
 import { useAuthStore } from "@/store/authStore";
 
 
@@ -37,7 +37,7 @@ const formatPhone = (value: string | undefined) => {
 }
 
 export function UserForm({ initialData, onSubmit, onCancel, isLoading }: UserFormProps) {
-    const { data: units = [], isLoading: loadingUnits } = useUnits();
+    // const { data: units = [], isLoading: loadingUnits } = useUnits(); // Oculto a pedido do cliente
 
     const user = useAuthStore(state => state.user);
     const isMaster = user?.role === UserRole.MASTER;

@@ -1,4 +1,4 @@
-import { Loader2 } from "lucide-react";
+import { Loader2, Upload, X, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
@@ -43,6 +43,173 @@ function getScopeFromModule(moduleValue: string): string | null {
     return null;
 }
 // -------------------------------------
+
+// Tipos de arquivos aceitos para rastreabilidade
+const ACCEPTED_FILE_TYPES = ".xlsx,.xls,.pdf,.doc,.docx";
+const MAX_FILE_SIZE_MB = 25;
+const MAX_FILE_SIZE_BYTES = MAX_FILE_SIZE_MB * 1024 * 1024;
+
+// Componente de Rastreabilidade Interna
+function TraceabilitySection({ form }: { form: ReturnType<typeof useAssetForm>["form"] }) {
+    const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+    const [fileError, setFileError] = useState<string | null>(null);
+
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = Array.from(e.target.files || []);
+        setFileError(null);
+
+        // Validar tamanho de cada arquivo
+        const invalidFiles = files.filter(f => f.size > MAX_FILE_SIZE_BYTES);
+        if (invalidFiles.length > 0) {
+            setFileError(`Alguns arquivos excedem o limite de ${MAX_FILE_SIZE_MB}MB`);
+            return;
+        }
+
+        setSelectedFiles(prev => [...prev, ...files]);
+        e.target.value = ""; // Reset input para permitir selecionar o mesmo arquivo novamente
+    };
+
+    const removeFile = (index: number) => {
+        setSelectedFiles(prev => prev.filter((_, i) => i !== index));
+    };
+
+    const getFileIcon = (fileName: string) => {
+        const ext = fileName.split('.').pop()?.toLowerCase();
+        return <FileText className="h-4 w-4 text-muted-foreground" />;
+    };
+
+    const formatFileSize = (bytes: number) => {
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+        return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+    };
+
+    return (
+        <div className="bg-muted/30 p-5 rounded-lg border">
+            <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-4">
+                Rastreabilidade Interna
+            </h4>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                    control={form.control}
+                    name="traceabilityResponsible"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Responsável pela Informação</FormLabel>
+                            <FormControl>
+                                <Input placeholder="Nome do responsável" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+
+                <FormField
+                    control={form.control}
+                    name="traceabilityEmail"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>E-mail</FormLabel>
+                            <FormControl>
+                                <Input type="email" placeholder="email@exemplo.com" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+
+                <FormField
+                    control={form.control}
+                    name="traceabilitySector"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Setor</FormLabel>
+                            <FormControl>
+                                <Input placeholder="Ex: Financeiro, Operações" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+
+                <FormField
+                    control={form.control}
+                    name="traceabilityLocation"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Localização da Informação</FormLabel>
+                            <FormControl>
+                                <Input placeholder="Ex: Pasta X, Sistema Y" {...field} />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
+            </div>
+
+            {/* Upload de Arquivos */}
+            <div className="mt-4">
+                <FormLabel>Arquivos de Evidência</FormLabel>
+                <p className="text-xs text-muted-foreground mb-2">
+                    Formatos aceitos: Excel, PDF, Word. Máximo {MAX_FILE_SIZE_MB}MB por arquivo.
+                </p>
+                
+                <div className="flex flex-col gap-3">
+                    {/* Área de upload */}
+                    <label className="flex flex-col items-center justify-center w-full h-24 border-2 border-dashed rounded-lg cursor-pointer bg-background hover:bg-muted/50 transition-colors">
+                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                            <Upload className="w-6 h-6 mb-2 text-muted-foreground" />
+                            <p className="text-sm text-muted-foreground">
+                                <span className="font-semibold">Clique para selecionar</span> ou arraste arquivos
+                            </p>
+                        </div>
+                        <input
+                            type="file"
+                            className="hidden"
+                            multiple
+                            accept={ACCEPTED_FILE_TYPES}
+                            onChange={handleFileChange}
+                        />
+                    </label>
+
+                    {fileError && (
+                        <p className="text-sm text-destructive">{fileError}</p>
+                    )}
+
+                    {/* Lista de arquivos selecionados */}
+                    {selectedFiles.length > 0 && (
+                        <div className="space-y-2">
+                            {selectedFiles.map((file, index) => (
+                                <div
+                                    key={`${file.name}-${index}`}
+                                    className="flex items-center justify-between p-2 bg-background rounded-md border"
+                                >
+                                    <div className="flex items-center gap-2 min-w-0">
+                                        {getFileIcon(file.name)}
+                                        <span className="text-sm truncate">{file.name}</span>
+                                        <span className="text-xs text-muted-foreground">
+                                            ({formatFileSize(file.size)})
+                                        </span>
+                                    </div>
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-6 w-6 shrink-0"
+                                        onClick={() => removeFile(index)}
+                                    >
+                                        <X className="h-4 w-4" />
+                                    </Button>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+}
 
 interface AssetFormProps {
     initialData?: AssetTypology | null;
@@ -237,7 +404,7 @@ export function AssetForm({ initialData, onSubmit, onCancel, isLoading, preSelec
                             name="responsibleContactId"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Responsável (Opcional)</FormLabel>
+                                    <FormLabel>Responsável pelo Cadastro (Opcional)</FormLabel>
                                     <Select
                                         onValueChange={field.onChange}
                                         value={field.value || ""}
@@ -274,6 +441,9 @@ export function AssetForm({ initialData, onSubmit, onCancel, isLoading, preSelec
                         </h4>
                         <AssetDynamicFields/>
                     </div>
+
+                    {/* Seção de Rastreabilidade Interna */}
+                    <TraceabilitySection form={form} />
 
                     <div className="flex flex-row items-center justify-between rounded-lg border p-4 shadow-sm bg-background">
                         <div className="space-y-0.5">

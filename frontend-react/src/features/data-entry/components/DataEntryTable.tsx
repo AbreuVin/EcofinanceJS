@@ -239,15 +239,6 @@ export function DataEntryTable({ assets, onReport, module }: DataEntryTableProps
         setDynamicFilters({});
     };
 
-    // Clear a specific filter
-    const clearFilter = (filterKey: string) => {
-        if (filterKey === "frequency") {
-            setFrequencyFilter([]);
-        } else {
-            setDynamicFilters(prev => ({ ...prev, [filterKey]: [] }));
-        }
-    };
-
     const columns = useMemo<ColumnDef<AssetWithProgress>[]>(() => {
         return [
             {
