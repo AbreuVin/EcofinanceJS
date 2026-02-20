@@ -73,8 +73,8 @@ function TraceabilitySection({ form }: { form: ReturnType<typeof useAssetForm>["
         setSelectedFiles(prev => prev.filter((_, i) => i !== index));
     };
 
-    const getFileIcon = (fileName: string) => {
-        const ext = fileName.split('.').pop()?.toLowerCase();
+    const getFileIcon = (_fileName: string) => {
+        // TODO: Implementar icones diferentes por tipo de arquivo (xlsx, pdf, docx)
         return <FileText className="h-4 w-4 text-muted-foreground" />;
     };
 
