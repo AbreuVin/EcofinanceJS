@@ -270,10 +270,9 @@ export function AssetsTable({ columns, data, isLoading }: AssetsTableProps) {
                         return (
                             <Badge key={columnId} variant="secondary" className="gap-1">
                                 {COLUMN_LABELS[columnId]}: {values.length}
-                                <X
-                                    className="h-3 w-3 cursor-pointer hover:text-destructive"
-                                    onClick={() => handleFilterChange(columnId, [])}
-                                />
+                                <Button onClick={clearAllFilters} variant="ghost" size="icon" className="h-3 w-3 p-0">
+                                    <X className="h-3 w-3 cursor-pointer hover:text-destructive"/>
+                                </Button>
                             </Badge>
                         );
                     })}

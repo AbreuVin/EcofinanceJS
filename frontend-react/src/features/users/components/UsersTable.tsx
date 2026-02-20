@@ -226,10 +226,9 @@ export function UsersTable({ columns, data, isLoading }: UsersTableProps) {
                         return (
                             <Badge key={columnId} variant="secondary" className="gap-1">
                                 {label}: {values.length}
-                                <X
-                                    className="h-3 w-3 cursor-pointer hover:text-destructive"
-                                    onClick={() => handleFilterChange(columnId, [])}
-                                />
+                                <Button onClick={clearAllFilters} variant="ghost" size="icon" className="h-3 w-3 p-0">
+                                    <X className="h-3 w-3 cursor-pointer hover:text-destructive"/>
+                                </Button>
                             </Badge>
                         );
                     })}

@@ -12,39 +12,21 @@ import { useUsers } from "@/features/users/hooks/useUsers";
 import { useAssetForm } from "../hooks/useAssetForm";
 import { AssetDynamicFields } from "./AssetDynamicFields";
 import { useWatch } from "react-hook-form";
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState } from "react";
 import { useAuthStore } from "@/store/authStore";
 
-// Scope groupings for modules
+// --- REINTRODUCED SCOPE CONSTANTS ---
 const SCOPE_MODULES: Record<string, string[]> = {
     escopo_1: [
-        'production_sales',
-        'stationary_combustion',
-        'mobile_combustion',
-        'lubricants_ippu',
-        'fugitive_emissions',
-        'fertilizers',
-        'effluents_controlled',
-        'domestic_effluents',
-        'land_use_change',
-        'solid_waste',
+        'production_sales', 'stationary_combustion', 'mobile_combustion',
+        'lubricants_ippu', 'fugitive_emissions', 'fertilizers',
+        'effluents_controlled', 'domestic_effluents', 'land_use_change', 'solid_waste',
     ],
-    escopo_2: [
-        'electricity_purchase',
-    ],
+    escopo_2: ['electricity_purchase'],
     escopo_3: [
-        'purchased_goods',
-        'capital_goods',
-        'upstream_transport',
-        'business_travel_land',
-        'downstream_transport',
-        'waste_transport',
-        'home_office',
-        'air_travel',
-        'employee_commuting',
-        'energy_generation',
-        'planted_forest',
-        'conservation_area',
+        'purchased_goods', 'capital_goods', 'upstream_transport', 'business_travel_land',
+        'downstream_transport', 'waste_transport', 'home_office', 'air_travel',
+        'employee_commuting', 'energy_generation', 'planted_forest', 'conservation_area',
     ],
 };
 
@@ -54,15 +36,13 @@ const SCOPE_LABELS: Record<string, string> = {
     escopo_3: "Escopo 3",
 };
 
-// Helper to find scope from module value
 function getScopeFromModule(moduleValue: string): string | null {
     for (const [scope, modules] of Object.entries(SCOPE_MODULES)) {
-        if (modules.includes(moduleValue)) {
-            return scope;
-        }
+        if (modules.includes(moduleValue)) return scope;
     }
     return null;
 }
+// -------------------------------------
 
 interface AssetFormProps {
     initialData?: AssetTypology | null;
@@ -82,27 +62,16 @@ export function AssetForm({ initialData, onSubmit, onCancel, isLoading, preSelec
     const selectedUnitId = useWatch({ control: form.control, name: "unitId" });
     const currentSourceType = useWatch({ control: form.control, name: "sourceType" });
 
-    // State for scope selection
+    // Synchronous state initialization (Safe because of the 'key' prop on the parent)
     const [selectedScope, setSelectedScope] = useState<string>(() => {
-        // Initialize from existing data or preSelectedSourceType
-        const moduleValue = initialData?.sourceType || preSelectedSourceType;
-        if (moduleValue) {
-            return getScopeFromModule(moduleValue) || "";
+        const initialSource = initialData?.sourceType || preSelectedSourceType;
+        if (initialSource) {
+            return getScopeFromModule(initialSource) || "";
         }
         return "";
     });
 
-    // Update scope when source type changes externally
-    useEffect(() => {
-        if (currentSourceType) {
-            const scope = getScopeFromModule(currentSourceType);
-            if (scope && scope !== selectedScope) {
-                setSelectedScope(scope);
-            }
-        }
-    }, [currentSourceType]);
-
-    // Get modules for the selected scope
+    // Derive available modules based on the selected scope
     const scopeModules = useMemo(() => {
         if (!selectedScope) return [];
         const moduleValues = SCOPE_MODULES[selectedScope] || [];
@@ -111,7 +80,6 @@ export function AssetForm({ initialData, onSubmit, onCancel, isLoading, preSelec
             .sort((a, b) => a.label.localeCompare(b.label));
     }, [selectedScope]);
 
-    // Lógica para filtrar usuários: Se ID for 0 ou undefined, mostra todos.
     const unitUsers = useMemo(() => {
         if (!selectedUnitId || Number(selectedUnitId) === 0) {
             return users;
@@ -119,18 +87,12 @@ export function AssetForm({ initialData, onSubmit, onCancel, isLoading, preSelec
         return users.filter((user) => Number(user.unitId) === Number(selectedUnitId));
     }, [users, selectedUnitId]);
 
-    // WRAPPER DE ENVIO: Intercepta o submit para converter 0 -> null e adicionar companyId
     const handleSubmitWrapper = async (values: AssetFormValues) => {
-        // Cria uma cópia dos valores tratando o unitId e adicionando companyId
         const payload = {
             ...values,
             unitId: values.unitId === 0 ? null : values.unitId,
-            // Use existing companyId when editing, or user's companyId for new assets
             companyId: initialData?.companyId || user?.companyId
         };
-
-        // Envia para a função original (que chama a API)
-        // O cast 'as any' ou 'as AssetFormValues' pode ser necessário dependendo da tipagem estrita do TS no onSubmit
         await onSubmit(payload as unknown as AssetFormValues);
     };
 
@@ -146,24 +108,24 @@ export function AssetForm({ initialData, onSubmit, onCancel, isLoading, preSelec
             </h4>
 
             <Form {...form}>
-                {/* O formulário agora chama o wrapper, não o handleSubmit direto */}
                 <form onSubmit={form.handleSubmit(handleSubmitWrapper)} className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        {/* Scope selection dropdown */}
+
+                        {/* REINTRODUCED SCOPE SELECT */}
                         <FormItem>
                             <FormLabel>Escopo</FormLabel>
                             <Select
+                                value={selectedScope || ""}
                                 onValueChange={(val) => {
                                     setSelectedScope(val);
-                                    // Clear sourceType when scope changes
-                                    form.setValue("sourceType", "" as any);
+                                    // Cascade reset dependent fields
+                                    form.setValue("sourceType", "");
                                     form.setValue("assetFields", {});
                                 }}
-                                value={selectedScope}
                             >
                                 <FormControl>
                                     <SelectTrigger className="w-full">
-                                        <SelectValue placeholder="Selecione o escopo..."/>
+                                        <SelectValue placeholder="Selecione o escopo..." />
                                     </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
@@ -176,7 +138,6 @@ export function AssetForm({ initialData, onSubmit, onCancel, isLoading, preSelec
                             </Select>
                         </FormItem>
 
-                        {/* Module selection dropdown - only shows when scope is selected */}
                         <FormField
                             control={form.control}
                             name="sourceType"
@@ -188,12 +149,12 @@ export function AssetForm({ initialData, onSubmit, onCancel, isLoading, preSelec
                                             field.onChange(val);
                                             form.setValue("assetFields", {});
                                         }}
-                                        value={field.value}
-                                        disabled={!selectedScope}
+                                        value={field.value || ""}
+                                        disabled={!selectedScope} // Block interaction if no scope is selected
                                     >
                                         <FormControl>
                                             <SelectTrigger className="w-full">
-                                                <SelectValue placeholder={selectedScope ? "Selecione o tipo..." : "Selecione o escopo primeiro"}/>
+                                                <SelectValue placeholder={selectedScope ? "Selecione o tipo..." : "Selecione o escopo primeiro"} />
                                             </SelectTrigger>
                                         </FormControl>
                                         <SelectContent className="max-h-[300px]">
@@ -229,9 +190,9 @@ export function AssetForm({ initialData, onSubmit, onCancel, isLoading, preSelec
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Frequência de Reporte</FormLabel>
-                                    <Select onValueChange={field.onChange} value={field.value}>
+                                    <Select onValueChange={field.onChange} value={field.value || ""}>
                                         <FormControl>
-                                            <SelectTrigger className="w-full"><SelectValue/></SelectTrigger>
+                                            <SelectTrigger className="w-full"><SelectValue placeholder="Selecione..."/></SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
                                             <SelectItem value="mensal">Mensal</SelectItem>
@@ -250,10 +211,8 @@ export function AssetForm({ initialData, onSubmit, onCancel, isLoading, preSelec
                                 <FormItem>
                                     <FormLabel>Unidade Pertencente</FormLabel>
                                     <Select
-                                        // Garante que o valor no form seja número
                                         onValueChange={(val) => field.onChange(Number(val))}
-                                        // Converte para string para o componente Select entender
-                                        value={field.value !== undefined ? String(field.value) : undefined}
+                                        value={field.value != null ? String(field.value) : "0"}
                                         disabled={loadingUnits}
                                     >
                                         <FormControl>
@@ -262,7 +221,6 @@ export function AssetForm({ initialData, onSubmit, onCancel, isLoading, preSelec
                                             </SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
-                                            {/* Valor 0 para o Front, será convertido para null no submit */}
                                             <SelectItem value="0">Todas as Unidades (Global)</SelectItem>
                                             {units.map((u) => (
                                                 <SelectItem key={u.id} value={String(u.id)}>{u.name}</SelectItem>
@@ -282,8 +240,7 @@ export function AssetForm({ initialData, onSubmit, onCancel, isLoading, preSelec
                                     <FormLabel>Responsável (Opcional)</FormLabel>
                                     <Select
                                         onValueChange={field.onChange}
-                                        value={field.value ? String(field.value) : undefined}
-                                        // Desabilita apenas se não houver usuários carregados
+                                        value={field.value || ""}
                                         disabled={loadingUsers || unitUsers.length === 0}
                                     >
                                         <FormControl>
@@ -318,8 +275,7 @@ export function AssetForm({ initialData, onSubmit, onCancel, isLoading, preSelec
                         <AssetDynamicFields/>
                     </div>
 
-                    <div
-                        className="flex flex-row items-center justify-between rounded-lg border p-4 shadow-sm bg-background">
+                    <div className="flex flex-row items-center justify-between rounded-lg border p-4 shadow-sm bg-background">
                         <div className="space-y-0.5">
                             <FormLabel className="text-base">Fonte Ativa</FormLabel>
                             <FormDescription>

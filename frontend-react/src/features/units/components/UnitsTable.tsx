@@ -44,12 +44,12 @@ function getNestedValue(obj: Unit, path: string): string {
 
 // Column Filter Component
 function ColumnFilter({
-    columnId,
-    columnLabel,
-    data,
-    selectedValues,
-    onFilterChange,
-}: {
+                          columnId,
+                          columnLabel,
+                          data,
+                          selectedValues,
+                          onFilterChange,
+                      }: {
     columnId: FilterableColumn;
     columnLabel: string;
     data: Unit[];
@@ -99,7 +99,7 @@ function ColumnFilter({
                         size="sm"
                         className={`h-6 w-6 p-0 ${hasFilters ? "text-primary" : "text-muted-foreground"}`}
                     >
-                        <Filter className="h-3 w-3" />
+                        <Filter className="h-3 w-3"/>
                         {hasFilters && (
                             <Badge
                                 variant="secondary"
@@ -115,12 +115,12 @@ function ColumnFilter({
                         <span className="text-xs font-medium text-muted-foreground">Filtrar por {columnLabel}</span>
                         {hasFilters && (
                             <Button variant="ghost" size="sm" className="h-6 px-2 text-xs" onClick={handleClearAll}>
-                                <X className="h-3 w-3 mr-1" />
+                                <X className="h-3 w-3 mr-1"/>
                                 Limpar
                             </Button>
                         )}
                     </div>
-                    <DropdownMenuSeparator />
+                    <DropdownMenuSeparator/>
                     <div className="flex gap-1 px-2 py-1">
                         <Button variant="outline" size="sm" className="h-6 text-xs flex-1" onClick={handleSelectAll}>
                             Todos
@@ -129,7 +129,7 @@ function ColumnFilter({
                             Nenhum
                         </Button>
                     </div>
-                    <DropdownMenuSeparator />
+                    <DropdownMenuSeparator/>
                     {uniqueValues.map((value) => (
                         <DropdownMenuCheckboxItem
                             key={value}
@@ -230,10 +230,9 @@ export function UnitsTable({ columns, data, isLoading }: UnitsTableProps) {
                         return (
                             <Badge key={columnId} variant="secondary" className="gap-1">
                                 {label}: {values.length}
-                                <X
-                                    className="h-3 w-3 cursor-pointer hover:text-destructive"
-                                    onClick={() => handleFilterChange(columnId, [])}
-                                />
+                                <Button onClick={clearAllFilters} variant="ghost" size="icon" className="h-3 w-3 p-0">
+                                    <X className="h-3 w-3 cursor-pointer hover:text-destructive"/>
+                                </Button>
                             </Badge>
                         );
                     })}
@@ -266,7 +265,7 @@ export function UnitsTable({ columns, data, isLoading }: UnitsTableProps) {
                                 <TableRow key={i}>
                                     {columns.map((_col, j) => (
                                         <TableCell key={j}>
-                                            <Skeleton className="h-6 w-full" />
+                                            <Skeleton className="h-6 w-full"/>
                                         </TableCell>
                                     ))}
                                 </TableRow>

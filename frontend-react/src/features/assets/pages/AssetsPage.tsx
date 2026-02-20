@@ -173,6 +173,7 @@ export default function AssetsPage() {
                             onSubmit={handleSubmit}
                             onCancel={handleCancel}
                             isLoading={isSaving}
+                            key={editingItem ? `edit-${editingItem.id}` : "new"}
                             preSelectedSourceType={!editingItem && moduleType ? moduleType : undefined}
                         />
                     </CollapsibleContent>
