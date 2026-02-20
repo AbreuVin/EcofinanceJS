@@ -32,6 +32,11 @@ export function useAssetForm({ initialData, onSubmit, preSelectedSourceType }: U
             reportingFrequency: (initialData?.reportingFrequency as "mensal" | "anual") || "mensal",
             isActive: initialData?.isActive ?? true,
             responsibleContactId: initialData?.responsibleContactId || "",
+            // Rastreabilidade Interna
+            traceabilityResponsible: initialData?.traceabilityResponsible || "",
+            traceabilityEmail: initialData?.traceabilityEmail || "",
+            traceabilitySector: initialData?.traceabilitySector || "",
+            traceabilityLocation: initialData?.traceabilityLocation || "",
             assetFields: parseAssetFields(initialData?.assetFields),
         },
     });

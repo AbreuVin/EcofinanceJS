@@ -16,6 +16,13 @@ export const assetFormSchema = z.object({
     // Allow empty string gracefully as optional
     responsibleContactId: z.string().optional(),
 
+    // Rastreabilidade Interna (todos opcionais)
+    traceabilityResponsible: z.string().optional(),
+    traceabilityEmail: z.string().email("E-mail inválido").optional().or(z.literal("")),
+    traceabilitySector: z.string().optional(),
+    traceabilityLocation: z.string().optional(),
+    // traceabilityFiles será tratado separadamente no upload
+
     // Removed .default({}). useForm provides the default.
     assetFields: z.record(z.string(), z.any()),
 }).refine(
