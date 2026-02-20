@@ -69,6 +69,7 @@ export default function UnitsPage() {
                             onSubmit={handleSubmit}
                             onCancel={handleCancel}
                             isLoading={isSaving}
+                            key={editingItem ? `edit-${editingItem.id}` : "new"}
                         />
                     </CollapsibleContent>
                 </Collapsible>
