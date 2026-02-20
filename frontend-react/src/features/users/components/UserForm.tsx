@@ -166,6 +166,7 @@ export function UserForm({ initialData, onSubmit, onCancel, isLoading }: UserFor
                             )}
                         />
 
+                        {/* TODO: Campo de Unidade oculto a pedido do cliente - descomentar se necessário
                         <FormField
                             control={form.control}
                             name="unitId"
@@ -195,6 +196,7 @@ export function UserForm({ initialData, onSubmit, onCancel, isLoading }: UserFor
                                 </FormItem>
                             )}
                         />
+                        */}
 
                     </div>
 

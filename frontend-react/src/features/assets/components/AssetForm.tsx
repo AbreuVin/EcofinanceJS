@@ -209,7 +209,7 @@ export function AssetForm({ initialData, onSubmit, onCancel, isLoading, preSelec
                             name="unitId"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Unidade Pertencente</FormLabel>
+                                    <FormLabel>Unidade Empresarial</FormLabel>
                                     <Select
                                         onValueChange={(val) => field.onChange(Number(val))}
                                         value={field.value != null ? String(field.value) : "0"}

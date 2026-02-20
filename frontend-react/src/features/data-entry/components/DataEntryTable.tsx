@@ -76,10 +76,6 @@ function DynamicColumnFilter({
         onFilterChange([]);
     };
 
-    const handleSelectAll = () => {
-        onFilterChange(uniqueValues);
-    };
-
     if (uniqueValues.length === 0) {
         return <span>{columnLabel}</span>;
     }
@@ -114,15 +110,6 @@ function DynamicColumnFilter({
                                 Limpar
                             </Button>
                         )}
-                    </div>
-                    <DropdownMenuSeparator />
-                    <div className="flex gap-1 px-2 py-1">
-                        <Button variant="outline" size="sm" className="h-6 text-xs flex-1" onClick={handleSelectAll}>
-                            Todos
-                        </Button>
-                        <Button variant="outline" size="sm" className="h-6 text-xs flex-1" onClick={handleClearAll}>
-                            Nenhum
-                        </Button>
                     </div>
                     <DropdownMenuSeparator />
                     {uniqueValues.map((value) => (

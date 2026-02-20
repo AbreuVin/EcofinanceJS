@@ -31,11 +31,12 @@ export const getUserColumns = ({ onEdit, onDelete }: UserColumnsProps): ColumnDe
             </Badge>
         ),
     },
-    {
-        accessorKey: "unit.name",
-        header: "Unidade",
-        cell: ({ row }) => row.original.unit?.name || <span className="text-muted-foreground">-</span>,
-    },
+    // TODO: Campo de Unidade oculto a pedido do cliente - descomentar se necessário
+    // {
+    //     accessorKey: "unit.name",
+    //     header: "Unidade",
+    //     cell: ({ row }) => row.original.unit?.name || <span className="text-muted-foreground">-</span>,
+    // },
     {
         id: "actions",
         cell: ({ row }) => {
