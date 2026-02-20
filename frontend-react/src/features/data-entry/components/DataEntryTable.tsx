@@ -403,10 +403,9 @@ export function DataEntryTable({ assets, onReport, module }: DataEntryTableProps
                     {activeFilterLabels.map(({ key, label, count }) => (
                         <Badge key={key} variant="secondary" className="gap-1">
                             {label}: {count}
-                            <X
-                                className="h-3 w-3 cursor-pointer hover:text-destructive"
-                                onClick={() => clearFilter(key)}
-                            />
+                            <Button onClick={clearAllFilters} variant="ghost" size="icon" className="h-3 w-3 p-0">
+                                <X className="h-3 w-3 cursor-pointer hover:text-destructive"/>
+                            </Button>
                         </Badge>
                     ))}
                     <Button variant="ghost" size="sm" className="h-6 text-xs" onClick={clearAllFilters}>

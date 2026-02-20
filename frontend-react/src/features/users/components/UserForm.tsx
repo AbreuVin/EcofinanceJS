@@ -156,7 +156,9 @@ export function UserForm({ initialData, onSubmit, onCancel, isLoading }: UserFor
                                         <SelectContent>
                                             <SelectItem value="USER">Usuário Padrão</SelectItem>
                                             <SelectItem value="ADMIN">Administrador</SelectItem>
-                                            <SelectItem value="MASTER">Master</SelectItem>
+                                            {isMaster && (
+                                                <SelectItem value="MASTER">Master</SelectItem>
+                                            )}
                                         </SelectContent>
                                     </Select>
                                     <FormMessage/>

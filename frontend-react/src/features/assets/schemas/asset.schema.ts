@@ -4,24 +4,27 @@ export const assetFormSchema = z.object({
     description: z.string().min(1, "A descrição/identificação é obrigatória."),
 
     sourceType: z.string().min(1, "Selecione o tipo de fonte (Módulo ESG)."),
-    unitId: z.coerce.number().min(0, "Selecione a unidade à qual esta fonte pertence."),
+
+    // Removed z.coerce. UI already casts to Number.
+    unitId: z.number().min(0, "Selecione a unidade à qual esta fonte pertence."),
 
     reportingFrequency: z.enum(["mensal", "anual"], "Selecione a frequência de reporte."),
 
-    isActive: z.boolean().default(true),
+    // Removed .default(true). useForm already handles the default.
+    isActive: z.boolean(),
 
-    responsibleContactId: z.string("Selecione o contato responsável pela fonte."),
+    // Allow empty string gracefully as optional
+    responsibleContactId: z.string().optional(),
 
-    assetFields: z.record(z.string(), z.any()).default({}),
+    // Removed .default({}). useForm provides the default.
+    assetFields: z.record(z.string(), z.any()),
 }).refine(
     (data) => {
-        // Only validate fertilizers
         if (data.sourceType === "fertilizers") {
             const nitrogen = parseFloat(data.assetFields?.nitrogenPercent ?? "0");
             const carbonate = parseFloat(data.assetFields?.carbonatePercent ?? "0");
             const total = nitrogen + carbonate;
-            
-            // Check if total equals exactly 100
+
             return total === 100;
         }
         return true;

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2 } from "lucide-react";
@@ -7,15 +7,14 @@ import { UserRole } from "@/types/enums";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, } from "@/components/ui/form";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from "@/components/ui/select";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
     Combobox,
     ComboboxInput,
     ComboboxContent,
     ComboboxList,
     ComboboxItem,
-    ComboboxEmpty,
 } from "@/components/ui/combobox";
 
 import { unitFormSchema, type UnitFormValues } from "../schemas/unit.schema";
@@ -61,11 +60,57 @@ interface UnitFormProps {
 }
 
 export function UnitForm({ initialData, onSubmit, onCancel, isLoading }: UnitFormProps) {
-    const [hasError, setHasError] = useState(false);
     const { data: companies = [], isLoading: isLoadingCompanies, error: companiesError } = useCompanies();
 
     const user = useAuthStore(state => state.user);
     const isMaster = user?.role === UserRole.MASTER;
+
+    const defaultCompanyId = !isMaster && user?.companyId ? user.companyId : "";
+
+    const form = useForm<UnitFormValues>({
+        resolver: zodResolver(unitFormSchema),
+        defaultValues: {
+            name: initialData?.name || "",
+            companyId: initialData?.companyId || defaultCompanyId,
+            country: initialData?.country || "Brasil",
+            state: initialData?.state || "",
+            city: initialData?.city || "",
+            numberOfWorkers: initialData?.numberOfWorkers || undefined,
+        },
+    });
+
+    const selectedCountry = form.watch("country");
+
+    // Hydrate companyId safely if user data arrives asynchronously
+    useEffect(() => {
+        if (!initialData && defaultCompanyId && !form.getValues("companyId")) {
+            form.setValue("companyId", defaultCompanyId);
+        }
+    }, [defaultCompanyId, initialData, form]);
+
+    // Reset form solely when editing a new record context
+    useEffect(() => {
+        if (initialData) {
+            form.reset({
+                name: initialData.name || "",
+                companyId: initialData.companyId || defaultCompanyId,
+                country: initialData.country || "Brasil",
+                state: initialData.state || "",
+                city: initialData.city || "",
+                numberOfWorkers: initialData.numberOfWorkers || undefined,
+            });
+        }
+    }, [initialData, defaultCompanyId, form]);
+
+    // Controlled Combobox filtering
+    const [countryQuery, setCountryQuery] = useState("");
+    const filteredCountries = useMemo(() => {
+        if (!countryQuery) return WORLD_COUNTRIES;
+        const lowerQuery = countryQuery.toLowerCase();
+        return WORLD_COUNTRIES.filter((c) =>
+            c.label.toLowerCase().includes(lowerQuery)
+        );
+    }, [countryQuery]);
 
     if (companiesError) {
         return (
@@ -77,75 +122,6 @@ export function UnitForm({ initialData, onSubmit, onCancel, isLoading }: UnitFor
         );
     }
 
-    if (hasError) {
-        return (
-            <div className="bg-red-50 p-6 rounded-md border border-red-200 shadow-sm mb-6">
-                <h3 className="text-lg font-semibold mb-4 text-red-800">Erro ao renderizar formulário</h3>
-                <p className="text-red-700">Houve um erro ao inicializar o formulário.</p>
-                <Button onClick={() => {
-                    setHasError(false);
-                    onCancel();
-                }} className="mt-4">Fechar</Button>
-            </div>
-        );
-    }
-
-    let form;
-    try {
-        form = useForm({
-            resolver: zodResolver(unitFormSchema),
-            defaultValues: {
-                name: "",
-                companyId: "",
-                country: "Brasil",
-                state: "",
-                city: "",
-                numberOfWorkers: undefined,
-            },
-        });
-    } catch (err) {
-        setHasError(true);
-        return null;
-    }
-
-    const selectedCountry = form.watch("country");
-
-    useEffect(() => {
-        try {
-            const defaultCompanyId = !isMaster && user?.companyId ? user.companyId : "";
-
-            if (initialData) {
-                form.reset({
-                    name: initialData.name || "",
-                    companyId: initialData.companyId || defaultCompanyId,
-                    country: initialData.country || "Brasil",
-                    state: initialData.state || "",
-                    city: initialData.city || "",
-                    numberOfWorkers: initialData.numberOfWorkers || undefined,
-                });
-            } else {
-                form.reset({
-                    name: "",
-                    companyId: defaultCompanyId,
-                    country: "Brasil",
-                    state: "",
-                    city: "",
-                    numberOfWorkers: undefined,
-                });
-            }
-        } catch (err) {
-            setHasError(true);
-        }
-    }, [initialData, form, isMaster, user]);
-
-    const handleSubmitWrapper = async (values: UnitFormValues) => {
-        try {
-            await onSubmit(values);
-        } catch (err) {
-            setHasError(true);
-        }
-    };
-
     return (
         <div className="bg-card p-6 rounded-md border shadow-sm mb-6">
             <h3 className="text-lg font-semibold mb-4 text-foreground">
@@ -153,7 +129,7 @@ export function UnitForm({ initialData, onSubmit, onCancel, isLoading }: UnitFor
             </h3>
 
             <Form {...form}>
-                <form onSubmit={form.handleSubmit(handleSubmitWrapper)} className="space-y-4">
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
                         <FormField
@@ -205,7 +181,12 @@ export function UnitForm({ initialData, onSubmit, onCancel, isLoading }: UnitFor
                                     <FormLabel>País</FormLabel>
                                     <Combobox
                                         value={field.value || ''}
-                                        onValueChange={(value) => field.onChange(value as string)}
+                                        onValueChange={(value) => {
+                                            field.onChange(value as string);
+                                            setCountryQuery("");
+                                        }}
+                                        inputValue={countryQuery}
+                                        onInputValueChange={setCountryQuery}
                                     >
                                         <FormControl>
                                             <ComboboxInput
@@ -215,15 +196,21 @@ export function UnitForm({ initialData, onSubmit, onCancel, isLoading }: UnitFor
                                         </FormControl>
                                         <ComboboxContent>
                                             <ComboboxList>
-                                                <ComboboxEmpty>Nenhum país encontrado</ComboboxEmpty>
-                                                {WORLD_COUNTRIES.map((country) => (
-                                                    <ComboboxItem
-                                                        key={country.value}
-                                                        value={country.value}
-                                                    >
-                                                        {country.label}
-                                                    </ComboboxItem>
-                                                ))}
+                                                {filteredCountries.length === 0 ? (
+                                                    <div className="py-2 text-center text-sm text-muted-foreground">
+                                                        Nenhum país encontrado
+                                                    </div>
+                                                ) : (
+                                                    filteredCountries.map((country) => (
+                                                        <ComboboxItem
+                                                            key={country.value}
+                                                            value={country.value}
+                                                            className="[&[hidden]]:hidden"
+                                                        >
+                                                            {country.label}
+                                                        </ComboboxItem>
+                                                    ))
+                                                )}
                                             </ComboboxList>
                                         </ComboboxContent>
                                     </Combobox>
@@ -239,7 +226,7 @@ export function UnitForm({ initialData, onSubmit, onCancel, isLoading }: UnitFor
                                 render={({ field }) => (
                                     <FormItem>
                                         <FormLabel>Estado</FormLabel>
-                                        <Select 
+                                        <Select
                                             onValueChange={field.onChange}
                                             value={field.value || ""}
                                         >
