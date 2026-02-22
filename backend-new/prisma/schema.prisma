@@ -4,8 +4,7 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  
+  provider = "postgresql"
 }
 
 model Company {
@@ -104,18 +103,24 @@ model Unit {
 // --- CONFIGURATION & METADATA ---
 
 model AssetTypology {
-  id                   Int      @id @default(autoincrement())
+  id                   Int     @id @default(autoincrement())
   companyId            String
-  company              Company  @relation(fields: [companyId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  company              Company @relation(fields: [companyId], references: [id], onUpdate: Cascade, onDelete: Cascade)
   unitId               Int?
-  unit                 Unit?    @relation(fields: [unitId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  unit                 Unit?   @relation(fields: [unitId], references: [id], onUpdate: Cascade, onDelete: Cascade)
   sourceType           String
   description          String
   assetFields          String // JSON string
-  isActive             Boolean  @default(true)
+  isActive             Boolean @default(true)
   responsibleContactId String?
-  userContact          User?    @relation(fields: [responsibleContactId], references: [id], onUpdate: Cascade, onDelete: Cascade)
-  reportingFrequency   String   @default("anual")
+  userContact          User?   @relation(fields: [responsibleContactId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  reportingFrequency   String  @default("anual")
+
+  // --- New Traceability Fields ---
+  traceabilityResponsible String?
+  traceabilityEmail       String?
+  traceabilitySector      String?
+  traceabilityLocation    String?
 }
 
 model ManagedOption {
