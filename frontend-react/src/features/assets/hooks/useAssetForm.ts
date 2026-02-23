@@ -28,7 +28,7 @@ export function useAssetForm({ initialData, onSubmit, preSelectedSourceType }: U
         defaultValues: {
             description: initialData?.description || "",
             sourceType: initialData?.sourceType || preSelectedSourceType || "",
-            unitId: initialData?.unitId != null ? Number(initialData.unitId) : 0,
+            unitIds: initialData?.units?.map(u => u.unitId) || [],
             reportingFrequency: (initialData?.reportingFrequency as "mensal" | "anual") || "mensal",
             isActive: initialData?.isActive ?? true,
             responsibleContactId: initialData?.responsibleContactId || "",

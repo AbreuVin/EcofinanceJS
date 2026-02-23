@@ -5,8 +5,8 @@ export const assetFormSchema = z.object({
 
     sourceType: z.string().min(1, "Selecione o tipo de fonte (Módulo ESG)."),
 
-    // Removed z.coerce. UI already casts to Number.
-    unitId: z.number().min(0, "Selecione a unidade à qual esta fonte pertence."),
+    // Multi-unit: array of unit IDs (empty = global)
+    unitIds: z.array(z.number()).default([]),
 
     reportingFrequency: z.enum(["mensal", "anual"], "Selecione a frequência de reporte."),
 

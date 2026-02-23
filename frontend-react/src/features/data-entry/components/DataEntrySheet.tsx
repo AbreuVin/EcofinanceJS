@@ -15,7 +15,7 @@ import { Loader2 } from "lucide-react";
 interface DataEntrySheetProps {
     asset: AssetTypology;
     year: number;
-    unitId?: number | null;
+    unitId?: number | null | undefined;
     open: boolean;
     onOpenChange: (open: boolean) => void;
 }
