@@ -5,7 +5,6 @@ import type { Company } from "@/types/Company.ts";
 export interface AssetTypology {
     id: number;
     companyId: string;
-    unitId: number | null;
     sourceType: string;
     description: string;
     assetFields: string | Record<string, any>; // JSON string
@@ -18,7 +17,7 @@ export interface AssetTypology {
     traceabilitySector?: string;
     traceabilityLocation?: string;
     // Relacionamentos
+    units?: { unit: Unit; unitId: number }[];
     userContact: User;
-    unit?: Unit;
     company?: Company;
 }

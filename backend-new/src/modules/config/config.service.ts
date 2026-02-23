@@ -3,17 +3,26 @@ import prisma from '../../shared/database/prisma';
 // Typologies
 export const getTypologies = async (unitId?: number, sourceType?: string) => {
     const where: any = {};
-    if (unitId) where.unitId = unitId;
+    if (unitId) where.units = { some: { unitId } };
     if (sourceType) where.sourceType = sourceType;
     return prisma.assetTypology.findMany({
         where,
         orderBy: { description: 'asc' },
-        include: { unit: true, userContact: true, company: true },
+        include: { units: { include: { unit: true } }, userContact: true },
     });
 };
 
 export const createTypology = async (data: any) => {
-    return prisma.assetTypology.create({ data });
+    const { unitIds = [], ...rest } = data;
+    return prisma.assetTypology.create({
+        data: {
+            ...rest,
+            units: {
+                create: unitIds.map((unitId: number) => ({ unitId })),
+            },
+        },
+        include: { units: { include: { unit: true } }, userContact: true },
+    });
 };
 
 export const deleteTypology = async (id: number) => {
@@ -21,7 +30,22 @@ export const deleteTypology = async (id: number) => {
 };
 
 export const updateTypology = async (id: number, data: any) => {
-    return prisma.assetTypology.update({ where: { id }, data });
+    const { unitIds, ...rest } = data;
+    return prisma.$transaction(async (tx) => {
+        if (unitIds !== undefined) {
+            await tx.assetTypologyUnit.deleteMany({ where: { assetTypologyId: id } });
+            if (unitIds.length > 0) {
+                await tx.assetTypologyUnit.createMany({
+                    data: unitIds.map((unitId: number) => ({ assetTypologyId: id, unitId })),
+                });
+            }
+        }
+        return tx.assetTypology.update({
+            where: { id },
+            data: rest,
+            include: { units: { include: { unit: true } }, userContact: true },
+        });
+    });
 }
 
 // Options

@@ -39,9 +39,11 @@ export default function DataEntryPage() {
 
                 if (selectedUnitId === "all_units") return true;
 
-                const assetUnitId = asset.unitId ? String(asset.unitId) : "0";
-
-                return !(assetUnitId !== selectedUnitId && assetUnitId !== "0");
+                // N:N: check if asset has the selected unit
+                const assetUnitIds = asset.units?.map(u => u.unitId) || [];
+                // Global assets (no units) are visible to all
+                if (assetUnitIds.length === 0) return true;
+                return assetUnitIds.includes(Number(selectedUnitId));
             })
             .map(asset => {
                 let parsedFields = {};
@@ -113,7 +115,7 @@ export default function DataEntryPage() {
                     <DataEntrySheet
                         asset={selectedAsset}
                         year={selectedYear}
-                        unitId={selectedAsset.unitId}
+                        unitId={selectedUnitId !== "all_units" ? Number(selectedUnitId) : undefined}
                         open={!!selectedAsset}
                         onOpenChange={(open) => !open && setSelectedAsset(null)}
                     />

@@ -29,7 +29,8 @@ export default function ReportsLandingPage() {
             }
 
             // Standard Users only see modules for their Unit
-            return asset.unitId === Number(user.unitId);
+            const userUnitId = Number(user.unitId);
+            return asset.units?.some(u => u.unitId === userUnitId) || (asset.units?.length === 0);
         });
 
         // 2. Extract unique Source Types

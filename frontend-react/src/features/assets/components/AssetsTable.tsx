@@ -46,12 +46,17 @@ interface AssetsTableProps {
 }
 
 // Columns that should have Excel-like filters
-const FILTERABLE_COLUMNS = ["sourceType", "unit.name", "userContact.name", "reportingFrequency", "isActive"] as const;
+const FILTERABLE_COLUMNS = ["sourceType", "units", "userContact.name", "reportingFrequency", "isActive"] as const;
 
 type FilterableColumn = typeof FILTERABLE_COLUMNS[number];
 
 // Helper to get nested value from object
 function getNestedValue(obj: AssetTypology, path: string): string {
+    if (path === "units") {
+        const units = obj.units;
+        if (!units || units.length === 0) return "Global";
+        return units.map(u => u.unit?.name).filter(Boolean).join(", ");
+    }
     const keys = path.split(".");
     let value: unknown = obj;
     for (const key of keys) {
@@ -82,9 +87,20 @@ function ColumnFilter({
     const uniqueValues = useMemo(() => {
         const values = new Set<string>();
         data.forEach((item) => {
-            const value = getNestedValue(item, columnId);
-            if (value && value !== "undefined" && value !== "null") {
-                values.add(value);
+            if (columnId === "units") {
+                const units = item.units;
+                if (!units || units.length === 0) {
+                    values.add("Global");
+                } else {
+                    units.forEach(u => {
+                        if (u.unit?.name) values.add(u.unit.name);
+                    });
+                }
+            } else {
+                const value = getNestedValue(item, columnId);
+                if (value && value !== "undefined" && value !== "null") {
+                    values.add(value);
+                }
             }
         });
         return Array.from(values).sort();
@@ -165,7 +181,7 @@ function ColumnFilter({
 // Column labels mapping
 const COLUMN_LABELS: Record<FilterableColumn, string> = {
     sourceType: "Tipo de Fonte",
-    "unit.name": "Unidade",
+    units: "Unidade(s)",
     "userContact.name": "Responsável",
     reportingFrequency: "Frequência",
     isActive: "Status",
@@ -174,7 +190,7 @@ const COLUMN_LABELS: Record<FilterableColumn, string> = {
 export function AssetsTable({ columns, data, isLoading }: AssetsTableProps) {
     const [columnFilters, setColumnFilters] = useState<Record<FilterableColumn, string[]>>({
         sourceType: [],
-        "unit.name": [],
+        units: [],
         "userContact.name": [],
         reportingFrequency: [],
         isActive: [],
@@ -194,6 +210,15 @@ export function AssetsTable({ columns, data, isLoading }: AssetsTableProps) {
             return FILTERABLE_COLUMNS.every((columnId) => {
                 const selectedValues = columnFilters[columnId];
                 if (selectedValues.length === 0) return true;
+
+                if (columnId === "units") {
+                    const units = item.units;
+                    if (!units || units.length === 0) {
+                        return selectedValues.includes("Global");
+                    }
+                    return units.some(u => u.unit?.name && selectedValues.includes(u.unit.name));
+                }
+
                 const value = getNestedValue(item, columnId);
                 return selectedValues.includes(value);
             });
@@ -207,7 +232,7 @@ export function AssetsTable({ columns, data, isLoading }: AssetsTableProps) {
     const clearAllFilters = () => {
         setColumnFilters({
             sourceType: [],
-            "unit.name": [],
+            units: [],
             "userContact.name": [],
             reportingFrequency: [],
             isActive: [],
