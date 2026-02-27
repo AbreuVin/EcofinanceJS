@@ -16,7 +16,7 @@ import type {
 } from "./EsgData";
 
 export interface Unit {
-    id: string;
+    id: number;
     name: string;
     city: string;
     state: string;
