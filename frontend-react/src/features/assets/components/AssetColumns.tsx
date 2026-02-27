@@ -39,9 +39,13 @@ export const getAssetColumns = ({ onEdit, onDelete }: AssetColumnsProps): Column
         },
     },
     {
-        accessorKey: "unit.name",
-        header: "Unidade",
-        cell: ({ row }) => row.original.unit?.name || <span>Global</span>,
+        accessorKey: "units",
+        header: "Unidade(s)",
+        cell: ({ row }) => {
+            const units = row.original.units;
+            if (!units || units.length === 0) return <span>Global</span>;
+            return units.map(u => u.unit?.name).filter(Boolean).join(", ") || <span>Global</span>;
+        },
     },
     {
         accessorKey: "userContact.name",

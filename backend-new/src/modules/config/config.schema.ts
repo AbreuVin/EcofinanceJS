@@ -6,8 +6,7 @@ export const createOptionSchema = z.object({
 });
 
 export const createTypologySchema = z.object({
-    companyId: z.string().min(1),
-    unitId: z.number().int().positive().nullable(),
+    unitIds: z.array(z.number().int().positive()).default([]),
     sourceType: z.string().min(1),
     description: z.string().min(1),
     assetFields: z.record(z.string(), z.any()).transform((val) => JSON.stringify(val)),

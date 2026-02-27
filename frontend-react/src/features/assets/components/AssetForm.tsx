@@ -4,6 +4,13 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from "@/components/ui/select";
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuCheckboxItem,
+    DropdownMenuTrigger,
+    DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 import { ESG_MODULES } from "@/types/enums";
 import type { AssetTypology } from "@/types/AssetTypology";
 import type { AssetFormValues } from "../schemas/asset.schema";
@@ -59,7 +66,7 @@ export function AssetForm({ initialData, onSubmit, onCancel, isLoading, preSelec
     const { data: units = [], isLoading: loadingUnits } = useUnits();
     const { data: users = [], isLoading: loadingUsers } = useUsers();
 
-    const selectedUnitId = useWatch({ control: form.control, name: "unitId" });
+    const selectedUnitIds: number[] = useWatch({ control: form.control, name: "unitIds" }) || [];
     const currentSourceType = useWatch({ control: form.control, name: "sourceType" });
 
     // Synchronous state initialization (Safe because of the 'key' prop on the parent)
@@ -81,16 +88,15 @@ export function AssetForm({ initialData, onSubmit, onCancel, isLoading, preSelec
     }, [selectedScope]);
 
     const unitUsers = useMemo(() => {
-        if (!selectedUnitId || Number(selectedUnitId) === 0) {
+        if (!selectedUnitIds || selectedUnitIds.length === 0) {
             return users;
         }
-        return users.filter((user) => Number(user.unitId) === Number(selectedUnitId));
-    }, [users, selectedUnitId]);
+        return users.filter((user) => selectedUnitIds.includes(Number(user.unitId)));
+    }, [users, selectedUnitIds]);
 
     const handleSubmitWrapper = async (values: AssetFormValues) => {
         const payload = {
             ...values,
-            unitId: values.unitId === 0 ? null : values.unitId,
             companyId: initialData?.companyId || user?.companyId
         };
         await onSubmit(payload as unknown as AssetFormValues);
@@ -206,30 +212,72 @@ export function AssetForm({ initialData, onSubmit, onCancel, isLoading, preSelec
 
                         <FormField
                             control={form.control}
-                            name="unitId"
-                            render={({ field }) => (
-                                <FormItem>
-                                    <FormLabel>Unidade Empresarial</FormLabel>
-                                    <Select
-                                        onValueChange={(val) => field.onChange(Number(val))}
-                                        value={field.value != null ? String(field.value) : "0"}
-                                        disabled={loadingUnits}
-                                    >
-                                        <FormControl>
-                                            <SelectTrigger className="w-full">
-                                                <SelectValue placeholder="Selecione a unidade"/>
-                                            </SelectTrigger>
-                                        </FormControl>
-                                        <SelectContent>
-                                            <SelectItem value="0">Todas as Unidades (Global)</SelectItem>
-                                            {units.map((u) => (
-                                                <SelectItem key={u.id} value={String(u.id)}>{u.name}</SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                    <FormMessage/>
-                                </FormItem>
-                            )}
+                            name="unitIds"
+                            render={({ field }) => {
+                                const selectedIds: number[] = field.value || [];
+                                const selectedNames = units
+                                    .filter(u => selectedIds.includes(u.id))
+                                    .map(u => u.name);
+
+                                const toggleUnit = (unitId: number) => {
+                                    const current: number[] = field.value || [];
+                                    const next = current.includes(unitId)
+                                        ? current.filter(id => id !== unitId)
+                                        : [...current, unitId];
+                                    field.onChange(next);
+                                };
+
+                                return (
+                                    <FormItem>
+                                        <FormLabel>Unidade Empresarial</FormLabel>
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger asChild disabled={loadingUnits}>
+                                                <Button variant="outline" className="w-full justify-start font-normal">
+                                                    {selectedNames.length > 0
+                                                        ? selectedNames.length <= 2
+                                                            ? selectedNames.join(", ")
+                                                            : `${selectedNames.length} unidades selecionadas`
+                                                        : "Todas as Unidades (Global)"}
+                                                </Button>
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent align="start" className="w-64 max-h-64 overflow-y-auto">
+                                                <div className="px-2 py-1.5">
+                                                    <span className="text-xs font-medium text-muted-foreground">
+                                                        Selecione as unidades
+                                                    </span>
+                                                </div>
+                                                <DropdownMenuSeparator />
+                                                {units.map((u) => (
+                                                    <DropdownMenuCheckboxItem
+                                                        key={u.id}
+                                                        checked={selectedIds.includes(u.id)}
+                                                        onCheckedChange={() => toggleUnit(u.id)}
+                                                        onSelect={(e) => e.preventDefault()}
+                                                    >
+                                                        {u.name}
+                                                    </DropdownMenuCheckboxItem>
+                                                ))}
+                                                {selectedIds.length > 0 && (
+                                                    <>
+                                                        <DropdownMenuSeparator />
+                                                        <div className="px-2 py-1.5">
+                                                            <Button
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                className="w-full text-xs"
+                                                                onClick={() => field.onChange([])}
+                                                            >
+                                                                Limpar seleção (Global)
+                                                            </Button>
+                                                        </div>
+                                                    </>
+                                                )}
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                        <FormMessage/>
+                                    </FormItem>
+                                );
+                            }}
                         />
 
                         <FormField
