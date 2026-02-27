@@ -131,15 +131,71 @@ model ManagedOption {
   @@unique([fieldKey, value])
 }
 
+// --- Atachments ---
+
+// O EvidenceGroup serve como um "Hub" ou container.
+// Em vez de cada modelo apontar para 10 arquivos, ele aponta para 1 Grupo,
+// e o Grupo contém N arquivos.
+model EvidenceGroup {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relação com os arquivos
+  attachments Attachment[]
+
+  // Relações Inversas (necessário para o Prisma manter a integridade)
+  mobileCombustion             MobileCombustionData?
+  stationaryCombustion         StationaryCombustionData?
+  productionSales              ProductionSalesData?
+  electricityPurchase          ElectricityPurchaseData?
+  ippuLubricants               LubricantsIppuData?
+  fugitiveEmissions            FugitiveEmissionsData?
+  fertilizers                  FertilizersData?
+  effluentsControlled          EffluentsControlledData?
+  domesticEffluents            DomesticEffluentsData?
+  landUseChange                LandUseChangeData?
+  solidWaste                   SolidWasteData?
+  purchasedGoods               PurchasedGoodsServicesData?
+  capitalGoods                 CapitalGoodsData?
+  upstreamTransport            UpstreamTransportData?
+  businessTravelLand           BusinessTravelLandData?
+  downstreamTransport          DownstreamTransportData?
+  wasteTransport               WasteTransportData?
+  homeOffice                   HomeOfficeData?
+  airTravel                    AirTravelData?
+  employeeCommuting            EmployeeCommutingData?
+  energyGeneration             EnergyGenerationData?
+  plantedForest                PlantedForestData?
+  conservationArea             ConservationAreaData?
+}
+
+model Attachment {
+  id          String @id @default(uuid())
+  fileName    String
+  storagePath String @unique // Caminho no bucket do Supabase
+  mimeType    String // Ex: application/pdf
+  size        Int // Tamanho em bytes
+
+  evidenceGroupId String
+  evidenceGroup   EvidenceGroup @relation(fields: [evidenceGroupId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@index([evidenceGroupId])
+}
+
 // --- ESG DATA TABLES ---
 
 // 1. Mobile Combustion
 model MobileCombustionData {
-  id     Int    @id @default(autoincrement())
-  year   Int
-  period String
-  unitId Int
-  unit   Unit   @relation(fields: [unitId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  id              Int            @id @default(autoincrement())
+  year            Int
+  period          String
+  evidenceGroupId String?        @unique
+  evidenceGroup   EvidenceGroup? @relation(fields: [evidenceGroupId], references: [id])
+  unitId          Int
+  unit            Unit           @relation(fields: [unitId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   sourceDescription   String?
   isCompanyControlled Boolean
@@ -158,11 +214,13 @@ model MobileCombustionData {
 
 // 2. Stationary Combustion
 model StationaryCombustionData {
-  id     Int    @id @default(autoincrement())
-  year   Int
-  period String
-  unitId Int
-  unit   Unit   @relation(fields: [unitId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  id              Int            @id @default(autoincrement())
+  year            Int
+  period          String
+  evidenceGroupId String?        @unique
+  evidenceGroup   EvidenceGroup? @relation(fields: [evidenceGroupId], references: [id])
+  unitId          Int
+  unit            Unit           @relation(fields: [unitId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   sourceDescription   String?
   fuelType            String?
@@ -176,11 +234,13 @@ model StationaryCombustionData {
 
 // 3. Production & Sales
 model ProductionSalesData {
-  id     Int    @id @default(autoincrement())
-  year   Int
-  period String
-  unitId Int
-  unit   Unit   @relation(fields: [unitId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  id              Int            @id @default(autoincrement())
+  year            Int
+  period          String
+  evidenceGroupId String?        @unique
+  evidenceGroup   EvidenceGroup? @relation(fields: [evidenceGroupId], references: [id])
+  unitId          Int
+  unit            Unit           @relation(fields: [unitId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   product      String
   quantitySold Int
@@ -193,11 +253,13 @@ model ProductionSalesData {
 
 // 4. Lubricants & IPPU
 model LubricantsIppuData {
-  id     Int    @id @default(autoincrement())
-  year   Int
-  period String
-  unitId Int
-  unit   Unit   @relation(fields: [unitId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  id              Int            @id @default(autoincrement())
+  year            Int
+  period          String
+  evidenceGroupId String?        @unique
+  evidenceGroup   EvidenceGroup? @relation(fields: [evidenceGroupId], references: [id])
+  unitId          Int
+  unit            Unit           @relation(fields: [unitId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   emissionSource      String?
   lubricantType       String?
@@ -211,11 +273,13 @@ model LubricantsIppuData {
 
 // 5. Fugitive Emissions
 model FugitiveEmissionsData {
-  id     Int    @id @default(autoincrement())
-  year   Int
-  period String
-  unitId Int
-  unit   Unit   @relation(fields: [unitId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  id              Int            @id @default(autoincrement())
+  year            Int
+  period          String
+  evidenceGroupId String?        @unique
+  evidenceGroup   EvidenceGroup? @relation(fields: [evidenceGroupId], references: [id])
+  unitId          Int
+  unit            Unit           @relation(fields: [unitId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   emissionSource      String?
   gasType             String?
@@ -230,11 +294,13 @@ model FugitiveEmissionsData {
 
 // 6. Fertilizers
 model FertilizersData {
-  id     Int    @id @default(autoincrement())
-  year   Int
-  period String
-  unitId Int
-  unit   Unit   @relation(fields: [unitId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  id              Int            @id @default(autoincrement())
+  year            Int
+  period          String
+  evidenceGroupId String?        @unique
+  evidenceGroup   EvidenceGroup? @relation(fields: [evidenceGroupId], references: [id])
+  unitId          Int
+  unit            Unit           @relation(fields: [unitId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   fertilizerType      String?
   quantityKg          Float?
@@ -250,11 +316,13 @@ model FertilizersData {
 
 // 7. Controlled Effluents
 model EffluentsControlledData {
-  id     Int    @id @default(autoincrement())
-  year   Int
-  period String
-  unitId Int
-  unit   Unit   @relation(fields: [unitId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  id              Int            @id @default(autoincrement())
+  year            Int
+  period          String
+  evidenceGroupId String?        @unique
+  evidenceGroup   EvidenceGroup? @relation(fields: [evidenceGroupId], references: [id])
+  unitId          Int
+  unit            Unit           @relation(fields: [unitId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   treatmentOrDest String
   treatmentType   String?
@@ -280,11 +348,13 @@ model EffluentsControlledData {
 
 // 8. Domestic Effluents
 model DomesticEffluentsData {
-  id     Int    @id @default(autoincrement())
-  year   Int
-  period String
-  unitId Int
-  unit   Unit   @relation(fields: [unitId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  id              Int            @id @default(autoincrement())
+  year            Int
+  period          String
+  evidenceGroupId String?        @unique
+  evidenceGroup   EvidenceGroup? @relation(fields: [evidenceGroupId], references: [id])
+  unitId          Int
+  unit            Unit           @relation(fields: [unitId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   workerType      String
   numWorkers      Int
@@ -298,11 +368,13 @@ model DomesticEffluentsData {
 
 // 9. Land Use Change
 model LandUseChangeData {
-  id     Int    @id @default(autoincrement())
-  year   Int
-  period String
-  unitId Int
-  unit   Unit   @relation(fields: [unitId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  id              Int            @id @default(autoincrement())
+  year            Int
+  period          String
+  evidenceGroupId String?        @unique
+  evidenceGroup   EvidenceGroup? @relation(fields: [evidenceGroupId], references: [id])
+  unitId          Int
+  unit            Unit           @relation(fields: [unitId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   prevLandUse      String
   biome            String?
@@ -317,11 +389,13 @@ model LandUseChangeData {
 
 // 10. Solid Waste
 model SolidWasteData {
-  id     Int    @id @default(autoincrement())
-  year   Int
-  period String
-  unitId Int
-  unit   Unit   @relation(fields: [unitId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  id              Int            @id @default(autoincrement())
+  year            Int
+  period          String
+  evidenceGroupId String?        @unique
+  evidenceGroup   EvidenceGroup? @relation(fields: [evidenceGroupId], references: [id])
+  unitId          Int
+  unit            Unit           @relation(fields: [unitId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   finalDestination   String?
   wasteType          String?
@@ -343,11 +417,13 @@ model SolidWasteData {
 
 // 11. Electricity Purchase
 model ElectricityPurchaseData {
-  id     Int    @id @default(autoincrement())
-  year   Int
-  period String
-  unitId Int
-  unit   Unit   @relation(fields: [unitId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  id              Int            @id @default(autoincrement())
+  year            Int
+  period          String
+  evidenceGroupId String?        @unique
+  evidenceGroup   EvidenceGroup? @relation(fields: [evidenceGroupId], references: [id])
+  unitId          Int
+  unit            Unit           @relation(fields: [unitId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   energySource  String?
   specifySource String?
@@ -367,11 +443,13 @@ model ElectricityPurchaseData {
 
 // 12. Purchased Goods & Services
 model PurchasedGoodsServicesData {
-  id     Int    @id @default(autoincrement())
-  year   Int
-  period String
-  unitId Int
-  unit   Unit   @relation(fields: [unitId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  id              Int            @id @default(autoincrement())
+  year            Int
+  period          String
+  evidenceGroupId String?        @unique
+  evidenceGroup   EvidenceGroup? @relation(fields: [evidenceGroupId], references: [id])
+  unitId          Int
+  unit            Unit           @relation(fields: [unitId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   itemDescription  String?
   itemType         String?
@@ -392,11 +470,13 @@ model PurchasedGoodsServicesData {
 
 // 13. Capital Goods
 model CapitalGoodsData {
-  id     Int    @id @default(autoincrement())
-  year   Int
-  period String
-  unitId Int
-  unit   Unit   @relation(fields: [unitId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  id              Int            @id @default(autoincrement())
+  year            Int
+  period          String
+  evidenceGroupId String?        @unique
+  evidenceGroup   EvidenceGroup? @relation(fields: [evidenceGroupId], references: [id])
+  unitId          Int
+  unit            Unit           @relation(fields: [unitId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   capitalGood      String?
   quantity         Int?
@@ -415,11 +495,13 @@ model CapitalGoodsData {
 
 // 14. Upstream Transport
 model UpstreamTransportData {
-  id     Int    @id @default(autoincrement())
-  year   Int
-  period String
-  unitId Int
-  unit   Unit   @relation(fields: [unitId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  id              Int            @id @default(autoincrement())
+  year            Int
+  period          String
+  evidenceGroupId String?        @unique
+  evidenceGroup   EvidenceGroup? @relation(fields: [evidenceGroupId], references: [id])
+  unitId          Int
+  unit            Unit           @relation(fields: [unitId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   transportedItem String?
   transportMode   String?
@@ -447,11 +529,13 @@ model UpstreamTransportData {
 
 // 15. Business Travel (Land)
 model BusinessTravelLandData {
-  id     Int    @id @default(autoincrement())
-  year   Int
-  period String
-  unitId Int
-  unit   Unit   @relation(fields: [unitId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  id              Int            @id @default(autoincrement())
+  year            Int
+  period          String
+  evidenceGroupId String?        @unique
+  evidenceGroup   EvidenceGroup? @relation(fields: [evidenceGroupId], references: [id])
+  unitId          Int
+  unit            Unit           @relation(fields: [unitId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   tripDescription String?
   travelMode      String?
@@ -475,11 +559,13 @@ model BusinessTravelLandData {
 
 // 16. Downstream Transport
 model DownstreamTransportData {
-  id     Int    @id @default(autoincrement())
-  year   Int
-  period String
-  unitId Int
-  unit   Unit   @relation(fields: [unitId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  id              Int            @id @default(autoincrement())
+  year            Int
+  period          String
+  evidenceGroupId String?        @unique
+  evidenceGroup   EvidenceGroup? @relation(fields: [evidenceGroupId], references: [id])
+  unitId          Int
+  unit            Unit           @relation(fields: [unitId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   transportedItem String?
   transportMode   String?
@@ -507,11 +593,13 @@ model DownstreamTransportData {
 
 // 17. Waste Transport
 model WasteTransportData {
-  id     Int    @id @default(autoincrement())
-  year   Int
-  period String
-  unitId Int
-  unit   Unit   @relation(fields: [unitId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  id              Int            @id @default(autoincrement())
+  year            Int
+  period          String
+  evidenceGroupId String?        @unique
+  evidenceGroup   EvidenceGroup? @relation(fields: [evidenceGroupId], references: [id])
+  unitId          Int
+  unit            Unit           @relation(fields: [unitId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   transportedItem String?
   reportType      String?
@@ -536,11 +624,13 @@ model WasteTransportData {
 
 // 18. Home Office
 model HomeOfficeData {
-  id     Int    @id @default(autoincrement())
-  year   Int
-  period String
-  unitId Int
-  unit   Unit   @relation(fields: [unitId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  id              Int            @id @default(autoincrement())
+  year            Int
+  period          String
+  evidenceGroupId String?        @unique
+  evidenceGroup   EvidenceGroup? @relation(fields: [evidenceGroupId], references: [id])
+  unitId          Int
+  unit            Unit           @relation(fields: [unitId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   workRegime   String?
   numEmployees Int?
@@ -557,11 +647,13 @@ model HomeOfficeData {
 
 // 19. Air Travel
 model AirTravelData {
-  id     Int    @id @default(autoincrement())
-  year   Int
-  period String
-  unitId Int
-  unit   Unit   @relation(fields: [unitId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  id              Int            @id @default(autoincrement())
+  year            Int
+  period          String
+  evidenceGroupId String?        @unique
+  evidenceGroup   EvidenceGroup? @relation(fields: [evidenceGroupId], references: [id])
+  unitId          Int
+  unit            Unit           @relation(fields: [unitId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   tripDescription   String?
   airportCodeOrigin String?
@@ -580,11 +672,13 @@ model AirTravelData {
 
 // 20. Employee Commuting
 model EmployeeCommutingData {
-  id     Int    @id @default(autoincrement())
-  year   Int
-  period String
-  unitId Int
-  unit   Unit   @relation(fields: [unitId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  id              Int            @id @default(autoincrement())
+  year            Int
+  period          String
+  evidenceGroupId String?        @unique
+  evidenceGroup   EvidenceGroup? @relation(fields: [evidenceGroupId], references: [id])
+  unitId          Int
+  unit            Unit           @relation(fields: [unitId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   identifier      String?
   methodUsed      String?
@@ -609,11 +703,13 @@ model EmployeeCommutingData {
 
 // 21. Energy Generation
 model EnergyGenerationData {
-  id     Int    @id @default(autoincrement())
-  year   Int
-  period String
-  unitId Int
-  unit   Unit   @relation(fields: [unitId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  id              Int            @id @default(autoincrement())
+  year            Int
+  period          String
+  evidenceGroupId String?        @unique
+  evidenceGroup   EvidenceGroup? @relation(fields: [evidenceGroupId], references: [id])
+  unitId          Int
+  unit            Unit           @relation(fields: [unitId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   sourceDescription String?
   generationSource  String?
@@ -632,11 +728,13 @@ model EnergyGenerationData {
 
 // 22. Planted Forest
 model PlantedForestData {
-  id     Int    @id @default(autoincrement())
-  year   Int
-  period String
-  unitId Int
-  unit   Unit   @relation(fields: [unitId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  id              Int            @id @default(autoincrement())
+  year            Int
+  period          String
+  evidenceGroupId String?        @unique
+  evidenceGroup   EvidenceGroup? @relation(fields: [evidenceGroupId], references: [id])
+  unitId          Int
+  unit            Unit           @relation(fields: [unitId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   areaId      String?
   speciesName String?
@@ -659,11 +757,13 @@ model PlantedForestData {
 
 // 23. Conservation Area
 model ConservationAreaData {
-  id     Int    @id @default(autoincrement())
-  year   Int
-  period String
-  unitId Int
-  unit   Unit   @relation(fields: [unitId], references: [id], onUpdate: Cascade, onDelete: Cascade)
+  id              Int            @id @default(autoincrement())
+  year            Int
+  period          String
+  evidenceGroupId String?        @unique
+  evidenceGroup   EvidenceGroup? @relation(fields: [evidenceGroupId], references: [id])
+  unitId          Int
+  unit            Unit           @relation(fields: [unitId], references: [id], onUpdate: Cascade, onDelete: Cascade)
 
   description      String?
   biome            String?
