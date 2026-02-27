@@ -1,4 +1,4 @@
-import { supabase } from '../../../shared/bucket';
+import { getSupabase } from '../../../shared/bucket';
 import prisma from '../../../shared/database/prisma';
 import { getRegistryEntry } from '../esg.registry';
 import { v4 as uuidv4 } from 'uuid';
@@ -11,6 +11,7 @@ export class EvidenceService {
         id: number,
         files: Express.Multer.File[]
     ) {
+        const supabase = getSupabase();
         // Pega a configuração centralizada
         const { modelName } = getRegistryEntry(sourceType);
         const prismaModel = (prisma as any)[modelName];
