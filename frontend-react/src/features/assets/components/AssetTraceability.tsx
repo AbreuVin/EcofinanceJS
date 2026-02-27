@@ -2,7 +2,7 @@ import { useState, useCallback } from "react";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Upload, FileText, Trash2, FileUp } from "lucide-react";
+import { FileText, Trash2, FileUp } from "lucide-react";
 import type { UseFormReturn } from "react-hook-form";
 import type { AssetFormValues } from "../schemas/asset.schema";
 
