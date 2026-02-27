@@ -26,4 +26,16 @@ router.post(
     evidenceController.upload
 );
 
+// NOVA ROTA: Listar Evidências de um registro
+router.get(
+    '/evidence/:sourceType/:id',
+    evidenceController.getFiles
+);
+
+// NOVA ROTA: Deletar um arquivo de evidência
+router.delete(
+    '/evidence/attachment/:attachmentId',
+    evidenceController.deleteFile
+);
+
 export default router;
