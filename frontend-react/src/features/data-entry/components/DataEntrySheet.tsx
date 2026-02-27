@@ -11,6 +11,8 @@ import { normalizeSlugToType } from "../utils/module-mapping";
 import type { AssetTypology } from "@/types/AssetTypology";
 import { useParams } from "wouter";
 import { Loader2 } from "lucide-react";
+// IMPORT DO COMPONENTE DE EVIDÊNCIAS
+import { EvidenceManager } from "./EvidenceManager";
 
 interface DataEntrySheetProps {
     asset: AssetTypology;
@@ -119,33 +121,46 @@ export function DataEntrySheet({ asset, year, unitId, open, onOpenChange }: Data
                         <form onSubmit={form.handleSubmit(onSubmit)} className="flex-1 flex flex-col min-h-0">
                             <ScrollArea className="flex-1 p-6">
                                 <div className={isMensal ? "grid grid-cols-2 gap-4" : "space-y-4"}>
-                                    {periods.map((period) => (
-                                        <div key={period} className="space-y-1.5 p-3 rounded-md border bg-card/50 shadow-sm">
-                                            <div className="text-xs font-semibold text-muted-foreground uppercase tracking-tight mb-1">
-                                                {period}
+                                    {periods.map((period) => {
+                                        // BUSCAR O REGISTRO ESPECÍFICO DESTE PERÍODO PARA PASSAR O ID AO EVIDENCE MANAGER
+                                        const currentEntry = existingEntries.find(e => e.period === period);
+                                        
+                                        return (
+                                            <div key={period} className="space-y-1.5 p-3 rounded-md border bg-card/50 shadow-sm">
+                                                <div className="flex items-center justify-between mb-1">
+                                                    <div className="text-xs font-semibold text-muted-foreground uppercase tracking-tight">
+                                                        {period}
+                                                    </div>
+                                                    {/* RENDERIZAÇÃO DO COMPONENTE DE EVIDÊNCIAS */}
+                                                    <EvidenceManager 
+                                                        sourceType={moduleType!} 
+                                                        entryId={currentEntry?.id} 
+                                                        monthName={period} 
+                                                    />
+                                                </div>
+                                                <div className="space-y-2">
+                                                    <FormField
+                                                        control={form.control}
+                                                        name={`entries.${period}.consumption`}
+                                                        render={({ field }) => (
+                                                            <FormItem className="space-y-0">
+                                                                <FormControl>
+                                                                    <Input
+                                                                        type="number"
+                                                                        placeholder="0.00"
+                                                                        className="h-8 text-right [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                                                        {...field}
+                                                                        value={field.value ?? ''} // Ensure controlled input
+                                                                        onChange={e => field.onChange(e.target.valueAsNumber)}
+                                                                    />
+                                                                </FormControl>
+                                                            </FormItem>
+                                                        )}
+                                                    />
+                                                </div>
                                             </div>
-                                            <div className="space-y-2">
-                                                <FormField
-                                                    control={form.control}
-                                                    name={`entries.${period}.consumption`}
-                                                    render={({ field }) => (
-                                                        <FormItem className="space-y-0">
-                                                            <FormControl>
-                                                                <Input
-                                                                    type="number"
-                                                                    placeholder="0.00"
-                                                                    className="h-8 text-right [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                                                                    {...field}
-                                                                    value={field.value ?? ''} // Ensure controlled input
-                                                                    onChange={e => field.onChange(e.target.valueAsNumber)}
-                                                                />
-                                                            </FormControl>
-                                                        </FormItem>
-                                                    )}
-                                                />
-                                            </div>
-                                        </div>
-                                    ))}
+                                        );
+                                    })}
                                 </div>
                             </ScrollArea>
 
@@ -153,7 +168,7 @@ export function DataEntrySheet({ asset, year, unitId, open, onOpenChange }: Data
                                 <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                                     Cancelar
                                 </Button>
-                                <Button type="submit" disabled={isPending} className="min-w-[120px]">
+                                <Button type="submit" disabled={isPending} className="min-w-30">
                                     {isPending ? "Salvando..." : "Salvar Alterações"}
                                 </Button>
                             </SheetFooter>
