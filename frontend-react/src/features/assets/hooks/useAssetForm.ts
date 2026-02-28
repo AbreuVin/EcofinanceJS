@@ -7,6 +7,7 @@ interface UseAssetFormProps {
     initialData?: AssetTypology | null;
     onSubmit: (values: AssetFormValues) => Promise<void>;
     preSelectedSourceType?: string;
+    companyId?: string;
 }
 
 function parseAssetFields(fields: any): Record<string, any> {
@@ -20,12 +21,13 @@ function parseAssetFields(fields: any): Record<string, any> {
     }
 }
 
-export function useAssetForm({ initialData, onSubmit, preSelectedSourceType }: UseAssetFormProps) {
+export function useAssetForm({ initialData, onSubmit, preSelectedSourceType, companyId }: UseAssetFormProps) {
     const form = useForm<AssetFormValues>({
         resolver: zodResolver(assetFormSchema),
         // Synchronous hydration: Since the parent component uses a 'key' prop,
         // this is evaluated precisely once with the correct data already injected.
         defaultValues: {
+            companyId: initialData?.companyId || companyId || "",
             description: initialData?.description || "",
             sourceType: initialData?.sourceType || preSelectedSourceType || "",
             unitIds: initialData?.units?.map(u => u.unitId) || [],

@@ -60,8 +60,8 @@ interface AssetFormProps {
 }
 
 export function AssetForm({ initialData, onSubmit, onCancel, isLoading, preSelectedSourceType }: AssetFormProps) {
-    const { form } = useAssetForm({ initialData, onSubmit, preSelectedSourceType });
     const user = useAuthStore((state) => state.user);
+    const { form } = useAssetForm({ initialData, onSubmit, preSelectedSourceType, companyId: user?.companyId || "" });
 
     const { data: units = [], isLoading: loadingUnits } = useUnits();
     const { data: users = [], isLoading: loadingUsers } = useUsers();
@@ -94,10 +94,15 @@ export function AssetForm({ initialData, onSubmit, onCancel, isLoading, preSelec
         return users.filter((user) => selectedUnitIds.includes(Number(user.unitId)));
     }, [users, selectedUnitIds]);
 
+
     const handleSubmitWrapper = async (values: AssetFormValues) => {
+        // Garante que responsibleContactId seja null se vazio
+        const responsibleContactId = values.responsibleContactId && values.responsibleContactId !== "" ? values.responsibleContactId : null;
+        const companyId = initialData?.companyId || user?.companyId || "";
         const payload = {
             ...values,
-            companyId: initialData?.companyId || user?.companyId
+            responsibleContactId,
+            companyId
         };
         await onSubmit(payload as unknown as AssetFormValues);
     };
@@ -171,7 +176,7 @@ export function AssetForm({ initialData, onSubmit, onCancel, isLoading, preSelec
                                             ))}
                                         </SelectContent>
                                     </Select>
-                                    <FormMessage/>
+                                    <FormMessage />
                                 </FormItem>
                             )}
                         />
@@ -185,7 +190,7 @@ export function AssetForm({ initialData, onSubmit, onCancel, isLoading, preSelec
                                     <FormControl>
                                         <Input placeholder="Ex: Frota Caminhões, Caldeira 01" {...field} />
                                     </FormControl>
-                                    <FormMessage/>
+                                    <FormMessage />
                                 </FormItem>
                             )}
                         />
@@ -198,14 +203,14 @@ export function AssetForm({ initialData, onSubmit, onCancel, isLoading, preSelec
                                     <FormLabel>Frequência de Reporte</FormLabel>
                                     <Select onValueChange={field.onChange} value={field.value || ""}>
                                         <FormControl>
-                                            <SelectTrigger className="w-full"><SelectValue placeholder="Selecione..."/></SelectTrigger>
+                                            <SelectTrigger className="w-full"><SelectValue placeholder="Selecione..." /></SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
                                             <SelectItem value="mensal">Mensal</SelectItem>
                                             <SelectItem value="anual">Anual</SelectItem>
                                         </SelectContent>
                                     </Select>
-                                    <FormMessage/>
+                                    <FormMessage />
                                 </FormItem>
                             )}
                         />
@@ -274,7 +279,7 @@ export function AssetForm({ initialData, onSubmit, onCancel, isLoading, preSelec
                                                 )}
                                             </DropdownMenuContent>
                                         </DropdownMenu>
-                                        <FormMessage/>
+                                        <FormMessage />
                                     </FormItem>
                                 );
                             }}
@@ -299,7 +304,7 @@ export function AssetForm({ initialData, onSubmit, onCancel, isLoading, preSelec
                                                         : unitUsers.length === 0
                                                             ? "Nenhum usuário disponível"
                                                             : "Selecione um responsável"
-                                                }/>
+                                                } />
                                             </SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
@@ -310,7 +315,7 @@ export function AssetForm({ initialData, onSubmit, onCancel, isLoading, preSelec
                                             ))}
                                         </SelectContent>
                                     </Select>
-                                    <FormMessage/>
+                                    <FormMessage />
                                 </FormItem>
                             )}
                         />
@@ -320,7 +325,7 @@ export function AssetForm({ initialData, onSubmit, onCancel, isLoading, preSelec
                         <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-4">
                             Configuração Específica
                         </h4>
-                        <AssetDynamicFields/>
+                        <AssetDynamicFields />
                     </div>
 
                     {/* Seção de Rastreabilidade Interna */}
@@ -354,7 +359,7 @@ export function AssetForm({ initialData, onSubmit, onCancel, isLoading, preSelec
                             Cancelar
                         </Button>
                         <Button type="submit" disabled={isLoading}>
-                            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
+                            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                             {initialData ? "Atualizar" : "Salvar"}
                         </Button>
                     </div>

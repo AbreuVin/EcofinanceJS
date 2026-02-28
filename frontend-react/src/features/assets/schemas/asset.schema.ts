@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 export const assetFormSchema = z.object({
+    companyId: z.string().min(1, "Empresa é obrigatória"),
     description: z.string().min(1, "A descrição/identificação é obrigatória."),
 
     sourceType: z.string().min(1, "Selecione o tipo de fonte (Módulo ESG)."),
@@ -16,11 +17,11 @@ export const assetFormSchema = z.object({
     // Allow empty string gracefully as optional
     responsibleContactId: z.string().optional(),
 
-    // Rastreabilidade Interna (todos opcionais)
-    traceabilityResponsible: z.string().optional(),
-    traceabilityEmail: z.string().email("E-mail inválido").optional().or(z.literal("")),
-    traceabilitySector: z.string().optional(),
-    traceabilityLocation: z.string().optional(),
+    // Rastreabilidade Interna (agora obrigatórios)
+    traceabilityResponsible: z.string().min(1, "Responsável é obrigatório"),
+    traceabilityEmail: z.string().email("E-mail inválido").min(1, "E-mail é obrigatório"),
+    traceabilitySector: z.string().min(1, "Setor é obrigatório"),
+    traceabilityLocation: z.string().min(1, "Localização é obrigatória"),
     // traceabilityFiles será tratado separadamente no upload
 
     // Removed .default({}). useForm provides the default.
