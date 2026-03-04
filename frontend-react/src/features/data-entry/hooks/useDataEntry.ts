@@ -4,7 +4,6 @@ import type { EsgModuleType } from "@/types/enums";
 import { toast } from "sonner";
 
 export const dataEntryKeys = {
-    // Aceita number, null ou undefined para a chave de cache
     byContext: (module: string, unitId: number | null | undefined, year: number) =>
         ["data-entry", module, unitId, year] as const,
 };
@@ -13,7 +12,6 @@ export function useDataEntries(module: EsgModuleType, unitId: number | null | un
     return useQuery({
         queryKey: dataEntryKeys.byContext(module, unitId, year),
         queryFn: () => DataEntryService.getByContext(module, unitId, year),
-        // CORREÇÃO: Removemos '!!unitId' para permitir busca global (quando unitId é undefined)
         enabled: !!module && !!year,
     });
 }
@@ -24,7 +22,7 @@ export function useDataEntryMutation(module: EsgModuleType, unitId: number | nul
     return useMutation({
         mutationFn: async (values: {
             assetDescription: string;
-            entries: Record<string, any>; // Key is period, Value is data object
+            entries: Record<string, any>;
             existingRecords: EsgDataRecord[];
         }) => {
             const { assetDescription, entries, existingRecords } = values;
@@ -37,14 +35,12 @@ export function useDataEntryMutation(module: EsgModuleType, unitId: number | nul
                     r.sourceDescription === assetDescription
                 );
 
-                // Nota: Se unitId for undefined aqui, o backend pode rejeitar dependendo da validação.
-                // Mas isso geralmente é resolvido pelo DataEntrySheet passando o ID da unidade do Ativo, não do Filtro.
                 const payload = {
-                    ...formData,
                     year,
                     unitId,
                     period,
-                    sourceDescription: assetDescription
+                    sourceDescription: assetDescription,
+                    ...formData
                 };
 
                 if (existing) {
@@ -58,7 +54,6 @@ export function useDataEntryMutation(module: EsgModuleType, unitId: number | nul
         },
         onSuccess: () => {
             toast.success("Dados salvos com sucesso!");
-            // Invalida a query atual para forçar recarregamento
             queryClient.invalidateQueries({
                 queryKey: dataEntryKeys.byContext(module, unitId, year)
             });

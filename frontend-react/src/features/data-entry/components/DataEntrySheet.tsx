@@ -83,7 +83,7 @@ export function DataEntrySheet({ asset, year, unitId, open, onOpenChange }: Data
                     fuelType: assetConfig.fuelType,
                     vehicleType: assetConfig.vehicleType,
                     isCompanyControlled: assetConfig.isCompanyControlled === 'true' || assetConfig.isCompanyControlled === true,
-                    unitId: Number(unitId)
+                    unitId: Number(asset.units?.[0]?.unitId) || unitId
                 };
             }
         });
