@@ -4,13 +4,6 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from "@/components/ui/select";
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuCheckboxItem,
-    DropdownMenuTrigger,
-    DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu";
 import { ESG_MODULES } from "@/types/enums";
 import type { AssetTypology } from "@/types/AssetTypology";
 import type { AssetFormValues } from "../schemas/asset.schema";
@@ -136,7 +129,7 @@ export function AssetForm({ initialData, onSubmit, onCancel, isLoading, preSelec
                             >
                                 <FormControl>
                                     <SelectTrigger className="w-full">
-                                        <SelectValue placeholder="Selecione o escopo..." />
+                                        <SelectValue placeholder="Selecione o escopo..."/>
                                     </SelectTrigger>
                                 </FormControl>
                                 <SelectContent>
@@ -165,7 +158,8 @@ export function AssetForm({ initialData, onSubmit, onCancel, isLoading, preSelec
                                     >
                                         <FormControl>
                                             <SelectTrigger className="w-full">
-                                                <SelectValue placeholder={selectedScope ? "Selecione o tipo..." : "Selecione o escopo primeiro"} />
+                                                <SelectValue
+                                                    placeholder={selectedScope ? "Selecione o tipo..." : "Selecione o escopo primeiro"}/>
                                             </SelectTrigger>
                                         </FormControl>
                                         <SelectContent className="max-h-[300px]">
@@ -176,7 +170,7 @@ export function AssetForm({ initialData, onSubmit, onCancel, isLoading, preSelec
                                             ))}
                                         </SelectContent>
                                     </Select>
-                                    <FormMessage />
+                                    <FormMessage/>
                                 </FormItem>
                             )}
                         />
@@ -190,7 +184,7 @@ export function AssetForm({ initialData, onSubmit, onCancel, isLoading, preSelec
                                     <FormControl>
                                         <Input placeholder="Ex: Frota Caminhões, Caldeira 01" {...field} />
                                     </FormControl>
-                                    <FormMessage />
+                                    <FormMessage/>
                                 </FormItem>
                             )}
                         />
@@ -203,83 +197,49 @@ export function AssetForm({ initialData, onSubmit, onCancel, isLoading, preSelec
                                     <FormLabel>Frequência de Reporte</FormLabel>
                                     <Select onValueChange={field.onChange} value={field.value || ""}>
                                         <FormControl>
-                                            <SelectTrigger className="w-full"><SelectValue placeholder="Selecione..." /></SelectTrigger>
+                                            <SelectTrigger className="w-full"><SelectValue placeholder="Selecione..."/></SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
                                             <SelectItem value="mensal">Mensal</SelectItem>
                                             <SelectItem value="anual">Anual</SelectItem>
                                         </SelectContent>
                                     </Select>
-                                    <FormMessage />
+                                    <FormMessage/>
                                 </FormItem>
                             )}
                         />
 
                         <FormField
                             control={form.control}
-                            name="unitIds"
+                            name="unitIds" // Mantém o nome no plural
                             render={({ field }) => {
-                                const selectedIds: number[] = field.value || [];
-                                const selectedNames = units
-                                    .filter(u => selectedIds.includes(u.id))
-                                    .map(u => u.name);
-
-                                const toggleUnit = (unitId: number) => {
-                                    const current: number[] = field.value || [];
-                                    const next = current.includes(unitId)
-                                        ? current.filter(id => id !== unitId)
-                                        : [...current, unitId];
-                                    field.onChange(next);
-                                };
+                                // Pega apenas o primeiro valor do array (se existir) para mostrar no Select
+                                const currentValue = field.value && field.value.length > 0 ? String(field.value[0]) : "";
 
                                 return (
                                     <FormItem>
                                         <FormLabel>Unidade Empresarial</FormLabel>
-                                        <DropdownMenu>
-                                            <DropdownMenuTrigger asChild disabled={loadingUnits}>
-                                                <Button variant="outline" className="w-full justify-start font-normal">
-                                                    {selectedNames.length > 0
-                                                        ? selectedNames.length <= 2
-                                                            ? selectedNames.join(", ")
-                                                            : `${selectedNames.length} unidades selecionadas`
-                                                        : "Todas as Unidades (Global)"}
-                                                </Button>
-                                            </DropdownMenuTrigger>
-                                            <DropdownMenuContent align="start" className="w-64 max-h-64 overflow-y-auto">
-                                                <div className="px-2 py-1.5">
-                                                    <span className="text-xs font-medium text-muted-foreground">
-                                                        Selecione as unidades
-                                                    </span>
-                                                </div>
-                                                <DropdownMenuSeparator />
+                                        <Select
+                                            // Embala a escolha do usuário num array [ID]
+                                            onValueChange={(val) => field.onChange([Number(val)])}
+                                            value={currentValue}
+                                            disabled={loadingUnits}
+                                        >
+                                            <FormControl>
+                                                <SelectTrigger className="w-full">
+                                                    <SelectValue
+                                                        placeholder={loadingUnits ? "Carregando..." : "Selecione a unidade..."}/>
+                                                </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
                                                 {units.map((u) => (
-                                                    <DropdownMenuCheckboxItem
-                                                        key={u.id}
-                                                        checked={selectedIds.includes(u.id)}
-                                                        onCheckedChange={() => toggleUnit(u.id)}
-                                                        onSelect={(e) => e.preventDefault()}
-                                                    >
+                                                    <SelectItem key={u.id} value={String(u.id)}>
                                                         {u.name}
-                                                    </DropdownMenuCheckboxItem>
+                                                    </SelectItem>
                                                 ))}
-                                                {selectedIds.length > 0 && (
-                                                    <>
-                                                        <DropdownMenuSeparator />
-                                                        <div className="px-2 py-1.5">
-                                                            <Button
-                                                                variant="ghost"
-                                                                size="sm"
-                                                                className="w-full text-xs"
-                                                                onClick={() => field.onChange([])}
-                                                            >
-                                                                Limpar seleção (Global)
-                                                            </Button>
-                                                        </div>
-                                                    </>
-                                                )}
-                                            </DropdownMenuContent>
-                                        </DropdownMenu>
-                                        <FormMessage />
+                                            </SelectContent>
+                                        </Select>
+                                        <FormMessage/>
                                     </FormItem>
                                 );
                             }}
@@ -304,7 +264,7 @@ export function AssetForm({ initialData, onSubmit, onCancel, isLoading, preSelec
                                                         : unitUsers.length === 0
                                                             ? "Nenhum usuário disponível"
                                                             : "Selecione um responsável"
-                                                } />
+                                                }/>
                                             </SelectTrigger>
                                         </FormControl>
                                         <SelectContent>
@@ -315,7 +275,7 @@ export function AssetForm({ initialData, onSubmit, onCancel, isLoading, preSelec
                                             ))}
                                         </SelectContent>
                                     </Select>
-                                    <FormMessage />
+                                    <FormMessage/>
                                 </FormItem>
                             )}
                         />
@@ -325,13 +285,14 @@ export function AssetForm({ initialData, onSubmit, onCancel, isLoading, preSelec
                         <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-4">
                             Configuração Específica
                         </h4>
-                        <AssetDynamicFields />
+                        <AssetDynamicFields/>
                     </div>
 
                     {/* Seção de Rastreabilidade Interna */}
-                    <AssetTraceability form={form} />
+                    <AssetTraceability form={form}/>
 
-                    <div className="flex flex-row items-center justify-between rounded-lg border p-4 shadow-sm bg-background">
+                    <div
+                        className="flex flex-row items-center justify-between rounded-lg border p-4 shadow-sm bg-background">
                         <div className="space-y-0.5">
                             <FormLabel className="text-base">Fonte Ativa</FormLabel>
                             <FormDescription>
@@ -359,7 +320,7 @@ export function AssetForm({ initialData, onSubmit, onCancel, isLoading, preSelec
                             Cancelar
                         </Button>
                         <Button type="submit" disabled={isLoading}>
-                            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
                             {initialData ? "Atualizar" : "Salvar"}
                         </Button>
                     </div>
