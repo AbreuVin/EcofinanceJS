@@ -25,7 +25,7 @@ export function StationaryCombustionFields() {
                 render={({ field }) => (
                     <FormItem>
                         <FormLabel>Combustível Padrão</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value} required>
                             <FormControl><SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger></FormControl>
                             <SelectContent className="max-h-[200px]">
                                 {STATIONARY_FUELS.map(opt => <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>)}
@@ -60,7 +60,7 @@ export function StationaryCombustionFields() {
                 render={({ field }) => (
                     <FormItem>
                         <FormLabel>Controlado pela Empresa?</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value} required>
                             <FormControl><SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger></FormControl>
                             <SelectContent>
                                 {YES_NO_OPTIONS.map(opt => <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>)}

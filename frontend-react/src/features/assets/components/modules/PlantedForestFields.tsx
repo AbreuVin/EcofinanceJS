@@ -16,7 +16,7 @@ export function PlantedForestFields() {
                     <FormItem>
                         <FormLabel>Identificação da Área (Talhão)</FormLabel>
                         <FormControl>
-                            <Input placeholder="Ex: Talhão A - Fazenda Norte" {...field} />
+                            <Input placeholder="Ex: Talhão A - Fazenda Norte" {...field} required />
                         </FormControl>
                         <FormMessage/>
                     </FormItem>
@@ -29,7 +29,7 @@ export function PlantedForestFields() {
                 render={({ field }) => (
                     <FormItem>
                         <FormLabel>Espécie Padrão</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value} required>
                             <FormControl>
                                 <SelectTrigger><SelectValue placeholder="Selecione..."/></SelectTrigger>
                             </FormControl>

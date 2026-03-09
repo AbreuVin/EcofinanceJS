@@ -32,7 +32,7 @@ export function MobileCombustionFields() {
                             setValue("assetFields.fuelType", undefined);
                             setValue("assetFields.vehicleType", undefined);
                             setValue("assetFields.unitMeasure", undefined);
-                        }} value={field.value}>
+                        }} value={field.value} required>
                             <FormControl><SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger></FormControl>
                             <SelectContent>
                                 <SelectItem value="Consumo">Consumo (Litros/m³)</SelectItem>
@@ -50,7 +50,7 @@ export function MobileCombustionFields() {
                 render={({ field }) => (
                     <FormItem>
                         <FormLabel>Controlado pela Empresa?</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value} required>
                             <FormControl><SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger></FormControl>
                             <SelectContent>
                                 {YES_NO_OPTIONS.map(opt => (
@@ -71,7 +71,7 @@ export function MobileCombustionFields() {
                         render={({ field }) => (
                             <FormItem>
                                 <FormLabel>Combustível Padrão</FormLabel>
-                                <Select onValueChange={field.onChange} value={field.value}>
+                                <Select onValueChange={field.onChange} value={field.value} required>
                                     <FormControl><SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger></FormControl>
                                     <SelectContent className="max-h-[200px]">
                                         {MOBILE_FUELS.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
@@ -106,7 +106,7 @@ export function MobileCombustionFields() {
                     render={({ field }) => (
                         <FormItem>
                             <FormLabel>Tipo de Veículo Padrão</FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value}>
+                            <Select onValueChange={field.onChange} value={field.value} required>
                                 <FormControl><SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger></FormControl>
                                 <SelectContent className="max-h-[200px]">
                                     {VEHICLE_TYPES.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}

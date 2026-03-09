@@ -18,7 +18,7 @@ export function SolidWasteFields() {
                 render={({ field }) => (
                     <FormItem>
                         <FormLabel>Tipo de Resíduo</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value} required>
                             <FormControl><SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger></FormControl>
                             <SelectContent className="max-h-[200px]">
                                 {WASTE_TYPES.map(opt => (
@@ -37,7 +37,7 @@ export function SolidWasteFields() {
                 render={({ field }) => (
                     <FormItem>
                         <FormLabel>Destinação Final</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value} required>
                             <FormControl><SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger></FormControl>
                             <SelectContent>
                                 {WASTE_DESTINATIONS.map(opt => (
@@ -59,7 +59,7 @@ export function SolidWasteFields() {
                         <FormItem>
                             <FormLabel>Cidade/UF de destino</FormLabel>
                             <FormControl>
-                                <Input placeholder="Ex: Porto Alegre/RS" {...field} />
+                                <Input placeholder="Ex: Porto Alegre/RS" {...field} required/>
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -73,7 +73,7 @@ export function SolidWasteFields() {
                 render={({ field }) => (
                     <FormItem>
                         <FormLabel>Unidade de Peso</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value} required>
                             <FormControl><SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger></FormControl>
                             <SelectContent>
                                 {WEIGHT_UNITS.map(opt => (
@@ -93,7 +93,7 @@ export function SolidWasteFields() {
                 render={({ field }) => (
                     <FormItem>
                         <FormLabel>Controlado pela Empresa?</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value} required>
                             <FormControl><SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger></FormControl>
                             <SelectContent>
                                 {YES_NO_OPTIONS.map(opt => (

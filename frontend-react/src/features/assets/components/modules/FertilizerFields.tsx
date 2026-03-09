@@ -28,7 +28,7 @@ export function FertilizerFields() {
                 render={({ field }) => (
                     <FormItem>
                         <FormLabel>Percentual de Nitrogênio Padrão (%)</FormLabel>
-                        <FormControl><Input type="number" step="0.01" placeholder="0.00" {...field} /></FormControl>
+                        <FormControl><Input type="number" step="0.01" placeholder="0.00" {...field}  required/></FormControl>
                         <FormMessage />
                     </FormItem>
                 )}
@@ -40,7 +40,7 @@ export function FertilizerFields() {
                 render={({ field }) => (
                     <FormItem>
                         <FormLabel>Percentual de Carbonato Padrão (%)</FormLabel>
-                        <FormControl><Input type="number" step="0.01" placeholder="0.00" {...field} /></FormControl>
+                        <FormControl><Input type="number" step="0.01" placeholder="0.00" {...field}  required/></FormControl>
                         <FormMessage />
                     </FormItem>
                 )}
@@ -61,7 +61,7 @@ export function FertilizerFields() {
                 render={({ field }) => (
                     <FormItem>
                         <FormLabel>Controlado pela Empresa?</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value} required>
                             <FormControl><SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger></FormControl>
                             <SelectContent>{YES_NO_OPTIONS.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}</SelectContent>
                         </Select>

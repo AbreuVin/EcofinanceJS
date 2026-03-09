@@ -33,12 +33,12 @@ export const assetFormSchema = z.object({
             const carbonate = parseFloat(data.assetFields?.carbonatePercent ?? "0");
             const total = nitrogen + carbonate;
 
-            return total === 100;
+            return total >= 0.1 && total <= 100.0;
         }
         return true;
     },
     {
-        message: "O Percentual de Nitrogênio + Percentual de Carbonato deve ser exatamente 100%.",
+        message: "O Percentual de Nitrogênio + Percentual de Carbonato deve estar entre 0.1% e 100%.",
         path: ["assetFields"],
     }
 );

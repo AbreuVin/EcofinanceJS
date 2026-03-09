@@ -14,7 +14,7 @@ export function FugitiveEmissionsFields() {
                 render={({ field }) => (
                     <FormItem>
                         <FormLabel>Gás Padrão</FormLabel> {/* Renamed */}
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value} required>
                             <FormControl><SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger></FormControl>
                             <SelectContent className="max-h-[200px]">
                                 {GAS_TYPES.map(opt => <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>)}
@@ -31,7 +31,7 @@ export function FugitiveEmissionsFields() {
                 render={({ field }) => (
                     <FormItem>
                         <FormLabel>Controlado pela Empresa?</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value} required>
                             <FormControl><SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger></FormControl>
                             <SelectContent>
                                 {YES_NO_OPTIONS.map(opt => <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>)}

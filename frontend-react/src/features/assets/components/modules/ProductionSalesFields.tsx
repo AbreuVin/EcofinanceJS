@@ -12,7 +12,7 @@ export function ProductionSalesFields() {
                 render={({ field }) => (
                     <FormItem>
                         <FormLabel>Unidade de Medida Padrão</FormLabel>
-                        <FormControl><Input placeholder="Ex: Toneladas, Peças" {...field} /></FormControl>
+                        <FormControl><Input placeholder="Ex: Toneladas, Peças" {...field}  required/></FormControl>
                         <FormMessage />
                     </FormItem>
                 )}

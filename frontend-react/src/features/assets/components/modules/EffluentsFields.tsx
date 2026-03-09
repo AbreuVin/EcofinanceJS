@@ -26,7 +26,7 @@ export function EffluentsFields() {
                     render={({ field }) => (
                         <FormItem>
                             <FormLabel>Tipo de Trabalhador</FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value}>
+                            <Select onValueChange={field.onChange} value={field.value} required>
                                 <FormControl><SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger></FormControl>
                                 <SelectContent>
                                     {WORKER_TYPES.map(opt => <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>)}
@@ -42,7 +42,7 @@ export function EffluentsFields() {
                     render={({ field }) => (
                         <FormItem>
                             <FormLabel>Fossa séptica na propriedade da empresa?</FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value}>
+                            <Select onValueChange={field.onChange} value={field.value} required>
                                 <FormControl><SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger></FormControl>
                                 <SelectContent>
                                     {YES_NO_OPTIONS.map(opt => <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>)}
@@ -65,7 +65,7 @@ export function EffluentsFields() {
                 render={({ field }) => (
                     <FormItem>
                         <FormLabel>Tratamento ou Destino Final?</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value} required>
                             <FormControl><SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger></FormControl>
                             <SelectContent>
                                 {EFFLUENT_DESTINATION_TYPES.map(opt => <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>)}
@@ -83,7 +83,7 @@ export function EffluentsFields() {
                     render={({ field }) => (
                         <FormItem>
                             <FormLabel>Tipo de Tratamento</FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value}>
+                            <Select onValueChange={field.onChange} value={field.value} required>
                                 <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
                                 <SelectContent className="max-h-[200px]">
                                     {EFFLUENT_TREATMENT_TYPES.map(opt => <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>)}
@@ -102,7 +102,7 @@ export function EffluentsFields() {
                     render={({ field }) => (
                         <FormItem>
                             <FormLabel>Tipo de Destino Final</FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value}>
+                            <Select onValueChange={field.onChange} value={field.value} required>
                                 <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
                                 <SelectContent className="max-h-[200px]">
                                     {EFFLUENT_FINAL_DESTINATIONS.map(opt => <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>)}
@@ -121,7 +121,7 @@ export function EffluentsFields() {
                 render={({ field }) => (
                     <FormItem>
                         <FormLabel>Unidade Padrão</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value} required>
                             <FormControl><SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger></FormControl>
                             <SelectContent>
                                 {EFFLUENT_PARAMETER_UNITS.map(opt => <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>)}

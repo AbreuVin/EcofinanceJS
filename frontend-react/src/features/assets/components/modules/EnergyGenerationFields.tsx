@@ -14,7 +14,7 @@ export function EnergyGenerationFields() {
                 render={({ field }) => (
                     <FormItem>
                         <FormLabel>Fonte de Geração</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value} required>
                             <FormControl><SelectTrigger><SelectValue
                                 placeholder="Selecione..."/></SelectTrigger></FormControl>
                             <SelectContent>
@@ -34,7 +34,7 @@ export function EnergyGenerationFields() {
                 render={({ field }) => (
                     <FormItem>
                         <FormLabel>Unidade de Medida</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value} required>
                             <FormControl><SelectTrigger><SelectValue
                                 placeholder="Selecione..."/></SelectTrigger></FormControl>
                             <SelectContent>

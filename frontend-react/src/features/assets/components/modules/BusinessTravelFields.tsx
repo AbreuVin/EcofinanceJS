@@ -14,7 +14,7 @@ export function BusinessTravelFields() {
                 render={({ field }) => (
                     <FormItem>
                         <FormLabel>Tipo de Reporte</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value} required>
                             <FormControl><SelectTrigger className="w-full"><SelectValue
                                 placeholder="Selecione..."/></SelectTrigger></FormControl>
                             <SelectContent>
@@ -34,7 +34,7 @@ export function BusinessTravelFields() {
                 render={({ field }) => (
                     <FormItem>
                         <FormLabel>Reembolso de Km (Padrão)?</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value} required>
                             <FormControl><SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger></FormControl>
                             <SelectContent>
                                 {YES_NO_OPTIONS.map(opt => <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>)}
@@ -51,7 +51,7 @@ export function BusinessTravelFields() {
                 render={({ field }) => (
                     <FormItem>
                         <FormLabel>Modal Utilizado</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value} required>
                             <FormControl><SelectTrigger className="w-full"><SelectValue
                                 placeholder="Selecione..."/></SelectTrigger></FormControl>
                             <SelectContent className="max-h-[200px]">

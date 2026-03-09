@@ -24,7 +24,7 @@ export function ConservationAreaFields() {
                 render={({ field }) => (
                     <FormItem>
                         <FormLabel>Bioma</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value} required>
                             <FormControl><SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger></FormControl>
                             <SelectContent>{BIOMES.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}</SelectContent>
                         </Select>
@@ -39,7 +39,7 @@ export function ConservationAreaFields() {
                 render={({ field }) => (
                     <FormItem>
                         <FormLabel>Fitofisionomia</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value} disabled={!selectedBiome}>
+                        <Select onValueChange={field.onChange} value={field.value} disabled={!selectedBiome} required>
                             <FormControl><SelectTrigger><SelectValue placeholder="Selecione o bioma..." /></SelectTrigger></FormControl>
                             <SelectContent>{phytophysiognomies.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
                         </Select>
@@ -54,7 +54,7 @@ export function ConservationAreaFields() {
                 render={({ field }) => (
                     <FormItem>
                         <FormLabel>Área de conservação plantada?</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value} required>
                             <FormControl><SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger></FormControl>
                             <SelectContent>{YES_NO_OPTIONS.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}</SelectContent>
                         </Select>
@@ -71,7 +71,7 @@ export function ConservationAreaFields() {
                     render={({ field }) => (
                         <FormItem>
                             <FormLabel>Plantio (Detalhes)</FormLabel>
-                            <FormControl><Input placeholder="Descreva o plantio..." {...field} /></FormControl>
+                            <FormControl><Input placeholder="Descreva o plantio..." {...field}  required/></FormControl>
                             <FormMessage />
                         </FormItem>
                     )}

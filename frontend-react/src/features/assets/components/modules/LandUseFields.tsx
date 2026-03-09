@@ -24,7 +24,7 @@ export function LandUseFields() {
                 render={({ field }) => (
                     <FormItem>
                         <FormLabel>Uso do Solo Anterior (Padrão)</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value} required>
                             <FormControl><SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger></FormControl>
                             <SelectContent>
                                 {LAND_USE_PREVIOUS_TYPES.map(opt => <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>)}
@@ -43,7 +43,7 @@ export function LandUseFields() {
                         render={({ field }) => (
                             <FormItem>
                                 <FormLabel>Bioma Padrão</FormLabel>
-                                <Select onValueChange={field.onChange} value={field.value}>
+                                <Select onValueChange={field.onChange} value={field.value} required>
                                     <FormControl><SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger></FormControl>
                                     <SelectContent>{BIOMES.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}</SelectContent>
                                 </Select>
@@ -58,7 +58,7 @@ export function LandUseFields() {
                         render={({ field }) => (
                             <FormItem>
                                 <FormLabel>Fitofisionomia Padrão</FormLabel>
-                                <Select onValueChange={field.onChange} value={field.value} disabled={!selectedBiome}>
+                                <Select onValueChange={field.onChange} value={field.value} disabled={!selectedBiome} required>
                                     <FormControl><SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger></FormControl>
                                     <SelectContent>{phytophysiognomies.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
                                 </Select>
@@ -73,7 +73,7 @@ export function LandUseFields() {
                         render={({ field }) => (
                             <FormItem>
                                 <FormLabel>Tipo de Área Padrão</FormLabel>
-                                <Select onValueChange={field.onChange} value={field.value}>
+                                <Select onValueChange={field.onChange} value={field.value} required>
                                     <FormControl><SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger></FormControl>
                                     <SelectContent>{LAND_VEGETATION_TYPES.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}</SelectContent>
                                 </Select>

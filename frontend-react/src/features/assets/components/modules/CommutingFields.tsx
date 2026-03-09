@@ -14,7 +14,7 @@ export function CommutingFields() {
                 render={({ field }) => (
                     <FormItem>
                         <FormLabel>Meio Utilizado</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value} required>
                             <FormControl><SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger></FormControl>
                             <SelectContent className="max-h-[200px]">
                                 {COMMUTING_MODES.map(opt => <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>)}
@@ -31,7 +31,7 @@ export function CommutingFields() {
                 render={({ field }) => (
                     <FormItem>
                         <FormLabel>Forma de Reporte Padrão</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value} required>
                             <FormControl><SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger></FormControl>
                             <SelectContent>
                                 {COMMUTING_REPORT_TYPES.map(opt => <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>)}

@@ -22,7 +22,7 @@ export function PurchasedGoodsFields() {
                 render={({ field }) => (
                     <FormItem>
                         <FormLabel>Tipo (Produto ou Serviço) Padrão</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value || "Serviço"}>
+                        <Select onValueChange={field.onChange} value={field.value || "Serviço"} required>
                             <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
                             <SelectContent>{PURCHASE_TYPES.map(opt => <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>)}</SelectContent>
                         </Select>
@@ -38,7 +38,7 @@ export function PurchasedGoodsFields() {
                     render={({ field }) => (
                         <FormItem>
                             <FormLabel>Unidade de Medida Padrão</FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value}>
+                            <Select onValueChange={field.onChange} value={field.value} required>
                                 <FormControl><SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger></FormControl>
                                 <SelectContent>{PURCHASE_UNITS.map(opt => <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>)}</SelectContent>
                             </Select>
@@ -54,7 +54,7 @@ export function PurchasedGoodsFields() {
                 render={({ field }) => (
                     <FormItem>
                         <FormLabel>Bens comprados por terceiros?</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value} required>
                             <FormControl><SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger></FormControl>
                             <SelectContent>{YES_NO_OPTIONS.map(opt => <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>)}</SelectContent>
                         </Select>

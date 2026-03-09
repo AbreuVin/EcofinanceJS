@@ -17,7 +17,7 @@ export function ElectricityFields() {
                 render={({ field }) => (
                     <FormItem>
                         <FormLabel>Fonte de Energia (Descrição)</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value} required>
                             <FormControl><SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger></FormControl>
                             <SelectContent>
                                 {ELECTRICITY_SOURCE_TYPES.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
@@ -35,7 +35,7 @@ export function ElectricityFields() {
                     render={({ field }) => (
                         <FormItem>
                             <FormLabel>Especificar Fonte Padrão</FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value}>
+                            <Select onValueChange={field.onChange} value={field.value} required>
                                 <FormControl><SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger></FormControl>
                                 <SelectContent>
                                     {GENERATION_SOURCES.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}
@@ -54,7 +54,7 @@ export function ElectricityFields() {
                 render={({ field }) => (
                     <FormItem>
                         <FormLabel>Unidade de Medida Padrão</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value} required>
                             <FormControl><SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger></FormControl>
                             <SelectContent>
                                 {ELECTRICITY_UNITS.map(u => <SelectItem key={u.value} value={u.value}>{u.label}</SelectItem>)}

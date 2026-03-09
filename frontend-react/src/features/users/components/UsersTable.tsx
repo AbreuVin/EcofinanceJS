@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import type { User } from "@/types/User";
+import { useAuthStore } from "@/store/authStore.ts";
 
 interface UsersTableProps {
     columns: ColumnDef<User, unknown>[];
@@ -134,6 +135,14 @@ function ColumnFilter({
 }
 
 export function UsersTable({ columns, data, isLoading }: UsersTableProps) {
+    const currentUser = useAuthStore((state) => state.user);
+    const isMaster = currentUser?.role === "MASTER";
+
+    const visibleData = useMemo(() => {
+        if (isMaster) return data;
+        return data.filter((u) => u.role !== "MASTER");
+    }, [data, isMaster]);
+
     const [columnFilters, setColumnFilters] = useState<Record<FilterableColumn, string[]>>({
         role: [],
         // "unit.name": [], // Oculto a pedido do cliente
@@ -149,7 +158,7 @@ export function UsersTable({ columns, data, isLoading }: UsersTableProps) {
 
     // Filter data based on selected filters
     const filteredData = useMemo(() => {
-        return data.filter((item) => {
+        return visibleData.filter((item) => {
             return FILTERABLE_COLUMNS.every((columnId) => {
                 const selectedValues = columnFilters[columnId];
                 if (selectedValues.length === 0) return true;
@@ -157,7 +166,7 @@ export function UsersTable({ columns, data, isLoading }: UsersTableProps) {
                 return selectedValues.includes(value);
             });
         });
-    }, [data, columnFilters]);
+    }, [visibleData, columnFilters]);
 
     // Check if any filters are active
     const hasActiveFilters = Object.values(columnFilters).some((values) => values.length > 0);
