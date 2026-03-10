@@ -50,7 +50,7 @@ export function PermissionsMatrix({ value = [], onChange }: PermissionsMatrixPro
                                 checked={value.includes(mod.value)}
                                 onCheckedChange={(checked) => handleToggle(mod.value, !!checked)}
                             />
-                            <Label htmlFor={`perm-${mod.value}`} className="font-normal cursor-pointer text-muted-foreground">
+                            <Label htmlFor={`perm-${mod.value}`} className="font-normal cursor-pointer">
                                 {mod.label}
                             </Label>
                         </div>

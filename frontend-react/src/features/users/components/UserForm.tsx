@@ -88,6 +88,19 @@ export function UserForm({ initialData, onSubmit, onCancel, isLoading }: UserFor
         }
     }, [initialData, form]);
 
+    const handleFormSubmit = async (values: any) => {
+        const payload = { ...values };
+
+        // Remove o ID falso gerado pelo Zod/React Hook Form.
+        // Ao deletar a chave, o Axios não a envia, e o Prisma backend
+        // apenas ignora a atualização da coluna, evitando o erro de Foreign Key.
+        if (payload.unitId === 0 || !payload.unitId) {
+            delete payload.unitId;
+        }
+
+        await onSubmit(payload);
+    };
+
     return (
         <div className="bg-card p-6 rounded-md border shadow-sm mb-6">
             <h3 className="text-lg font-semibold mb-4">
@@ -95,7 +108,7 @@ export function UserForm({ initialData, onSubmit, onCancel, isLoading }: UserFor
             </h3>
 
             <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-4">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <FormField
                             control={form.control}
@@ -155,7 +168,9 @@ export function UserForm({ initialData, onSubmit, onCancel, isLoading }: UserFor
                                         </FormControl>
                                         <SelectContent>
                                             <SelectItem value="USER">Usuário Padrão</SelectItem>
-                                            <SelectItem value="ADMIN">Administrador</SelectItem>
+                                            {isMaster && (
+                                                <SelectItem value="ADMIN">Administrador</SelectItem>
+                                            )}
                                             {initialData?.role === "MASTER" && (
                                                 <SelectItem value="MASTER">Master</SelectItem>
                                             )}

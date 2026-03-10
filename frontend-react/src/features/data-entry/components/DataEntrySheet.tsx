@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter, SheetDescription } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
 import { Form, FormField, FormItem, FormControl } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -94,10 +94,6 @@ export function DataEntrySheet({ asset, year, unitId, open, onOpenChange }: Data
         });
     };
 
-    useEffect(() => {
-        console.log(asset);
-    }, [asset]);
-
     const isMensal = asset.reportingFrequency?.toLowerCase() === "mensal";
     const periods = isMensal ? MONTHS : ["Annual"];
 
@@ -106,6 +102,9 @@ export function DataEntrySheet({ asset, year, unitId, open, onOpenChange }: Data
             <SheetContent className="sm:max-w-xl w-full flex flex-col h-full p-0" side="right">
                 <SheetHeader className="px-6 py-4 border-b shrink-0">
                     <SheetTitle>{asset.description} <span className="text-muted-foreground font-normal">({year})</span></SheetTitle>
+                    <SheetDescription className="sr-only">
+                        Formulário para reporte de dados mensais ou anuais da fonte de emissão.
+                    </SheetDescription>
                     <div className="text-xs text-muted-foreground bg-muted/50 p-2 rounded flex items-center gap-2">
                         <span className="font-semibold uppercase tracking-wider">{isMensal ? "Mensal" : "Anual"}</span>
                         <span>•</span>

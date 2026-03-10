@@ -1,7 +1,7 @@
 import { useFormContext } from "react-hook-form";
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { GAS_TYPES, YES_NO_OPTIONS } from "../../constants/esg-options";
+import { GAS_TYPES } from "../../constants/esg-options";
 
 export function FugitiveEmissionsFields() {
     const form = useFormContext();
@@ -25,22 +25,6 @@ export function FugitiveEmissionsFields() {
                 )}
             />
 
-            <FormField
-                control={form.control}
-                name="assetFields.isCompanyControlled"
-                render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>Controlado pela Empresa?</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value} required>
-                            <FormControl><SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger></FormControl>
-                            <SelectContent>
-                                {YES_NO_OPTIONS.map(opt => <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>)}
-                            </SelectContent>
-                        </Select>
-                        <FormMessage />
-                    </FormItem>
-                )}
-            />
         </div>
     );
 }

@@ -1,8 +1,8 @@
 import { useFormContext, useWatch } from "react-hook-form";
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { WASTE_TYPES, WASTE_DESTINATIONS, WEIGHT_UNITS, YES_NO_OPTIONS } from "../../constants/esg-options";
+import { WASTE_DESTINATIONS, WASTE_TYPES, WEIGHT_UNITS } from "../../constants/esg-options";
 
 export function SolidWasteFields() {
     const { control } = useFormContext();
@@ -86,25 +86,6 @@ export function SolidWasteFields() {
                 )}
             />
 
-            {/* Novo Campo: Controlado pela Empresa */}
-            <FormField
-                control={control}
-                name="assetFields.isCompanyControlled"
-                render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>Controlado pela Empresa?</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value} required>
-                            <FormControl><SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger></FormControl>
-                            <SelectContent>
-                                {YES_NO_OPTIONS.map(opt => (
-                                    <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                                ))}
-                            </SelectContent>
-                        </Select>
-                        <FormMessage />
-                    </FormItem>
-                )}
-            />
         </div>
     );
 }

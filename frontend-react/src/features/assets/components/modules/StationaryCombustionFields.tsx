@@ -1,8 +1,8 @@
 import { useFormContext, useWatch } from "react-hook-form"; // Added useWatch
 import { useEffect } from "react"; // Added useEffect
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { STATIONARY_FUELS, STATIONARY_UNITS, YES_NO_OPTIONS, FUEL_UNIT_MAP } from "../../constants/esg-options";
+import { FUEL_UNIT_MAP, STATIONARY_FUELS, STATIONARY_UNITS } from "../../constants/esg-options";
 
 export function StationaryCombustionFields() {
     const { control, setValue } = useFormContext();
@@ -46,24 +46,6 @@ export function StationaryCombustionFields() {
                             <FormControl><SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger></FormControl>
                             <SelectContent>
                                 {STATIONARY_UNITS.map(opt => <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>)}
-                            </SelectContent>
-                        </Select>
-                        <FormMessage />
-                    </FormItem>
-                )}
-            />
-
-            {/* NEW FIELD: Controlado pela empresa */}
-            <FormField
-                control={control}
-                name="assetFields.isCompanyControlled"
-                render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>Controlado pela Empresa?</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value} required>
-                            <FormControl><SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger></FormControl>
-                            <SelectContent>
-                                {YES_NO_OPTIONS.map(opt => <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>)}
                             </SelectContent>
                         </Select>
                         <FormMessage />

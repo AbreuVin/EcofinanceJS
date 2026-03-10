@@ -1,12 +1,8 @@
 import { useFormContext, useWatch } from "react-hook-form";
 import { useEffect } from "react";
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import {
-    MOBILE_FUELS,
-    MOBILE_FUEL_UNITS_MAP,
-    VEHICLE_TYPES, YES_NO_OPTIONS
-} from "../../constants/esg-options";
+import { MOBILE_FUEL_UNITS_MAP, MOBILE_FUELS, VEHICLE_TYPES } from "../../constants/esg-options";
 
 export function MobileCombustionFields() {
     const { control, setValue } = useFormContext();
@@ -37,25 +33,6 @@ export function MobileCombustionFields() {
                             <SelectContent>
                                 <SelectItem value="Consumo">Consumo (Litros/m³)</SelectItem>
                                 <SelectItem value="Distância">Distância (km)</SelectItem>
-                            </SelectContent>
-                        </Select>
-                        <FormMessage />
-                    </FormItem>
-                )}
-            />
-
-            <FormField
-                control={control}
-                name="assetFields.isCompanyControlled"
-                render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>Controlado pela Empresa?</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value} required>
-                            <FormControl><SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger></FormControl>
-                            <SelectContent>
-                                {YES_NO_OPTIONS.map(opt => (
-                                    <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                                ))}
                             </SelectContent>
                         </Select>
                         <FormMessage />

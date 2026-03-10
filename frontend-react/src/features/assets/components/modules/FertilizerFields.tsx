@@ -1,8 +1,6 @@
 import { useFormContext, useWatch } from "react-hook-form";
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { YES_NO_OPTIONS } from "../../constants/esg-options";
 
 export function FertilizerFields() {
     const form = useFormContext();
@@ -55,20 +53,6 @@ export function FertilizerFields() {
                 </p>
             </div>
 
-            <FormField
-                control={form.control}
-                name="assetFields.isCompanyControlled"
-                render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>Controlado pela Empresa?</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value} required>
-                            <FormControl><SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger></FormControl>
-                            <SelectContent>{YES_NO_OPTIONS.map(o => <SelectItem key={o.value} value={o.value}>{o.label}</SelectItem>)}</SelectContent>
-                        </Select>
-                        <FormMessage />
-                    </FormItem>
-                )}
-            />
         </div>
     );
 }
