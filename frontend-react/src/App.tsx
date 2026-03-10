@@ -5,7 +5,7 @@ import { useAuthStore } from "@/store/authStore";
 
 import LoginPage from "@/shared/pages/LoginPage";
 import HomePage from "@/shared/pages/HomePage";
-import { RequireAuth } from "@/shared/components/RequireAuth";
+import { AuthGuard } from "@/shared/components/guards/AuthGuard.tsx";
 import { Toaster } from "@/components/ui/sonner.tsx";
 import CompaniesPage from "@/features/companies/pages/CompaniesPage.tsx";
 import UnitsPage from "@/features/units/pages/UnitPage.tsx";
@@ -13,6 +13,9 @@ import UsersPage from "./features/users/pages/UsersPage";
 import AssetsPage from "./features/assets/pages/AssetsPage";
 import DataEntryPage from "@/features/data-entry/pages/DataEntryPage.tsx";
 import ReportsLandingPage from "@/features/data-entry/pages/ReportsLandingPage.tsx";
+import { MasterGuard } from "@/shared/components/guards/MasterGuard.tsx";
+import AuditCompaniesPage from "@/features/audit/pages/AuditCompaniesPage.tsx";
+import AuditUnitsPage from "@/features/audit/pages/AuditUnitsPage.tsx";
 
 const queryClient = new QueryClient();
 
@@ -30,63 +33,75 @@ function App() {
                     <Route path="/" component={LoginPage}/>
 
                     <Route path="/home">
-                        <RequireAuth>
+                        <AuthGuard>
                             <HomePage/>
-                        </RequireAuth>
+                        </AuthGuard>
                     </Route>
 
                     <Route path="/managers/companies">
-                        <RequireAuth>
+                        <AuthGuard>
                             <CompaniesPage/>
-                        </RequireAuth>
+                        </AuthGuard>
                     </Route>
 
                     <Route path="/managers/units">
-                        <RequireAuth>
+                        <AuthGuard>
                             <UnitsPage/>
-                        </RequireAuth>
+                        </AuthGuard>
                     </Route>
 
                     <Route path="/managers/users">
-                        <RequireAuth>
+                        <AuthGuard>
                             <UsersPage/>
-                        </RequireAuth>
+                        </AuthGuard>
                     </Route>
 
                     <Route path="/managers/sources">
-                        <RequireAuth>
-                            <AssetsPage />
-                        </RequireAuth>
+                        <AuthGuard>
+                            <AssetsPage/>
+                        </AuthGuard>
                     </Route>
 
                     <Route path="/managers/sources/:module">
                         {(_params) => (
-                            <RequireAuth>
-                                <AssetsPage />
-                            </RequireAuth>
+                            <AuthGuard>
+                                <AssetsPage/>
+                            </AuthGuard>
                         )}
                     </Route>
 
                     <Route path="/data-entry/:module">
                         {(_params) => (
-                            <RequireAuth>
+                            <AuthGuard>
                                 <DataEntryPage/>
-                            </RequireAuth>
+                            </AuthGuard>
                         )}
                     </Route>
 
                     <Route path="/reports">
-                        <RequireAuth>
-                            <ReportsLandingPage />
-                        </RequireAuth>
+                        <AuthGuard>
+                            <ReportsLandingPage/>
+                        </AuthGuard>
                     </Route>
 
                     <Route path="/reports/:module">
                         {(_params) => (
-                            <RequireAuth>
+                            <AuthGuard>
                                 <DataEntryPage/>
-                            </RequireAuth>
+                            </AuthGuard>
                         )}
+                    </Route>
+
+                    <Route path="/admin/companies">
+                        <MasterGuard>
+                            <AuditCompaniesPage/>
+                        </MasterGuard>
+                    </Route>
+
+                    <Route path="/admin/companies/:companyId/units">
+                        <MasterGuard>
+                            <AuditUnitsPage />
+                        </MasterGuard>
                     </Route>
 
                     <Route>404 - Not Found</Route>

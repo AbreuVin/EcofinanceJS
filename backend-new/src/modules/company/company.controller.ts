@@ -6,6 +6,14 @@ export const list = async (req: Request, res: Response) => {
     res.json(result);
 };
 
+export const listAdmin = async (req: Request, res: Response) => {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+
+    const result = await companyService.getPaginatedAdmin(page, limit);
+    res.json(result);
+};
+
 export const create = async (req: Request, res: Response) => {
     const result = await companyService.create(req.body);
     res.status(201).json(result);

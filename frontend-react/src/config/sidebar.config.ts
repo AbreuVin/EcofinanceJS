@@ -1,4 +1,5 @@
 import {
+    Book,
     Building,
     Building2,
     FilePlusCorner,
@@ -44,6 +45,12 @@ export const sidebarConfig = {
             title: "Empresas",
             url: "/managers/companies", // Matches 'units' case in useManagerConfig
             icon: Building,
+            allowedRoles: [UserRole.MASTER],
+        },
+        {
+            title: "Auditoria de Clientes",
+            url: "/admin/companies",
+            icon: Book,
             allowedRoles: [UserRole.MASTER],
         },
 
