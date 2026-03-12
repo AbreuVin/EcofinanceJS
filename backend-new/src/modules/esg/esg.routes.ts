@@ -3,36 +3,35 @@ import multer from 'multer';
 import { authenticate } from '../../shared/middleware/authMiddleware';
 import * as esgController from './esg.controller';
 import * as evidenceController from './evidence/evidence.controller';
+import { requireMaster } from "../../shared/middleware/roleMiddlewares";
 
 const router = Router();
 const upload = multer({
     storage: multer.memoryStorage(),
-    limits: { fileSize: 10 * 1024 * 1024 } // Limite de 10MB por arquivo
+    limits: { fileSize: 10 * 1024 * 1024 }
 });
 
 router.use(authenticate);
 
-// Rotas de Dados Existentes
+router.get('/admin/:sourceType/units/:unitId/reports', requireMaster, esgController.listAdminReports);
+router.get('/admin/:sourceType/reports/:id', requireMaster, esgController.getAdminReportDetail);
+
 router.get('/:sourceType', esgController.list);
 router.post('/:sourceType', esgController.create);
 router.put('/:sourceType/:id', esgController.update);
 router.delete('/:sourceType/:id', esgController.remove);
 
-// NOVA ROTA: Upload de Evidências
-// O front deve chamar: POST /managers/esg/evidence/mobile_combustion/123
 router.post(
     '/evidence/:sourceType/:id',
     upload.array('files'),
     evidenceController.upload
 );
 
-// NOVA ROTA: Listar Evidências de um registro
 router.get(
     '/evidence/:sourceType/:id',
     evidenceController.getFiles
 );
 
-// NOVA ROTA: Deletar um arquivo de evidência
 router.delete(
     '/evidence/attachment/:attachmentId',
     evidenceController.deleteFile

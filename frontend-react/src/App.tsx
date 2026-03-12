@@ -16,6 +16,7 @@ import ReportsLandingPage from "@/features/data-entry/pages/ReportsLandingPage.t
 import { MasterGuard } from "@/shared/components/guards/MasterGuard.tsx";
 import AuditCompaniesPage from "@/features/audit/pages/AuditCompaniesPage.tsx";
 import AuditUnitsPage from "@/features/audit/pages/AuditUnitsPage.tsx";
+import AuditReportsPage from "@/features/audit/pages/AuditReportsPage.tsx";
 
 const queryClient = new QueryClient();
 
@@ -101,6 +102,12 @@ function App() {
                     <Route path="/admin/companies/:companyId/units">
                         <MasterGuard>
                             <AuditUnitsPage />
+                        </MasterGuard>
+                    </Route>
+
+                    <Route path="/admin/units/:unitId/reports">
+                        <MasterGuard>
+                            <AuditReportsPage />
                         </MasterGuard>
                     </Route>
 

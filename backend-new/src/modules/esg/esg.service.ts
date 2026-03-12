@@ -2,6 +2,8 @@ import { ZodSchema } from 'zod';
 
 export interface PrismaDelegate<T> {
     findMany(args?: any): Promise<T[]>;
+    findUnique(args?: any): Promise<T | null>;
+    count(args?: any): Promise<number>;
     create(args: { data: any }): Promise<T>;
     update(args: { where: any; data: any }): Promise<T>;
     delete(args: { where: any }): Promise<T>;
@@ -28,6 +30,32 @@ export class EsgGenericService<T> {
             where,
             orderBy: { createdAt: 'desc' },
             include: { unit: true }
+        });
+    }
+
+    async getPaginatedAdminByUnit(unitId: number, page: number, limit: number) {
+        const skip = (page - 1) * limit;
+        const where = { unitId };
+
+        const [data, total] = await Promise.all([
+            this.delegate.findMany({
+                where,
+                skip,
+                take: limit,
+                orderBy: { year: 'desc' } // Ordena pelo ano de reporte
+            }),
+            this.delegate.count({ where })
+        ]);
+
+        return {
+            data,
+            meta: { total, page, limit, totalPages: Math.ceil(total / limit) }
+        };
+    }
+
+    async getById(id: number) {
+        return this.delegate.findUnique({
+            where: { id }
         });
     }
 

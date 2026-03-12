@@ -16,6 +16,27 @@ export const list = async (req: Request, res: Response) => {
     res.json(data);
 };
 
+export const listAdminReports = async (req: Request, res: Response) => {
+    const { sourceType, unitId } = req.params;
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 10;
+
+    const { service } = getRegistryEntry(sourceType);
+
+    const data = await service.getPaginatedAdminByUnit(Number(unitId), page, limit);
+    res.json(data);
+};
+
+export const getAdminReportDetail = async (req: Request, res: Response) => {
+    const { sourceType, id } = req.params;
+    const { service } = getRegistryEntry(sourceType);
+
+    const data = await service.getById(Number(id));
+    if (!data) return res.status(404).json({ message: 'Reporte não encontrado' });
+
+    res.json(data);
+};
+
 export const create = async (req: Request, res: Response) => {
     const { sourceType } = req.params;
     const { service, schema } = getRegistryEntry(sourceType as string);
