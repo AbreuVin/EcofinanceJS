@@ -5,9 +5,10 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowLeft, FileText, Loader2 } from "lucide-react";
+import { ArrowLeft, Download, FileText, Loader2 } from "lucide-react";
 import { useAdminReports } from "@/features/audit/hook/useAdminReports.ts";
 import { ESG_MODULES } from "@/types/enums.ts";
+import { exportToExcel } from "@/features/audit/utils/exportToExcel";
 
 import { useAssets } from "@/features/assets/hooks/useAssets";
 
@@ -96,6 +97,17 @@ const AuditReportsPage = () => {
         setPage(1);
     };
 
+    const handleExportExcel = () => {
+        if (!reports.length || dynamicColumns.length === 0) return;
+        const moduleName = activeModules.find(m => m.value === sourceType)?.label || sourceType;
+        exportToExcel({
+            data: reports,
+            columns: dynamicColumns.map(col => ({ key: col, header: translateColumn(col) })),
+            fileName: `reportes_${moduleName.replace(/\s+/g, "_").toLowerCase()}`,
+            sheetName: moduleName,
+        });
+    };
+
     return (
         <DashboardLayout>
             <div className="flex flex-col h-full space-y-4 p-4 md:p-8 pt-6 bg-background">
@@ -118,6 +130,16 @@ const AuditReportsPage = () => {
                                 Visão completa de todos os dados lançados.
                             </p>
                         </div>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={handleExportExcel}
+                            disabled={isLoading || reports.length === 0}
+                            className="gap-2"
+                        >
+                            <Download className="h-4 w-4" />
+                            Exportar Excel
+                        </Button>
                     </div>
                 </div>
 
