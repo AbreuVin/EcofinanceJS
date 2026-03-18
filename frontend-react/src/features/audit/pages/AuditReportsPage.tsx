@@ -12,22 +12,31 @@ import { exportToExcel } from "@/features/audit/utils/exportToExcel";
 
 import { useAssets } from "@/features/assets/hooks/useAssets";
 
-const HIDDEN_COLUMNS = ['id', 'unitId', 'createdAt', 'updatedAt', 'unit', 'evidence', 'evidenceGroupId'];
+const HIDDEN_COLUMNS = [
+    'id', 'unitId', 'createdAt', 'updatedAt', 'unit',
+    'evidence', 'evidenceGroupId', 'assetFields',
+    'consumptionUnit', 'distanceUnit' // <-- Adicionamos estes dois!
+];
 
 // --- DICIONÁRIO DE TRADUÇÃO (MAPPER) ---
 const COLUMN_TRANSLATIONS: Record<string, string> = {
     year: "Ano",
     period: "Período",
     sourceDescription: "Fonte Emissora",
+    inputType: "Tipo de Entrada",
     fuelType: "Combustível / Fonte",
     consumption: "Consumo",
-    unitMeasure: "Unidade de Medida",
+    consumptionUnit: "Unid. de Consumo",
+    unitMeasure: "Unidade de Medida", // Injetado pelo Asset
+    reportType: "Tipo de Relatório",  // Injetado pelo Asset
     isCompanyControlled: "Controle da Empresa",
     distance: "Distância",
+    distanceUnit: "Unid. de Distância",
     quantity: "Quantidade",
     vehicleType: "Tipo de Veículo",
     gasType: "Tipo de Gás",
     quantityReplaced: "Qtd. Reposta",
+    comments: "Observações",
 };
 
 const translateColumn = (key: string) => {
@@ -52,8 +61,6 @@ const AuditReportsPage = () => {
     const activeModules = useMemo(() => {
         if (!assets || assets.length === 0) return [];
 
-        // Aqui pegamos todos os sourceTypes únicos que existem nos assets
-        // (Se quiser ser extremamente rigoroso, pode filtrar os assets onde a unidade é igual ao unitId)
         const registeredSourceTypes = new Set(assets.map(a => a.sourceType));
 
         return ESG_MODULES.filter(mod => registeredSourceTypes.has(mod.value));
@@ -71,16 +78,60 @@ const AuditReportsPage = () => {
     const { data: response, isLoading: isLoadingReports } = useAdminReports(sourceType, unitId, page, limit);
 
     const isLoading = isLoadingAssets || isLoadingReports;
-    const reports: Record<string, any>[] = response?.data || [];
+
+    // Pegamos os dados crus para poder fazer o merge com os assets
+    const rawReports: Record<string, any>[] = response?.data || [];
     const meta = response?.meta;
 
-    const dynamicColumns = useMemo(() => {
-        if (reports.length === 0) return [];
+    // --- MÁGICA 3: ENRIQUECIMENTO DE DADOS (Injeta os campos do Asset no Reporte) ---
+    const reports = useMemo(() => {
+        if (!rawReports.length) return [];
 
-        const allKeys = Object.keys(reports[0]);
+        return rawReports.map(report => {
+            const matchedAsset = assets?.find(
+                a => a.description === report.sourceDescription && a.sourceType === sourceType
+            );
+
+            let parsedFields: any = {};
+            if (matchedAsset && matchedAsset.assetFields) {
+                try {
+                    parsedFields = typeof matchedAsset.assetFields === 'string'
+                        ? JSON.parse(matchedAsset.assetFields)
+                        : matchedAsset.assetFields;
+                } catch (e) {
+                    console.error("Erro ao extrair assetFields do ativo", e);
+                }
+            }
+
+            // UNIFICAÇÃO DE MEDIDAS:
+            // Tenta pegar a unidade do próprio reporte primeiro (consumo ou distância).
+            // Se não tiver, puxa a unidade cadastrada lá no Ativo (parsedFields).
+            const unifiedUnitMeasure = report.consumptionUnit || report.distanceUnit || parsedFields.unitMeasure || null;
+
+            return {
+                ...parsedFields,
+                ...report,
+                unitMeasure: unifiedUnitMeasure // <-- Sobrescreve garantindo uma única coluna preenchida!
+            };
+        });
+    }, [rawReports, assets, sourceType]);
+
+
+    const dynamicColumns = useMemo(() => {
+        if (!reports || reports.length === 0) return [];
+
+        // 1. Coleta TODAS as chaves únicas de TODOS os reportes da página (inclusive as injetadas)
+        const keySet = new Set<string>();
+        reports.forEach(report => {
+            Object.keys(report).forEach(key => keySet.add(key));
+        });
+        const allKeys = Array.from(keySet);
+
+        // 2. Remove as colunas que queremos esconder
         const visibleKeys = allKeys.filter(key => !HIDDEN_COLUMNS.includes(key));
 
-        const priority = ['year', 'period'];
+        // 3. Ordena dando prioridade para ano, período e fonte
+        const priority = ['year', 'period', 'sourceDescription'];
 
         return visibleKeys.sort((a, b) => {
             const indexA = priority.indexOf(a);
@@ -194,7 +245,7 @@ const AuditReportsPage = () => {
                                     </TableRow>
                                 ))
                             ) : reports.length > 0 ? (
-                                reports.map((report) => (
+                                reports.map((report: any) => (
                                     <TableRow key={report.id} className="hover:bg-muted/50 transition-colors">
                                         {dynamicColumns.map(col => {
                                             let displayValue = report[col];

@@ -21,7 +21,6 @@ export const useAdminReportDetail = (sourceType: string, reportId: number | null
     return useQuery({
         queryKey: adminReportKeys.detail(sourceType, reportId),
         queryFn: () => AdminReportService.getDetail(sourceType, reportId as number),
-        // Task 4.6: O "Pulo do Gato". A query só dispara se existir um reportId! (Lazy fetch)
         enabled: !!reportId && !!sourceType,
     });
 };
