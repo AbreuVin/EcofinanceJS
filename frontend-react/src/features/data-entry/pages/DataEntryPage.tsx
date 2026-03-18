@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
-import { useParams } from "wouter";
-import { Loader2 } from "lucide-react";
+import { useLocation, useParams } from "wouter";
+import { ArrowLeft, Loader2 } from "lucide-react";
 import DashboardLayout from "@/shared/layouts/DashboardLayout";
 import { useAssets } from "@/features/assets/hooks/useAssets";
 import { useDataEntries } from "../hooks/useDataEntry";
@@ -11,6 +11,7 @@ import { getModuleLabel, normalizeSlugToType } from "../utils/module-mapping";
 import type { AssetTypology } from "@/types/AssetTypology";
 
 export default function DataEntryPage() {
+    const [, setLocation] = useLocation();
     const params = useParams();
     const moduleSlug = params.module || "";
     const moduleType = normalizeSlugToType(moduleSlug);
@@ -88,6 +89,13 @@ export default function DataEntryPage() {
     return (
         <DashboardLayout>
             <div className="space-y-6 container mx-auto max-w-8xl flex flex-col h-[calc(100vh-4rem)]">
+                <button
+                    onClick={() => setLocation("/reports")}
+                    className="flex items-center text-xs text-muted-foreground hover:text-primary hover:cursor-pointer transition-colors w-fit"
+                >
+                    <ArrowLeft className="h-3 w-3 mr-1" />
+                    Voltar para Reportes
+                </button>
                 <div className="flex flex-col sm:flex-row justify-between items-start gap-4 border-b pb-4">
                     <div>
                         <h1 className="text-2xl font-bold">{getModuleLabel(moduleType)}</h1>
