@@ -13,7 +13,7 @@ export class EsgGenericService<T> {
     constructor(
         private delegate: PrismaDelegate<T>,
         private schema: ZodSchema
-    ) {}
+    ) { }
 
     async getByUnitAndYear(unitId?: number, year?: number) {
         const where: any = {};
@@ -51,6 +51,14 @@ export class EsgGenericService<T> {
             data,
             meta: { total, page, limit, totalPages: Math.ceil(total / limit) }
         };
+    }
+
+    async getAllByCompany(companyId: string) {
+        return this.delegate.findMany({
+            where: { unit: { companyId } },
+            orderBy: { year: 'desc' },
+            include: { unit: { select: { id: true, name: true } } }
+        });
     }
 
     async getById(id: number) {

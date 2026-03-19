@@ -53,8 +53,8 @@ interface AssetFormProps {
 }
 
 export function AssetForm({ initialData, onSubmit, onCancel, isLoading, preSelectedSourceType }: AssetFormProps) {
+    const { form } = useAssetForm({ initialData, onSubmit, preSelectedSourceType });
     const user = useAuthStore((state) => state.user);
-    const { form } = useAssetForm({ initialData, onSubmit, preSelectedSourceType, companyId: user?.companyId || "" });
 
     const { data: units = [], isLoading: loadingUnits } = useUnits();
     const { data: users = [], isLoading: loadingUsers } = useUsers();
@@ -91,10 +91,13 @@ export function AssetForm({ initialData, onSubmit, onCancel, isLoading, preSelec
     const handleSubmitWrapper = async (values: AssetFormValues) => {
         // Garante que responsibleContactId seja null se vazio
         const responsibleContactId = values.responsibleContactId && values.responsibleContactId !== "" ? values.responsibleContactId : null;
+        // Garante que assetFields seja string
+        const assetFields = typeof values.assetFields === "string" ? values.assetFields : JSON.stringify(values.assetFields);
         const companyId = initialData?.companyId || user?.companyId || "";
         const payload = {
             ...values,
             responsibleContactId,
+            assetFields,
             companyId
         };
         await onSubmit(payload as unknown as AssetFormValues);

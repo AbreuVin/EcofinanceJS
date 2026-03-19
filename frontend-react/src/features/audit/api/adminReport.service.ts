@@ -35,5 +35,11 @@ export const AdminReportService = {
     getDetail: async (sourceType: string, reportId: number): Promise<any> => {
         const { data } = await api.get(`/esg/data/admin/${sourceType}/reports/${reportId}`);
         return data;
+    },
+
+    // Busca todos os reportes de uma fonte para TODAS as unidades de uma empresa
+    getByCompany: async (sourceType: string, companyId: string): Promise<any[]> => {
+        const { data } = await api.get(`/esg/data/admin/${sourceType}/companies/${companyId}/reports`);
+        return data;
     }
 };

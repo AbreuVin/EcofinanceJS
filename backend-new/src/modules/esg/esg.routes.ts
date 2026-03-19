@@ -15,6 +15,7 @@ router.use(authenticate);
 
 router.get('/admin/:sourceType/units/:unitId/reports', requireMaster, esgController.listAdminReports);
 router.get('/admin/:sourceType/reports/:id', requireMaster, esgController.getAdminReportDetail);
+router.get('/admin/:sourceType/companies/:companyId/reports', requireMaster, esgController.listAdminReportsByCompany);
 
 router.get('/:sourceType', esgController.list);
 router.post('/:sourceType', esgController.create);

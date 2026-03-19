@@ -24,53 +24,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ESG_MODULES } from "@/types/enums";
 import { normalizeSlugToType } from "../../data-entry/utils/module-mapping";
-
-// Scope groupings for modules
-const SCOPE_MODULES: Record<string, string[]> = {
-    escopo_1: [
-        'production_sales',
-        'stationary_combustion',
-        'mobile_combustion',
-        'lubricants_ippu',
-        'fugitive_emissions',
-        'fertilizers',
-        'effluents_controlled',
-        'domestic_effluents',
-        'land_use_change',
-        'solid_waste',
-    ],
-    escopo_2: [
-        'electricity_purchase',
-    ],
-    escopo_3: [
-        'purchased_goods',
-        'capital_goods',
-        'upstream_transport',
-        'business_travel_land',
-        'downstream_transport',
-        'waste_transport',
-        'home_office',
-        'air_travel',
-        'employee_commuting',
-        'energy_generation',
-        'planted_forest',
-        'conservation_area',
-    ],
-};
-
-const SCOPE_LABELS: Record<string, string> = {
-    escopo_1: "Escopo 1",
-    escopo_2: "Escopo 2",
-    escopo_3: "Escopo 3",
-};
-
-// Get modules for a specific scope, sorted alphabetically
-function getScopeModules(scopeKey: string) {
-    const moduleValues = SCOPE_MODULES[scopeKey] || [];
-    return ESG_MODULES
-        .filter(mod => moduleValues.includes(mod.value))
-        .sort((a, b) => a.label.localeCompare(b.label));
-}
+import { SCOPE_LABELS, getScopeModules } from "@/constants/scopeModules";
 
 // Get label for selected type
 function getSelectedTypeLabel(selectedType: string) {
@@ -156,7 +110,7 @@ export default function AssetsPage() {
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <div className="space-y-1">
                         <h1 className="text-2xl font-bold tracking-tight flex items-center gap-2">
-                            <Leaf className="size-6 text-primary"/>
+                            <Leaf className="size-6 text-primary" />
                             Cadastro de Fontes
                         </h1>
                         <p className="text-muted-foreground">
@@ -191,7 +145,7 @@ export default function AssetsPage() {
                             <DropdownMenuItem onClick={() => setSelectedType("all")}>
                                 Visão Geral (Todas)
                             </DropdownMenuItem>
-                            
+
                             {Object.entries(SCOPE_LABELS).map(([scopeKey, scopeLabel]) => (
                                 <DropdownMenuSub key={scopeKey}>
                                     <DropdownMenuSubTrigger>
@@ -199,8 +153,8 @@ export default function AssetsPage() {
                                     </DropdownMenuSubTrigger>
                                     <DropdownMenuSubContent className="max-h-[300px] overflow-y-auto">
                                         {getScopeModules(scopeKey).map((mod) => (
-                                            <DropdownMenuItem 
-                                                key={mod.value} 
+                                            <DropdownMenuItem
+                                                key={mod.value}
                                                 onClick={() => setSelectedType(mod.value)}
                                             >
                                                 {mod.label}
@@ -214,7 +168,7 @@ export default function AssetsPage() {
 
                     {!isFormOpen && (
                         <Button onClick={toggleForm}>
-                            <Plus className="mr-2 size-4"/> Nova Fonte
+                            <Plus className="mr-2 size-4" /> Nova Fonte
                         </Button>
                     )}
                 </div>

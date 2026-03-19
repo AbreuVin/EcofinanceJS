@@ -64,3 +64,11 @@ export const remove = async (req: Request, res: Response) => {
     await service.delete(Number(id));
     res.status(204).send();
 };
+
+export const listAdminReportsByCompany = async (req: Request, res: Response) => {
+    const { sourceType, companyId } = req.params;
+    const { service } = getRegistryEntry(sourceType);
+
+    const data = await service.getAllByCompany(companyId);
+    res.json(data);
+};
