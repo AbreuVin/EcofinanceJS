@@ -35,28 +35,28 @@ export const ASSET_INJECTED_FIELDS: Partial<Record<EsgModuleType, AssetInjectedF
     mobile_combustion: [
         { name: 'fuelType', assetKey: 'fuelType' },
         { name: 'vehicleType', assetKey: 'vehicleType' },
-        { name: 'isCompanyControlled', assetKey: 'isCompanyControlled', transform: (v) => v === 'true' || v === true },
+        { name: 'isCompanyControlled', assetKey: 'isCompanyControlled', transform: (v: any) => v === 'true' || v === true },
         { name: 'inputType', assetKey: 'inputType' },
         { name: 'consumptionUnit', assetKey: 'consumptionUnit' },
         { name: 'distanceUnit', assetKey: 'distanceUnit' },
     ],
     stationary_combustion: [
         { name: 'fuelType', assetKey: 'fuelType' },
-        { name: 'isCompanyControlled', assetKey: 'isCompanyControlled', transform: (v) => v === 'true' || v === true },
+        { name: 'isCompanyControlled', assetKey: 'isCompanyControlled', transform: (v: any) => v === 'true' || v === true },
         { name: 'unitMeasure', assetKey: 'unitMeasure' },
     ],
     fugitive_emissions: [
-        { name: 'isCompanyControlled', assetKey: 'isCompanyControlled', transform: (v) => v === 'true' || v === true },
+        { name: 'isCompanyControlled', assetKey: 'isCompanyControlled', transform: (v: any) => v === 'true' || v === true },
         { name: 'gasType', assetKey: 'gasType' },
         { name: 'unitMeasure', assetKey: 'unitMeasure' },
     ],
-    ippu_lubricants: [
-        { name: 'isCompanyControlled', assetKey: 'isCompanyControlled', transform: (v) => v === 'true' || v === true },
+    lubricants_ippu: [
+        { name: 'isCompanyControlled', assetKey: 'isCompanyControlled', transform: (v: any) => v === 'true' || v === true },
         { name: 'lubricantType', assetKey: 'lubricantType' },
         { name: 'unitMeasure', assetKey: 'unitMeasure' },
     ],
     fertilizers: [
-        { name: 'isCompanyControlled', assetKey: 'isCompanyControlled', transform: (v) => v === 'true' || v === true },
+        { name: 'isCompanyControlled', assetKey: 'isCompanyControlled', transform: (v: any) => v === 'true' || v === true },
         { name: 'fertilizerType', assetKey: 'fertilizerType' },
         { name: 'unitMeasure', assetKey: 'unitMeasure' },
     ],
@@ -80,7 +80,7 @@ export const MODULE_FIELDS: Record<string, ModuleField[]> = {
     fugitive_emissions: [
         { name: 'quantityReplaced', label: 'Quantidade Reposta', type: 'number' },
     ],
-    ippu_lubricants: [
+    lubricants_ippu: [
         { name: 'consumption', label: 'Consumo', type: 'number' },
     ],
     fertilizers: [
