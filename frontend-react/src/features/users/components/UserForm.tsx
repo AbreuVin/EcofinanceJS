@@ -10,8 +10,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue, } from "
 import { userFormSchema } from "../schemas/user.schema";
 import { PermissionsMatrix } from "./PermissionsMatrix";
 import type { User } from "@/types/User";
-// import { useUnits } from "@/features/units/hooks/useUnits"; // Oculto a pedido do cliente
+import { useCompanies } from "@/features/companies/hooks/useCompanies";
 import { useAuthStore } from "@/store/authStore";
+// Force HMR reload - company selector for MASTER users
 
 
 interface UserFormProps {
@@ -37,10 +38,11 @@ const formatPhone = (value: string | undefined) => {
 }
 
 export function UserForm({ initialData, onSubmit, onCancel, isLoading }: UserFormProps) {
-    // const { data: units = [], isLoading: loadingUnits } = useUnits(); // Oculto a pedido do cliente
-
     const user = useAuthStore(state => state.user);
     const isMaster = user?.role === UserRole.MASTER;
+    const isAdmin = user?.role === UserRole.ADMIN;
+
+    const { data: companies = [], isLoading: loadingCompanies } = useCompanies();
 
     const form = useForm({
         resolver: zodResolver(userFormSchema),
@@ -91,9 +93,16 @@ export function UserForm({ initialData, onSubmit, onCancel, isLoading }: UserFor
     const handleFormSubmit = async (values: any) => {
         const payload = { ...values };
 
+        // Sanitizar campos vazios para evitar erro de FK no backend
+        if (!payload.companyId) delete payload.companyId;
+        if (!payload.phone) delete payload.phone;
+
+        // Para ADMIN, forçar companyId da sessão
+        if (isAdmin && user?.companyId) {
+            payload.companyId = user.companyId;
+        }
+
         // Remove o ID falso gerado pelo Zod/React Hook Form.
-        // Ao deletar a chave, o Axios não a envia, e o Prisma backend
-        // apenas ignora a atualização da coluna, evitando o erro de Foreign Key.
         if (payload.unitId === 0 || !payload.unitId) {
             delete payload.unitId;
         }
@@ -180,6 +189,38 @@ export function UserForm({ initialData, onSubmit, onCancel, isLoading }: UserFor
                                 </FormItem>
                             )}
                         />
+
+                        {/* Seletor de Empresa — visível apenas para MASTER */}
+                        {isMaster && (
+                            <FormField
+                                control={form.control}
+                                name="companyId"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Empresa</FormLabel>
+                                        <Select
+                                            onValueChange={field.onChange}
+                                            value={field.value || undefined}
+                                            disabled={loadingCompanies}
+                                        >
+                                            <FormControl>
+                                                <SelectTrigger className="w-full">
+                                                    <SelectValue placeholder={loadingCompanies ? "Carregando..." : "Selecione a empresa..."}/>
+                                                </SelectTrigger>
+                                            </FormControl>
+                                            <SelectContent>
+                                                {companies.map(c => (
+                                                    <SelectItem key={c.id} value={c.id}>
+                                                        {c.name}
+                                                    </SelectItem>
+                                                ))}
+                                            </SelectContent>
+                                        </Select>
+                                        <FormMessage/>
+                                    </FormItem>
+                                )}
+                            />
+                        )}
 
                         {/* TODO: Campo de Unidade oculto a pedido do cliente - descomentar se necessário
                         <FormField

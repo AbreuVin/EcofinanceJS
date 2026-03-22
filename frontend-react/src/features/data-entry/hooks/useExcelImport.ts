@@ -3,13 +3,15 @@ import * as XLSX from "xlsx";
 import type { UseFormSetValue } from "react-hook-form";
 import { MONTHS } from "@/features/assets/constants/esg-options";
 import type { AssetTypology } from "@/types/AssetTypology";
+import { getModuleFields } from "../config/module-fields";
 
 interface UseExcelImportProps {
     asset: AssetTypology;
     setValue: UseFormSetValue<any>;
+    moduleType?: string | null;
 }
 
-export function useExcelImport({ asset, setValue }: UseExcelImportProps) {
+export function useExcelImport({ asset, setValue, moduleType }: UseExcelImportProps) {
     const isMensal = asset.reportingFrequency?.toLowerCase() === "mensal";
     const periods = isMensal ? MONTHS : ["Annual"];
 
@@ -19,18 +21,29 @@ export function useExcelImport({ asset, setValue }: UseExcelImportProps) {
         : (asset.assetFields || {});
 
     const unit = assetConfig.unitMeasure || "Unidades";
-    const valueColumnName = `Valor (${unit})`;
+
+    // Campos dinâmicos do módulo
+    const fields = moduleType ? getModuleFields(moduleType) : [{ name: 'consumption', label: 'Valor', type: 'number' as const }];
+    const isSingleField = fields.length === 1;
 
     // Função 1: Gera e baixa a planilha em branco com os cabeçalhos corretos
     const downloadTemplate = () => {
-        const data = periods.map(period => ({
-            "Período": period,
-            [valueColumnName]: "" // Coluna vazia para o usuário preencher
-        }));
+        const data = periods.map(period => {
+            const row: Record<string, any> = { "Período": period };
+            if (isSingleField) {
+                row[`${fields[0].label} (${unit})`] = "";
+            } else {
+                fields.forEach(f => {
+                    row[f.label] = "";
+                });
+            }
+            return row;
+        });
 
         const ws = XLSX.utils.json_to_sheet(data);
         // Ajusta a largura das colunas para ficar visualmente agradável
-        ws['!cols'] = [{ wch: 15 }, { wch: 20 }];
+        const colWidths = [{ wch: 15 }, ...fields.map(() => ({ wch: 20 }))];
+        ws['!cols'] = colWidths;
 
         const wb = XLSX.utils.book_new();
         XLSX.utils.book_append_sheet(wb, ws, "Dados de Entrada");
@@ -69,8 +82,9 @@ export function useExcelImport({ asset, setValue }: UseExcelImportProps) {
                     return;
                 }
 
-                // Pega o valor (tenta pela chave exata ou faz fallback para a 2ª coluna)
-                let rawValue = row[valueColumnName];
+                // Pega o valor (tenta pela chave exata do primeiro campo ou faz fallback para a 2ª coluna)
+                const firstFieldCol = isSingleField ? `${fields[0].label} (${unit})` : fields[0].label;
+                let rawValue = row[firstFieldCol];
                 if (rawValue === undefined) {
                     const keys = Object.keys(row);
                     const valKey = keys.find(k => k.toUpperCase() !== "PERÍODO" && k.toUpperCase() !== "PERIODO");
@@ -81,14 +95,14 @@ export function useExcelImport({ asset, setValue }: UseExcelImportProps) {
                     // Força a conversão para número
                     const numValue = Number(rawValue);
                     if (!isNaN(numValue)) {
-                        // MÁGICA: Injeta no React Hook Form!
-                        setValue(`entries.${matchedPeriod}.consumption`, numValue, {
+                        // Injeta no React Hook Form com o nome do campo certo
+                        setValue(`entries.${matchedPeriod}.${fields[0].name}`, numValue, {
                             shouldValidate: true,
                             shouldDirty: true,
                         });
                         successCount++;
                     } else {
-                        errorCount++; // Se o usuário digitou "cem" em vez de "100"
+                        errorCount++;
                     }
                 }
             });

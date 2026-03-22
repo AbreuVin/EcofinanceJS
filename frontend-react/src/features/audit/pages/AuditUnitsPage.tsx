@@ -5,11 +5,13 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, ChevronDown, ChevronRight, Download, Factory, Loader2, Search } from "lucide-react";
+import { ArrowLeft, ChevronDown, ChevronRight, Download, FileArchive, Factory, Loader2, Search } from "lucide-react";
 import { useAdminUnits } from "@/features/audit/hook/useAdminUnits.ts";
 import { useAdminReportsByCompany } from "@/features/audit/hook/useAdminReportsByCompany.ts";
 import { useAssets } from "@/features/assets/hooks/useAssets";
 import { exportToExcel } from "@/features/audit/utils/exportToExcel";
+import { exportAllToZip } from "@/features/audit/utils/exportAllToZip";
+import { AdminReportService } from "@/features/audit/api/adminReport.service";
 import { ESG_MODULES } from "@/types/enums";
 import { SCOPE_LABELS, getScopeModules } from "@/constants/scopeModules";
 import {
@@ -66,6 +68,7 @@ const AuditUnitsPage = () => {
 
     // ---- State do filtro de fonte para export ----
     const [selectedSourceType, setSelectedSourceType] = useState<string>("");
+    const [isExportingAll, setIsExportingAll] = useState(false);
 
     // Debounce da busca
     useEffect(() => {
@@ -174,6 +177,76 @@ const AuditUnitsPage = () => {
         });
     };
 
+    const handleExportAll = async () => {
+        if (activeModules.length === 0) return;
+        setIsExportingAll(true);
+
+        try {
+            const sourceTypes = activeModules.map(m => m.value);
+            const allResults = await AdminReportService.getAllSourcesByCompany(sourceTypes, companyId);
+
+            const sourcesWithData = allResults
+                .filter(r => r.data.length > 0)
+                .map(({ sourceType, data }) => {
+                    const mod = ESG_MODULES.find(m => m.value === sourceType);
+                    const label = mod?.label || sourceType;
+
+                    // Enriquecer os dados (mesmo processo do enrichedReports)
+                    const enriched = data.map((report: any) => {
+                        const matchedAsset = assets?.find(
+                            a => a.description === report.sourceDescription && a.sourceType === sourceType
+                        );
+                        let parsedFields: any = {};
+                        if (matchedAsset?.assetFields) {
+                            try {
+                                parsedFields = typeof matchedAsset.assetFields === 'string'
+                                    ? JSON.parse(matchedAsset.assetFields)
+                                    : matchedAsset.assetFields;
+                            } catch (e) {
+                                console.error("Erro ao extrair assetFields", e);
+                            }
+                        }
+                        const unifiedUnitMeasure = report.consumptionUnit || report.distanceUnit || parsedFields.unitMeasure || null;
+                        return {
+                            ...parsedFields,
+                            ...report,
+                            unitName: report.unit?.name || "-",
+                            unitMeasure: unifiedUnitMeasure,
+                        };
+                    });
+
+                    // Gerar colunas dinâmicas
+                    const keySet = new Set<string>();
+                    enriched.forEach((r: any) => Object.keys(r).forEach(k => keySet.add(k)));
+                    const visibleKeys = Array.from(keySet).filter(k => !HIDDEN_COLUMNS.includes(k));
+                    const priority = ['unitName', 'year', 'period', 'sourceDescription'];
+                    const sortedCols = visibleKeys.sort((a, b) => {
+                        const iA = priority.indexOf(a);
+                        const iB = priority.indexOf(b);
+                        if (iA !== -1 && iB !== -1) return iA - iB;
+                        if (iA !== -1) return -1;
+                        if (iB !== -1) return 1;
+                        return a.localeCompare(b);
+                    });
+
+                    return {
+                        sourceType,
+                        label,
+                        data: enriched,
+                        columns: sortedCols.map(col => ({ key: col, header: translateColumn(col) })),
+                    };
+                });
+
+            if (sourcesWithData.length > 0) {
+                await exportAllToZip(sourcesWithData, `reportes_empresa_todas_fontes`);
+            }
+        } catch (err) {
+            console.error("Erro ao exportar todos os excels", err);
+        } finally {
+            setIsExportingAll(false);
+        }
+    };
+
     // Filtra fontes do dropdown por escopo, mostrando apenas as que são ativas
     const getActiveScopeModules = (scopeKey: string) => {
         const scopeModules = getScopeModules(scopeKey);
@@ -277,6 +350,21 @@ const AuditUnitsPage = () => {
                                 <Download className="h-4 w-4" />
                             )}
                             Exportar Excel
+                        </Button>
+
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={handleExportAll}
+                            disabled={isExportingAll || activeModules.length === 0}
+                            className="gap-2 border-primary/30 text-primary hover:bg-primary/10"
+                        >
+                            {isExportingAll ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                            ) : (
+                                <FileArchive className="h-4 w-4" />
+                            )}
+                            Baixar Todos
                         </Button>
                     </div>
                     {selectedSourceType && !isLoadingExport && enrichedReports.length === 0 && (

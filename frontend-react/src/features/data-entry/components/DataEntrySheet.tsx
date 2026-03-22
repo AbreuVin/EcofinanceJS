@@ -12,6 +12,7 @@ import { useParams } from "wouter";
 import { useExcelImport } from "../hooks/useExcelImport";
 import { Download, FileSpreadsheet, Loader2 } from "lucide-react";
 import { EvidenceManager } from "./EvidenceManager";
+import { getModuleFields, getAssetInjectedFields } from "../config/module-fields";
 
 interface DataEntrySheetProps {
     asset: AssetTypology;
@@ -42,32 +43,39 @@ export function DataEntrySheet({ asset, year, unitId, open, onOpenChange }: Data
 
     const { downloadTemplate, handleFileUpload } = useExcelImport({
         asset,
-        setValue: form.setValue
+        setValue: form.setValue,
+        moduleType
     });
 
-    // 3. Populate Form
+    // Campos dinâmicos do módulo
+    const fields = useMemo(() => getModuleFields(moduleType!), [moduleType]);
+
+    // 3. Populate Form — carrega TODOS os campos do módulo, não apenas consumption
     useEffect(() => {
         if (open && !isLoading) {
             const formData: Record<string, any> = {};
 
             if (existingEntries.length > 0) {
                 existingEntries.forEach(entry => {
-                    formData[entry.period] = {
-                        consumption: entry.consumption,
-                        distance: entry.distance,
-                        quantity: entry.quantity,
-                    };
+                    const entryData: Record<string, any> = {};
+                    fields.forEach(field => {
+                        entryData[field.name] = entry[field.name];
+                    });
+                    formData[entry.period] = entryData;
                 });
             }
 
             form.reset({ entries: formData });
         }
-    }, [open, isLoading, existingEntries, form]);
+    }, [open, isLoading, existingEntries, form, fields]);
 
     const onSubmit = (data: any) => {
         const assetConfig = typeof asset.assetFields === 'string'
             ? JSON.parse(asset.assetFields)
             : asset.assetFields;
+
+        // Injeta campos do asset apenas se relevantes para este módulo
+        const injectedFields = getAssetInjectedFields(moduleType!, assetConfig || {});
 
         const enhancedEntries: Record<string, any> = {};
 
@@ -77,10 +85,9 @@ export function DataEntrySheet({ asset, year, unitId, open, onOpenChange }: Data
             if (hasValue) {
                 enhancedEntries[period] = {
                     ...values,
-                    fuelType: assetConfig.fuelType,
-                    vehicleType: assetConfig.vehicleType,
-                    isCompanyControlled: assetConfig.isCompanyControlled === 'true' || assetConfig.isCompanyControlled === true,
-                    unitId: Number(asset.units?.[0]?.unitId) || unitId
+                    ...injectedFields,
+                    // Bug 5 fix: prioriza unitId do filtro do usuário
+                    unitId: unitId || Number(asset.units?.[0]?.unitId)
                 };
             }
         });
@@ -156,7 +163,7 @@ export function DataEntrySheet({ asset, year, unitId, open, onOpenChange }: Data
                                     </label>
                                 </div>
 
-                                {/* Lista de Meses / Anual */}
+                                {/* Lista de Meses / Anual — campos dinâmicos por módulo */}
                                 <div className={isMensal ? "grid grid-cols-2 gap-4" : "space-y-4"}>
                                     {periods.map((period) => {
                                         const currentEntry = existingEntries.find(e => e.period === period);
@@ -174,24 +181,38 @@ export function DataEntrySheet({ asset, year, unitId, open, onOpenChange }: Data
                                                     />
                                                 </div>
                                                 <div className="space-y-2">
-                                                    <FormField
-                                                        control={form.control}
-                                                        name={`entries.${period}.consumption`}
-                                                        render={({ field }) => (
-                                                            <FormItem className="space-y-0">
-                                                                <FormControl>
-                                                                    <Input
-                                                                        type="number"
-                                                                        placeholder="0.00"
-                                                                        className="h-8 text-right [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                                                                        {...field}
-                                                                        value={field.value ?? ''}
-                                                                        onChange={e => field.onChange(e.target.valueAsNumber)}
-                                                                    />
-                                                                </FormControl>
-                                                            </FormItem>
-                                                        )}
-                                                    />
+                                                    {fields.map(moduleField => (
+                                                        <FormField
+                                                            key={moduleField.name}
+                                                            control={form.control}
+                                                            name={`entries.${period}.${moduleField.name}`}
+                                                            render={({ field }) => (
+                                                                <FormItem className="space-y-0">
+                                                                    {fields.length > 1 && (
+                                                                        <label className="text-[11px] text-muted-foreground">
+                                                                            {moduleField.label}
+                                                                        </label>
+                                                                    )}
+                                                                    <FormControl>
+                                                                        <Input
+                                                                            type={moduleField.type}
+                                                                            placeholder="0.00"
+                                                                            className="h-8 text-right [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                                                            {...field}
+                                                                            value={field.value ?? ''}
+                                                                            onChange={e => {
+                                                                                if (moduleField.type === 'number') {
+                                                                                    field.onChange(e.target.valueAsNumber);
+                                                                                } else {
+                                                                                    field.onChange(e.target.value);
+                                                                                }
+                                                                            }}
+                                                                        />
+                                                                    </FormControl>
+                                                                </FormItem>
+                                                            )}
+                                                        />
+                                                    ))}
                                                 </div>
                                             </div>
                                         );

@@ -31,6 +31,11 @@ export const getById = async (id: string) => {
 export const create = async (data: any) => {
     const { permissions, password, ...userData } = data;
 
+    // Convert empty/falsy companyId to null to avoid FK constraint error
+    if (!userData.companyId) {
+        userData.companyId = null;
+    }
+
     // Convert unitId 0 to null (0 means "all units" in the frontend)
     if (userData.unitId === 0) {
         userData.unitId = null;

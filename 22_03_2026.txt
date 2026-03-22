@@ -1,0 +1,15 @@
+Este commit traz um pacote de correções críticas e melhorias para a página de reportes, gestão de usuários e auditoria.
+**1. Correções nas Páginas de Reporte (Data Entry)**
+- [Bug 1] Filtro de Unidades: Adicionada a opção "Todas as Unidades" no dropdown, configurada como padrão. A tabela agora carrega os dados gerais automaticamente.
+- [Bug 2, 3 e 4] Formulário Dinâmico: Criado o arquivo de configuração central [module-fields.ts](cci:7://file:///c:/Users/Vin%C3%ADcius%20Abreu/OneDrive/Documentos/EcofinanceJS/frontend-react/src/features/data-entry/config/module-fields.ts:0:0-0:0) mapeando os campos editáveis para os 23 módulos ESG. O [DataEntrySheet](cci:1://file:///c:/Users/Vin%C3%ADcius%20Abreu/OneDrive/Documentos/EcofinanceJS/frontend-react/src/features/data-entry/components/DataEntrySheet.tsx:24:0-237:1) foi completamente reescrito para renderizar os inputs dinamicamente (ex: separando Consumo e Distância) em vez de fixar apenas o campo "consumption".
+- [Bug 3] Submit Limpo: A injeção de configurações do ativo (como `fuelType` ou `vehicleType`) no salvamento agora respeita estritamente se o módulo exige esses dados.
+- [Bug 5] Prioridade de Unidade: O submit do reporte agora respeita e prioriza o `unitId` selecionado no filtro pelo usuário em vez da primeira unidade do asset.
+- [Bug 6] EvidenceManager: Estado dos anexos migrado de `useState` para `useQuery` (React Query) com cache persistente, eliminando o "flash" visual ao fechar e abrir a aba de evidências.
+- Exportação Excel: O hook [useExcelImport](cci:1://file:///c:/Users/Vin%C3%ADcius%20Abreu/OneDrive/Documentos/EcofinanceJS/frontend-react/src/features/data-entry/hooks/useExcelImport.ts:13:0-130:1) foi atualizado para gerar templates e importar colunas mapeando dinamicamente os campos do módulo atual.
+**2. Gestão de Usuários**
+- Corrigida a validação Zod do campo de telefone (permitindo vazio, mas exigindo mínimo se preenchido).
+- Corrigido o seletor de empresas no formulário de criação de usuários para contas nível MASTER.
+- Tratamento de `companyId` vazio no backend para evitar quebra de constraints de chave estrangeira (FK).
+- Executado script de limpeza de banco removendo usuários testes órfãos (sem companyId).
+**3. Auditoria**
+- Concluída a implementação do recurso de download em lote (botão "Baixar Todos os Excels") na página de Seleção de Escopos.

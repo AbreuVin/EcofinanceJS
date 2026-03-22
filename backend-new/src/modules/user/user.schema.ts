@@ -12,10 +12,10 @@ export const createUserSchema = z.object({
     email: z.string().email("Invalid email format"),
     password: z.string().min(6, "Password must be at least 6 characters").optional(),
     name: z.string().min(2, "Name is required"),
-    phone: z.string().nullable().optional(),
+    phone: z.string().nullable().optional().transform(val => val === "" ? null : val),
     role: z.enum(['MASTER', 'ADMIN', 'USER']).default('USER'),
     unitId: z.coerce.number().int().nullable().optional(),
-    companyId: z.string().nullable().optional(),
+    companyId: z.string().nullable().optional().transform(val => val === "" ? null : val),
     parentId: z.string().nullable().optional(),
     permissions: z.array(z.string()).optional(),
 });

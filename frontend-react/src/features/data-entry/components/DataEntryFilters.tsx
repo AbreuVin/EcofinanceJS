@@ -34,6 +34,7 @@ export function DataEntryFilters({ year, unitId, onYearChange, onUnitChange }: D
                         <SelectValue placeholder="Todas as Unidades" />
                     </SelectTrigger>
                     <SelectContent>
+                        <SelectItem value="all_units">Todas as Unidades</SelectItem>
                         {units.map(u => (
                             <SelectItem key={u.id} value={String(u.id)}>{u.name}</SelectItem>
                         ))}

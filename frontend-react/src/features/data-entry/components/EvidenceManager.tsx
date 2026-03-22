@@ -2,8 +2,9 @@ import { useState } from "react";
 import { Paperclip, Trash2, Upload, Loader2, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { evidenceService, type Attachment } from "../api/evidence.service";
+import { evidenceService } from "../api/evidence.service";
 import { toast } from "sonner";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 interface EvidenceManagerProps {
     sourceType: string;
@@ -12,22 +13,19 @@ interface EvidenceManagerProps {
 }
 
 export function EvidenceManager({ sourceType, entryId, monthName }: EvidenceManagerProps) {
-    const [files, setFiles] = useState<Attachment[]>([]);
-    const [loading, setLoading] = useState(false);
+    const queryClient = useQueryClient();
     const [uploading, setUploading] = useState(false);
 
-    // Carregar arquivos existentes ao abrir o diálogo
-    const loadFiles = async () => {
-        if (!entryId) return;
-        setLoading(true);
-        try {
-            const data = await evidenceService.getFiles(sourceType, entryId);
-            setFiles(data);
-        } catch (error) {
-            console.error("Erro ao carregar evidências", error);
-        } finally {
-            setLoading(false);
-        }
+    // React Query para cache persistente — elimina flash ao reabrir
+    const { data: files = [], isLoading: loading } = useQuery({
+        queryKey: ['evidence', sourceType, entryId],
+        queryFn: () => evidenceService.getFiles(sourceType, entryId!),
+        enabled: !!entryId,
+        staleTime: 30_000, // 30s cache
+    });
+
+    const invalidateFiles = () => {
+        queryClient.invalidateQueries({ queryKey: ['evidence', sourceType, entryId] });
     };
 
     const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -36,9 +34,9 @@ export function EvidenceManager({ sourceType, entryId, monthName }: EvidenceMana
 
         setUploading(true);
         try {
-            const newAttachments = await evidenceService.upload(sourceType, entryId, selectedFiles);
-            setFiles((prev) => [...prev, ...newAttachments]);
+            await evidenceService.upload(sourceType, entryId, selectedFiles);
             toast.success("Evidências enviadas com sucesso!");
+            invalidateFiles();
         } catch (error) {
             toast.error("Falha no upload dos arquivos.");
         } finally {
@@ -50,15 +48,15 @@ export function EvidenceManager({ sourceType, entryId, monthName }: EvidenceMana
     const handleDelete = async (fileId: string) => {
         try {
             await evidenceService.delete(fileId);
-            setFiles((prev) => prev.filter(f => f.id !== fileId));
             toast.success("Arquivo removido.");
+            invalidateFiles();
         } catch (error) {
             toast.error("Erro ao remover arquivo.");
         }
     };
 
     return (
-        <Dialog onOpenChange={(open: any) => open && loadFiles()}>
+        <Dialog>
             <DialogTrigger asChild>
                 <Button 
                     variant="ghost" 

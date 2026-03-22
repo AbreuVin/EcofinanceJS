@@ -17,13 +17,13 @@ export default function DataEntryPage() {
     const moduleType = normalizeSlugToType(moduleSlug);
 
     const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
-    const [selectedUnitId, setSelectedUnitId] = useState<string>("");
+    const [selectedUnitId, setSelectedUnitId] = useState<string>("all_units");
 
     const [selectedAsset, setSelectedAsset] = useState<AssetTypology | null>(null);
 
     const { data: rawAssets = [], isLoading: loadingAssets } = useAssets();
 
-    const queryUnitId = Number(selectedUnitId);
+    const queryUnitId = selectedUnitId === "all_units" ? undefined : Number(selectedUnitId);
     const { data: entries = [] } = useDataEntries(
         moduleType!,
         queryUnitId,

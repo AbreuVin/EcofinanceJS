@@ -41,5 +41,20 @@ export const AdminReportService = {
     getByCompany: async (sourceType: string, companyId: string): Promise<any[]> => {
         const { data } = await api.get(`/esg/data/admin/${sourceType}/companies/${companyId}/reports`);
         return data;
+    },
+
+    // Busca reportes de MÚLTIPLAS fontes para uma empresa (em paralelo)
+    getAllSourcesByCompany: async (sourceTypes: string[], companyId: string) => {
+        const results = await Promise.all(
+            sourceTypes.map(async (sourceType) => {
+                try {
+                    const { data } = await api.get(`/esg/data/admin/${sourceType}/companies/${companyId}/reports`);
+                    return { sourceType, data: data as any[] };
+                } catch {
+                    return { sourceType, data: [] as any[] };
+                }
+            })
+        );
+        return results;
     }
 };
