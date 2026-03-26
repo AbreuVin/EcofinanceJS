@@ -10,7 +10,10 @@ export const createTypologySchema = z.object({
     unitIds: z.array(z.number().int().positive()).default([]),
     sourceType: z.string().min(1),
     description: z.string().min(1),
-    assetFields: z.record(z.string(), z.any()).transform((val) => JSON.stringify(val)),
+    assetFields: z.union([z.record(z.string(), z.any()), z.string()]).transform((val) => {
+        if (typeof val === "string") return val;
+        return JSON.stringify(val ?? {});
+    }),
     isActive: z.boolean().default(true),
     responsibleContactId: z.string().optional().nullable(),
     reportingFrequency: z.enum(['mensal', 'anual']).default('anual'),

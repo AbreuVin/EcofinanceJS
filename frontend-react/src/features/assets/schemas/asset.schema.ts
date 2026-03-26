@@ -25,7 +25,7 @@ export const assetFormSchema = z.object({
     // traceabilityFiles será tratado separadamente no upload
 
     // Removed .default({}). useForm provides the default.
-    assetFields: z.record(z.string(), z.any()),
+    assetFields: z.any(),
 }).refine(
     (data) => {
         if (data.sourceType === "fertilizers") {

@@ -12,11 +12,10 @@ import { useUsers } from "@/features/users/hooks/useUsers";
 import { useAssetForm } from "../hooks/useAssetForm";
 import { AssetDynamicFields } from "./AssetDynamicFields";
 import { useWatch } from "react-hook-form";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useAuthStore } from "@/store/authStore";
 import { AssetTraceability } from "@/features/assets/components/AssetTraceability.tsx";
 
-// --- REINTRODUCED SCOPE CONSTANTS ---
 const SCOPE_MODULES: Record<string, string[]> = {
     escopo_1: [
         'production_sales', 'stationary_combustion', 'mobile_combustion',
@@ -62,7 +61,6 @@ export function AssetForm({ initialData, onSubmit, onCancel, isLoading, preSelec
     const selectedUnitIds: number[] = useWatch({ control: form.control, name: "unitIds" }) || [];
     const currentSourceType = useWatch({ control: form.control, name: "sourceType" });
 
-    // Synchronous state initialization (Safe because of the 'key' prop on the parent)
     const [selectedScope, setSelectedScope] = useState<string>(() => {
         const initialSource = initialData?.sourceType || preSelectedSourceType;
         if (initialSource) {
@@ -71,7 +69,6 @@ export function AssetForm({ initialData, onSubmit, onCancel, isLoading, preSelec
         return "";
     });
 
-    // Derive available modules based on the selected scope
     const scopeModules = useMemo(() => {
         if (!selectedScope) return [];
         const moduleValues = SCOPE_MODULES[selectedScope] || [];
@@ -81,27 +78,45 @@ export function AssetForm({ initialData, onSubmit, onCancel, isLoading, preSelec
     }, [selectedScope]);
 
     const unitUsers = useMemo(() => {
-        if (!selectedUnitIds || selectedUnitIds.length === 0) {
-            return users;
-        }
+        if (!selectedUnitIds || selectedUnitIds.length === 0) return users;
         return users.filter((user) => selectedUnitIds.includes(Number(user.unitId)));
     }, [users, selectedUnitIds]);
 
+    /**
+     * Tratamento de Hidratação de Dados:
+     * Garante que assetFields seja um Objeto (Record) internamente para não quebrar a validação do Zod.
+     */
+    useEffect(() => {
+        const currentFields = form.getValues("assetFields");
+        if (typeof currentFields === "string") {
+            try {
+                form.setValue("assetFields", JSON.parse(currentFields));
+            } catch (e) {
+                form.setValue("assetFields", {});
+            }
+        }
+    }, [initialData, form]);
 
     const handleSubmitWrapper = async (values: AssetFormValues) => {
-        // Garante que responsibleContactId seja null se vazio
-        const responsibleContactId = values.responsibleContactId && values.responsibleContactId !== "" ? values.responsibleContactId : null;
-        // Garante que assetFields seja string
-        const assetFields = typeof values.assetFields === "string" ? values.assetFields : JSON.stringify(values.assetFields);
-        const companyId = initialData?.companyId || user?.companyId || "";
+
+
         const payload = {
             ...values,
-            responsibleContactId,
-            assetFields,
-            companyId
+            companyId: user?.companyId || values.companyId || "",
+            responsibleContactId: values.responsibleContactId || null,
+            // A API espera string, mas o Zod/Form usa objeto. Convertemos apenas no payload de saída.
+            assetFields: JSON.stringify(values.assetFields || {}),
         };
+        console.log("Submitting form with values:", payload);
+
         await onSubmit(payload as unknown as AssetFormValues);
     };
+
+    useEffect(() => {
+        if (user?.companyId && !form.getValues("companyId")) {
+            form.setValue("companyId", user.companyId);
+        }
+    }, [user, form]);
 
     return (
         <div className="bg-card p-6 rounded-md border shadow-sm mb-6">
@@ -115,17 +130,17 @@ export function AssetForm({ initialData, onSubmit, onCancel, isLoading, preSelec
             </h4>
 
             <Form {...form}>
-                <form onSubmit={form.handleSubmit(handleSubmitWrapper)} className="space-y-6">
+                <form
+                    onSubmit={form.handleSubmit(handleSubmitWrapper, (err) => console.error("Validation Error:", err))}
+                    className="space-y-6"
+                >
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-
-                        {/* REINTRODUCED SCOPE SELECT */}
                         <FormItem>
                             <FormLabel>Escopo</FormLabel>
                             <Select
                                 value={selectedScope || ""}
                                 onValueChange={(val) => {
                                     setSelectedScope(val);
-                                    // Cascade reset dependent fields
                                     form.setValue("sourceType", "");
                                     form.setValue("assetFields", {});
                                 }}
@@ -157,7 +172,7 @@ export function AssetForm({ initialData, onSubmit, onCancel, isLoading, preSelec
                                             form.setValue("assetFields", {});
                                         }}
                                         value={field.value || ""}
-                                        disabled={!selectedScope} // Block interaction if no scope is selected
+                                        disabled={!selectedScope}
                                     >
                                         <FormControl>
                                             <SelectTrigger className="w-full">
@@ -214,16 +229,13 @@ export function AssetForm({ initialData, onSubmit, onCancel, isLoading, preSelec
 
                         <FormField
                             control={form.control}
-                            name="unitIds" // Mantém o nome no plural
+                            name="unitIds"
                             render={({ field }) => {
-                                // Pega apenas o primeiro valor do array (se existir) para mostrar no Select
                                 const currentValue = field.value && field.value.length > 0 ? String(field.value[0]) : "";
-
                                 return (
                                     <FormItem>
                                         <FormLabel>Unidade Empresarial</FormLabel>
                                         <Select
-                                            // Embala a escolha do usuário num array [ID]
                                             onValueChange={(val) => field.onChange([Number(val)])}
                                             value={currentValue}
                                             disabled={loadingUnits}
@@ -291,16 +303,12 @@ export function AssetForm({ initialData, onSubmit, onCancel, isLoading, preSelec
                         <AssetDynamicFields/>
                     </div>
 
-                    {/* Seção de Rastreabilidade Interna */}
                     <AssetTraceability form={form}/>
 
-                    <div
-                        className="flex flex-row items-center justify-between rounded-lg border p-4 shadow-sm bg-background">
+                    <div className="flex flex-row items-center justify-between rounded-lg border p-4 shadow-sm bg-background">
                         <div className="space-y-0.5">
                             <FormLabel className="text-base">Fonte Ativa</FormLabel>
-                            <FormDescription>
-                                Desative para ocultar esta fonte dos reportes.
-                            </FormDescription>
+                            <FormDescription>Desative para ocultar esta fonte dos reportes.</FormDescription>
                         </div>
                         <FormField
                             control={form.control}
@@ -308,10 +316,7 @@ export function AssetForm({ initialData, onSubmit, onCancel, isLoading, preSelec
                             render={({ field }) => (
                                 <FormItem>
                                     <FormControl>
-                                        <Switch
-                                            checked={field.value}
-                                            onCheckedChange={field.onChange}
-                                        />
+                                        <Switch checked={field.value} onCheckedChange={field.onChange} />
                                     </FormControl>
                                 </FormItem>
                             )}
@@ -319,9 +324,7 @@ export function AssetForm({ initialData, onSubmit, onCancel, isLoading, preSelec
                     </div>
 
                     <div className="flex justify-end gap-3 pt-4 border-t">
-                        <Button type="button" variant="outline" onClick={onCancel}>
-                            Cancelar
-                        </Button>
+                        <Button type="button" variant="outline" onClick={onCancel}>Cancelar</Button>
                         <Button type="submit" disabled={isLoading}>
                             {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}
                             {initialData ? "Atualizar" : "Salvar"}
