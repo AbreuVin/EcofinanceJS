@@ -18,6 +18,7 @@ router.get('/admin/:sourceType/reports/:id', requireMaster, esgController.getAdm
 router.get('/admin/:sourceType/companies/:companyId/reports', requireMaster, esgController.listAdminReportsByCompany);
 
 router.get('/:sourceType', esgController.list);
+router.post('/:sourceType/bulk-upsert', esgController.bulkCreateOrUpdate);
 router.post('/:sourceType', esgController.create);
 router.put('/:sourceType/:id', esgController.update);
 router.delete('/:sourceType/:id', esgController.remove);

@@ -46,5 +46,11 @@ export const DataEntryService = {
     // Delete a record
     delete: async (module: EsgModuleType, id: number) => {
         await api.delete(`${BASE_URL}/${module}/${id}`);
-    }
+    },
+
+    // Bulk create or update records (used by Excel import)
+    bulkUpsert: async (module: EsgModuleType, entries: Partial<EsgDataRecord>[]) => {
+        const { data } = await api.post(`${BASE_URL}/${module}/bulk-upsert`, { entries });
+        return data as { created: number; updated: number; message: string };
+    },
 };

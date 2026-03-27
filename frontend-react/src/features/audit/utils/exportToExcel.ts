@@ -1,4 +1,5 @@
-import * as XLSX from "xlsx";
+import ExcelJS from "exceljs";
+import { saveAs } from "file-saver";
 
 interface ExportOptions {
     data: Record<string, any>[];
@@ -7,20 +8,36 @@ interface ExportOptions {
     sheetName?: string;
 }
 
-export function exportToExcel({ data, columns, fileName, sheetName = "Dados" }: ExportOptions) {
-    const rows = data.map((item) => {
+export async function exportToExcel({ data, columns, fileName, sheetName = "Dados" }: ExportOptions) {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet(sheetName);
+
+    // Define headers
+    worksheet.columns = columns.map(col => ({
+        header: col.header,
+        key: col.key,
+        width: 20,
+    }));
+
+    // Style header row
+    const headerRow = worksheet.getRow(1);
+    headerRow.font = { bold: true };
+    headerRow.alignment = { vertical: "middle" };
+
+    // Add data rows
+    for (const item of data) {
         const row: Record<string, any> = {};
         for (const col of columns) {
             let value = col.key.split(".").reduce((obj: any, k) => obj?.[k], item);
             if (typeof value === "boolean") value = value ? "Sim" : "Não";
             if (value === null || value === undefined) value = "";
-            row[col.header] = value;
+            row[col.key] = value;
         }
-        return row;
-    });
+        worksheet.addRow(row);
+    }
 
-    const worksheet = XLSX.utils.json_to_sheet(rows);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
-    XLSX.writeFile(workbook, `${fileName}.xlsx`);
+    // Generate and download
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+    saveAs(blob, `${fileName}.xlsx`);
 }

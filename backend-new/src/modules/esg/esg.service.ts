@@ -2,6 +2,7 @@ import { ZodSchema } from 'zod';
 
 export interface PrismaDelegate<T> {
     findMany(args?: any): Promise<T[]>;
+    findFirst(args?: any): Promise<T | null>;
     findUnique(args?: any): Promise<T | null>;
     count(args?: any): Promise<number>;
     create(args: { data: any }): Promise<T>;
@@ -42,7 +43,7 @@ export class EsgGenericService<T> {
                 where,
                 skip,
                 take: limit,
-                orderBy: { year: 'desc' } // Ordena pelo ano de reporte
+                orderBy: { year: 'desc' }
             }),
             this.delegate.count({ where })
         ]);
@@ -82,5 +83,47 @@ export class EsgGenericService<T> {
 
     async delete(id: number) {
         return this.delegate.delete({ where: { id } });
+    }
+
+    /**
+     * Bulk create or update entries.
+     * Matches existing records by (unitId, year, period, sourceDescription).
+     * If a match is found, updates it; otherwise creates a new record.
+     * Returns a summary of created and updated counts.
+     */
+    async bulkCreateOrUpdate(entries: any[]): Promise<{ created: number; updated: number }> {
+        let created = 0;
+        let updated = 0;
+
+        for (const entry of entries) {
+            const cleanData: any = await this.schema.parseAsync(entry);
+
+            // Build match criteria
+            const where: any = {
+                unitId: cleanData.unitId,
+                year: cleanData.year,
+                period: cleanData.period,
+            };
+
+            // Include sourceDescription in match if present
+            if (cleanData.sourceDescription !== undefined) {
+                where.sourceDescription = cleanData.sourceDescription;
+            }
+
+            const existing = await this.delegate.findFirst({ where }) as any;
+
+            if (existing) {
+                await this.delegate.update({
+                    where: { id: existing.id },
+                    data: cleanData,
+                });
+                updated++;
+            } else {
+                await this.delegate.create({ data: cleanData });
+                created++;
+            }
+        }
+
+        return { created, updated };
     }
 }

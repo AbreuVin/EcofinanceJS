@@ -61,7 +61,9 @@ export function DataEntrySheet({ asset, year, unitId, open, onOpenChange }: Data
                     fields.forEach(field => {
                         entryData[field.name] = entry[field.name];
                     });
-                    formData[entry.period] = entryData;
+                    // Normalize period: old data may use "Annual" (English)
+                    const normalizedPeriod = entry.period === "Annual" ? "Anual" : entry.period;
+                    formData[normalizedPeriod] = entryData;
                 });
             }
 
@@ -102,7 +104,7 @@ export function DataEntrySheet({ asset, year, unitId, open, onOpenChange }: Data
     };
 
     const isMensal = asset.reportingFrequency?.toLowerCase() === "mensal";
-    const periods = isMensal ? MONTHS : ["Annual"];
+    const periods = isMensal ? MONTHS : ["Anual"];
 
     return (
         <Sheet open={open} onOpenChange={onOpenChange}>
@@ -166,7 +168,9 @@ export function DataEntrySheet({ asset, year, unitId, open, onOpenChange }: Data
                                 {/* Lista de Meses / Anual — campos dinâmicos por módulo */}
                                 <div className={isMensal ? "grid grid-cols-2 gap-4" : "space-y-4"}>
                                     {periods.map((period) => {
-                                        const currentEntry = existingEntries.find(e => e.period === period);
+                                        const currentEntry = existingEntries.find(e =>
+                                            e.period === period || (period === "Anual" && e.period === "Annual")
+                                        );
 
                                         return (
                                             <div key={period} className="space-y-1.5 p-3 rounded-md border bg-card/50 shadow-sm">

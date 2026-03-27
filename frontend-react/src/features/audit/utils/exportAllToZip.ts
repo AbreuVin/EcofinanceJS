@@ -1,4 +1,4 @@
-import * as XLSX from "xlsx";
+import ExcelJS from "exceljs";
 import JSZip from "jszip";
 
 interface ColumnDef {
@@ -23,25 +23,35 @@ export async function exportAllToZip(
     const zip = new JSZip();
 
     for (const source of sources) {
-        // Monta as linhas traduzidas (mesmo padrão do exportToExcel)
-        const rows = source.data.map((item) => {
+        const workbook = new ExcelJS.Workbook();
+        const sheetName = source.label.substring(0, 31);
+        const worksheet = workbook.addWorksheet(sheetName);
+
+        // Define columns
+        worksheet.columns = source.columns.map(col => ({
+            header: col.header,
+            key: col.key,
+            width: 20,
+        }));
+
+        // Style header row
+        const headerRow = worksheet.getRow(1);
+        headerRow.font = { bold: true };
+
+        // Add data rows
+        for (const item of source.data) {
             const row: Record<string, any> = {};
             for (const col of source.columns) {
                 let value = col.key.split(".").reduce((obj: any, k) => obj?.[k], item);
                 if (typeof value === "boolean") value = value ? "Sim" : "Não";
                 if (value === null || value === undefined) value = "";
-                row[col.header] = value;
+                row[col.key] = value;
             }
-            return row;
-        });
-
-        // Gera o workbook em memória
-        const worksheet = XLSX.utils.json_to_sheet(rows);
-        const workbook = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(workbook, worksheet, source.label.substring(0, 31));
+            worksheet.addRow(row);
+        }
 
         // Converte para buffer binário
-        const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
+        const excelBuffer = await workbook.xlsx.writeBuffer();
 
         // Adiciona ao ZIP
         const safeFileName = source.label.replace(/\s+/g, "_").toLowerCase();

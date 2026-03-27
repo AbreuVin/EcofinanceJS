@@ -1,5 +1,5 @@
 import { toast } from "sonner";
-import * as XLSX from "xlsx";
+import ExcelJS from "exceljs";
 import type { UseFormSetValue } from "react-hook-form";
 import { MONTHS } from "@/features/assets/constants/esg-options";
 import type { AssetTypology } from "@/types/AssetTypology";
@@ -27,30 +27,40 @@ export function useExcelImport({ asset, setValue, moduleType }: UseExcelImportPr
     const isSingleField = fields.length === 1;
 
     // Função 1: Gera e baixa a planilha em branco com os cabeçalhos corretos
-    const downloadTemplate = () => {
-        const data = periods.map(period => {
-            const row: Record<string, any> = { "Período": period };
-            if (isSingleField) {
-                row[`${fields[0].label} (${unit})`] = "";
-            } else {
-                fields.forEach(f => {
-                    row[f.label] = "";
-                });
-            }
-            return row;
-        });
+    const downloadTemplate = async () => {
+        const workbook = new ExcelJS.Workbook();
+        const ws = workbook.addWorksheet("Dados de Entrada");
 
-        const ws = XLSX.utils.json_to_sheet(data);
-        // Ajusta a largura das colunas para ficar visualmente agradável
-        const colWidths = [{ wch: 15 }, ...fields.map(() => ({ wch: 20 }))];
-        ws['!cols'] = colWidths;
+        // Define headers
+        const headers = ["Período"];
+        if (isSingleField) {
+            headers.push(`${fields[0].label} (${unit})`);
+        } else {
+            fields.forEach(f => headers.push(f.label));
+        }
 
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, "Dados de Entrada");
+        // Add header row
+        const headerRow = ws.addRow(headers);
+        headerRow.font = { bold: true };
 
-        // Limpa o nome do arquivo para não dar erro no Windows/Mac
+        // Set column widths
+        ws.getColumn(1).width = 15;
+        for (let i = 2; i <= headers.length; i++) {
+            ws.getColumn(i).width = 20;
+        }
+
+        // Add data rows (one per period)
+        for (const period of periods) {
+            const rowData = [period, ...fields.map(() => "")];
+            ws.addRow(rowData);
+        }
+
+        // Generate and download
+        const { saveAs } = await import("file-saver");
+        const buffer = await workbook.xlsx.writeBuffer();
+        const blob = new Blob([buffer], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
         const safeName = asset.description.replace(/[^a-z0-9]/gi, '_');
-        XLSX.writeFile(wb, `Template_${safeName}.xlsx`);
+        saveAs(blob, `Template_${safeName}.xlsx`);
     };
 
     // Função 2: Intercepta o upload, lê e injeta no formulário
@@ -59,17 +69,34 @@ export function useExcelImport({ asset, setValue, moduleType }: UseExcelImportPr
         if (!file) return;
 
         try {
-            const data = await file.arrayBuffer();
-            const wb = XLSX.read(data);
-            const ws = wb.Sheets[wb.SheetNames[0]]; // Pega a primeira aba
-            const jsonData = XLSX.utils.sheet_to_json(ws) as any[];
+            const arrayBuffer = await file.arrayBuffer();
+            const workbook = new ExcelJS.Workbook();
+            await workbook.xlsx.load(arrayBuffer);
+            const ws = workbook.worksheets[0]; // Pega a primeira aba
+
+            if (!ws) {
+                toast.error("Planilha vazia ou inválida.");
+                return;
+            }
+
+            // Read header row to build column mapping
+            const headerRow = ws.getRow(1);
+            const colMap: Record<string, number> = {};
+            headerRow.eachCell((cell, colNumber) => {
+                const val = String(cell.value || "").trim();
+                if (val) colMap[val] = colNumber;
+            });
 
             let successCount = 0;
             let errorCount = 0;
 
-            jsonData.forEach((row) => {
-                // Tenta achar a coluna de Período (ignora case e acentos se possível)
-                const rawPeriod = row["Período"] || row["Periodo"] || row["PERÍODO"];
+            // Iterate data rows (skip header)
+            ws.eachRow((row, rowNumber) => {
+                if (rowNumber <= 1) return; // Pula header
+
+                // Tenta achar a coluna de Período
+                const periodCol = colMap["Período"] || colMap["Periodo"] || colMap["PERÍODO"] || 1;
+                const rawPeriod = row.getCell(periodCol).value;
                 if (!rawPeriod) return;
 
                 const periodStr = String(rawPeriod).trim().toUpperCase();
@@ -84,11 +111,10 @@ export function useExcelImport({ asset, setValue, moduleType }: UseExcelImportPr
 
                 // Pega o valor (tenta pela chave exata do primeiro campo ou faz fallback para a 2ª coluna)
                 const firstFieldCol = isSingleField ? `${fields[0].label} (${unit})` : fields[0].label;
-                let rawValue = row[firstFieldCol];
-                if (rawValue === undefined) {
-                    const keys = Object.keys(row);
-                    const valKey = keys.find(k => k.toUpperCase() !== "PERÍODO" && k.toUpperCase() !== "PERIODO");
-                    if (valKey) rawValue = row[valKey];
+                let rawValue = colMap[firstFieldCol] ? row.getCell(colMap[firstFieldCol]).value : undefined;
+                if (rawValue === undefined || rawValue === null) {
+                    // Fallback: pega a segunda coluna
+                    rawValue = row.getCell(2).value;
                 }
 
                 if (rawValue !== undefined && rawValue !== null && rawValue !== "") {

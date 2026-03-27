@@ -189,8 +189,12 @@ export function getAssetInjectedFields(moduleType: string, assetConfig: Record<s
     if (fields) {
         fields.forEach(({ name, assetKey, transform }) => {
             const rawValue = assetConfig[assetKey];
-            if (rawValue !== undefined && rawValue !== null) {
-                injected[name] = transform ? transform(rawValue) : rawValue;
+
+            if (transform) {
+                // Always inject transformed fields (handles defaults for required booleans)
+                injected[name] = transform(rawValue);
+            } else if (rawValue !== undefined && rawValue !== null) {
+                injected[name] = rawValue;
             }
         });
     }

@@ -72,3 +72,23 @@ export const listAdminReportsByCompany = async (req: Request, res: Response) => 
     const data = await service.getAllByCompany(companyId);
     res.json(data);
 };
+
+export const bulkCreateOrUpdate = async (req: Request, res: Response) => {
+    const { sourceType } = req.params;
+    const { service } = getRegistryEntry(sourceType);
+    const { entries } = req.body;
+
+    if (!Array.isArray(entries) || entries.length === 0) {
+        return res.status(400).json({ message: 'Nenhum registro enviado' });
+    }
+
+    if (entries.length > 500) {
+        return res.status(400).json({ message: 'Máximo 500 registros por envio' });
+    }
+
+    const result = await service.bulkCreateOrUpdate(entries);
+    res.status(200).json({
+        ...result,
+        message: `${result.created} registros criados, ${result.updated} atualizados`
+    });
+};

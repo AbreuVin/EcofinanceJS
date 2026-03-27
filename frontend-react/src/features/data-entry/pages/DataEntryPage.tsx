@@ -3,10 +3,12 @@ import { useLocation, useParams } from "wouter";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import DashboardLayout from "@/shared/layouts/DashboardLayout";
 import { useAssets } from "@/features/assets/hooks/useAssets";
+import { useUnits } from "@/features/units/hooks/useUnits";
 import { useDataEntries } from "../hooks/useDataEntry";
 import { DataEntryTable } from "../components/DataEntryTable";
 import { DataEntrySheet } from "../components/DataEntrySheet";
 import { DataEntryFilters } from "../components/DataEntryFilters";
+import { ExcelActionsDropdown } from "../components/ExcelActionsDropdown";
 import { getModuleLabel, normalizeSlugToType } from "../utils/module-mapping";
 import type { AssetTypology } from "@/types/AssetTypology";
 
@@ -22,6 +24,7 @@ export default function DataEntryPage() {
     const [selectedAsset, setSelectedAsset] = useState<AssetTypology | null>(null);
 
     const { data: rawAssets = [], isLoading: loadingAssets } = useAssets();
+    const { data: units = [] } = useUnits();
 
     const queryUnitId = selectedUnitId === "all_units" ? undefined : Number(selectedUnitId);
     const { data: entries = [] } = useDataEntries(
@@ -101,12 +104,23 @@ export default function DataEntryPage() {
                         <h1 className="text-2xl font-bold">{getModuleLabel(moduleType)}</h1>
                         <p className="text-muted-foreground">Reporte de dados operacionais</p>
                     </div>
-                    <DataEntryFilters
-                        year={selectedYear}
-                        unitId={selectedUnitId}
-                        onYearChange={setSelectedYear}
-                        onUnitChange={setSelectedUnitId}
-                    />
+                    <div className="flex items-center gap-3">
+                        <ExcelActionsDropdown
+                            sourceType={moduleType}
+                            assets={processedAssets}
+                            reports={entries}
+                            currentYear={selectedYear}
+                            unitId={queryUnitId}
+                            unitName={queryUnitId ? units.find(u => u.id === queryUnitId)?.name : undefined}
+                            units={units}
+                        />
+                        <DataEntryFilters
+                            year={selectedYear}
+                            unitId={selectedUnitId}
+                            onYearChange={setSelectedYear}
+                            onUnitChange={setSelectedUnitId}
+                        />
+                    </div>
                 </div>
 
                 {loadingAssets ? (

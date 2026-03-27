@@ -28,10 +28,16 @@ export function useDataEntryMutation(module: EsgModuleType, unitId: number | nul
             const { assetDescription, entries, existingRecords } = values;
             const promises: Promise<any>[] = [];
 
+            // Helper: normalize period to match DB records (handles Annual/Anual mismatch)
+            const periodsMatch = (a: string, b: string) =>
+                a === b ||
+                (a === "Anual" && b === "Annual") ||
+                (a === "Annual" && b === "Anual");
+
             for (const [period, formData] of Object.entries(entries)) {
 
                 const existing = existingRecords.find(r =>
-                    r.period === period &&
+                    periodsMatch(r.period, period) &&
                     r.sourceDescription === assetDescription
                 );
 
