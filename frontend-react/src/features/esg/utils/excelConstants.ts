@@ -64,17 +64,17 @@ export interface ScopeLayout {
  */
 export const PERIOD_COLUMN_WIDTHS: Record<string, number> = {
     'Janeiro':   10.78,
-    'Fevereiro':  8.89,
+    'Fevereiro': 12.00,
     'Março':      8.89,
     'Abril':      8.89,
     'Maio':       8.89,
     'Junho':      8.89,
     'Julho':      8.89,
     'Agosto':     8.89,
-    'Setembro':   9.78,
-    'Outubro':    8.89,
-    'Novembro':  10.22,
-    'Dezembro':   9.89,
+    'Setembro':  12.00,
+    'Outubro':   11.00,
+    'Novembro':  13.00,
+    'Dezembro':  12.00,
     'Anual':      8.89,
 };
 
@@ -89,32 +89,32 @@ const LAYOUT_STATIONARY_COMBUSTION: ScopeLayout = {
         { key: 'frequency',         header: 'Mensal ou anual?',          width: 14.55 },
         { key: 'responsible',       header: 'Responsável pelo reporte',  width: 14.55 },
     ],
-    rowHeights: { title: 21, instruction: 15.75, detail: 76.5, header: 32.25 },
+    rowHeights: { title: 21, instruction: 15.75, detail: 76.5, header: 42 },
 };
 
 const LAYOUT_MOBILE_COMBUSTION: ScopeLayout = {
     fixedColumns: [
         { key: 'unitName',          header: 'Unidade Empresarial',            width: 30.44 },
-        { key: 'sourceDescription', header: 'Fonte de Emissão',               width: 18.11 },
+        { key: 'sourceDescription', header: 'Fonte de Emissão',               width: 25.00 },
         { key: 'reportType',        header: 'Tipo de Reporte',                width: 18.11 },
-        { key: 'fuelOrVehicle',     header: 'Combustível / Veículo utilizado', width: 18.55 },
+        { key: 'fuelOrVehicle',     header: 'Combustível / Veículo utilizado', width: 30.00 },
         { key: 'unitMeasure',       header: 'Unidade de medida',              width: 19.11 },
         { key: 'frequency',         header: 'Mensal ou anual?',               width: 14.55 },
         { key: 'responsible',       header: 'Responsável pelo reporte',       width: 14.55 },
     ],
-    rowHeights: { title: 21, instruction: 15.75, detail: 33.75, header: 32.25 },
+    rowHeights: { title: 21, instruction: 20.25, detail: 76.5, header: 42 },
 };
 
 const LAYOUT_FUGITIVE_EMISSIONS: ScopeLayout = {
     fixedColumns: [
         { key: 'unitName',          header: 'Unidade Empresarial',       width: 30.44 },
-        { key: 'sourceDescription', header: 'Fonte de Emissão',          width: 18.11 },
-        { key: 'fuelOrVehicle',     header: 'Gás reposto',              width: 18.55 },
-        { key: 'unitMeasure',       header: 'Unidade de medida',         width: 19.11 },
+        { key: 'sourceDescription', header: 'Fonte de Emissão',          width: 27.00 },
+        { key: 'fuelOrVehicle',     header: 'Gás reposto',               width: 26.00 },
+        { key: 'unitMeasure',       header: 'Unidade de medida',         width: 22.00 },
         { key: 'frequency',         header: 'Mensal ou anual?',          width: 14.55 },
         { key: 'responsible',       header: 'Responsável pelo reporte',  width: 14.55 },
     ],
-    rowHeights: { title: 25.5, instruction: 25.5, detail: 16.5, header: 36.75 },
+    rowHeights: { title: 25.5, instruction: 25.5, detail: 76.5, header: 42 },
 };
 
 /**

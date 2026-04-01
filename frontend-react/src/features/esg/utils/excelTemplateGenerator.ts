@@ -222,13 +222,14 @@ export async function generateEsgExcelTemplate({
             const cell = row.getCell(periodStartCol + i);
             const isEditable = isMensal;
 
-            cell.protection = { locked: !isEditable };
             cell.fill = isEditable ? EDITABLE_FILL : LOCKED_FILL;
             cell.border = CELL_BORDER;
             cell.alignment = CENTER_ALIGNMENT;
             cell.font = { ...DATA_FONT };
-
+            // Só definir proteção nas células EDITÁVEIS (locked: false).
+            // Células sem protection explícita herdam locked=true do Excel por padrão.
             if (isEditable) {
+                cell.protection = { locked: false };
                 const existing = findReport(reports, asset, month, currentYear);
                 if (existing && existing[primaryField] != null) {
                     cell.value = existing[primaryField];
@@ -239,13 +240,12 @@ export async function generateEsgExcelTemplate({
         // Anual column
         const annualCell = row.getCell(periodStartCol + 12);
         const isAnnualEditable = !isMensal;
-        annualCell.protection = { locked: !isAnnualEditable };
         annualCell.fill = isAnnualEditable ? EDITABLE_FILL : LOCKED_FILL;
         annualCell.border = CELL_BORDER;
         annualCell.alignment = CENTER_ALIGNMENT;
         annualCell.font = { ...DATA_FONT };
-
         if (isAnnualEditable) {
+            annualCell.protection = { locked: false };
             const existing = findReport(reports, asset, "Anual", currentYear);
             if (existing && existing[primaryField] != null) {
                 annualCell.value = existing[primaryField];
@@ -295,10 +295,14 @@ export async function generateEsgExcelTemplate({
 
 function setCellLocked(cell: ExcelJS.Cell, value: any, fill?: ExcelJS.Fill, font?: Partial<ExcelJS.Font>) {
     cell.value = value;
-    cell.protection = { locked: true };
     cell.fill = fill || INFO_CELL_FILL;
     cell.border = CELL_BORDER;
     cell.font = font || { ...DATA_FONT };
+    // Não definir cell.protection aqui: células sem protection explícita
+    // ficam com locked=true pelo comportamento padrão do Excel quando a
+    // planilha está protegida. Definir { locked: true } explicitamente causa
+    // applyProtection="1" sem elemento <protection> filho, o que pode ser
+    // ignorado por certas versões do Excel/LibreOffice.
 }
 
 function parseAssetFields(assetFields: string | Record<string, any>): Record<string, any> {
