@@ -1,17 +1,18 @@
 /**
  * Parser para templates Excel ESG gerados pelo excelTemplateGenerator.
  *
- * Layout de colunas esperado (matching client template):
- *   A: __assetId (oculta)
- *   B: Unidade Empresarial
- *   C: Fonte de Emissão
- *   D: Tipo de Reporte
- *   E: Combustível / Veículo
- *   F: Unidade de medida
- *   G: Mensal ou anual?
- *   H: Responsável
- *   I-T: Janeiro a Dezembro
- *   U: Anual
+ * Layout de colunas **variável por escopo** — cada módulo pode ter
+ * um número diferente de colunas fixas antes dos períodos.
+ * A detecção é dinâmica via nomes de cabeçalho (row 4).
+ *
+ * Estrutura geral:
+ *   Col 1: __assetId (oculta — usada para identificação)
+ *   Col 2..N: Colunas fixas do escopo (varia por módulo)
+ *   Col N+1..N+12: Janeiro a Dezembro
+ *   Col N+13: Anual
+ *
+ * O parser busca __assetId e os meses/Anual pelo nome no cabeçalho,
+ * tornando-o compatível com qualquer layout de colunas fixas.
  */
 
 import ExcelJS from "exceljs";

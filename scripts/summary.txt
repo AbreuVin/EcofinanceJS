@@ -1,0 +1,468 @@
+=== Escopo 1 - Combustão Estacionária.xlsx ===
+  Sheet: Template Limpo (state:visible)
+  Rows: 13, Cols: 19
+  Comments count: 0
+
+  COLUMN WIDTHS:
+    A(1): width=30.44140625
+    B(2): width=18.109375
+    C(3): width=18.5546875
+    D(4): width=19.109375
+    E(5): width=14.5546875
+    F(6): width=14.5546875
+    G(7): width=10.77734375
+    H(8): width=8.88671875
+    I(9): width=8.88671875
+    J(10): width=8.88671875
+    K(11): width=8.88671875
+    L(12): width=8.88671875
+    M(13): width=8.88671875
+    N(14): width=8.88671875
+    O(15): width=9.77734375
+    P(16): width=8.88671875
+    Q(17): width=10.21875
+    R(18): width=9.88671875
+    S(19): width=8.88671875
+
+  ROW HEIGHTS:
+    Row 1: height=21
+    Row 2: height=15.75
+    Row 3: height=76.5
+    Row 4: height=32.25
+    Row 5: height=undefined
+    Row 6: height=undefined
+    Row 7: height=undefined
+    Row 8: height=undefined
+    Row 9: height=undefined
+    Row 10: height=undefined
+    Row 11: height=undefined
+    Row 12: height=undefined
+    Row 13: height=undefined
+
+  HEADER ROW (row 4) - height=32.25:
+    A4: "Unidade Empresarial"
+    B4: "Fonte de Emissão"
+    C4: "Combustível"
+    D4: "Unidade de medida"
+    E4: "Mensal ou anual?"
+    F4: "Responsável pelo reporte"
+    G4: "Janeiro"
+    H4: "Fevereiro"
+    I4: "Março"
+    J4: "Abril"
+    K4: "Maio"
+    L4: "Junho"
+    M4: "Julho"
+    N4: "Agosto"
+    O4: "Setembro"
+    P4: "Outubro"
+    Q4: "Novembro"
+    R4: "Dezembro"
+    S4: "Anual"
+
+  TITLE (row 1): "Combustão Estacionária"
+  INSTRUCTION (row 2): "Caso o controle do combustível seja feito em uma unidade diferente da solicitada (ex. lenha é controlada em m3 invés de "
+
+  MERGED CELLS: none
+
+  DATA SAMPLE (row 5):
+    A5: "Diretoria de Governança de TIC", fill={"theme":0,"tint":-0.249977111117893}
+    B5: "Gerador 1", fill={"theme":0,"tint":-0.249977111117893}
+    C5: "Óleo Diesel", fill={"theme":0,"tint":-0.249977111117893}
+    D5: "Litros", fill={"theme":0,"tint":-0.249977111117893}
+    E5: "Anual", fill={"theme":0,"tint":-0.249977111117893}
+    F5: "Alírio", fill={"theme":0,"tint":-0.249977111117893}
+
+------------------------------------------------------------
+  Sheet: Template com Comentários (state:visible)
+  Rows: 14, Cols: 19
+  Comments count: 0
+
+  COLUMN WIDTHS:
+    A(1): width=30.44140625
+    B(2): width=18.109375
+    C(3): width=18.5546875
+    D(4): width=19.109375
+    E(5): width=14.5546875
+    F(6): width=14.5546875
+    G(7): width=10.77734375
+    H(8): width=8.88671875
+    I(9): width=8.88671875
+    J(10): width=8.88671875
+    K(11): width=8.88671875
+    L(12): width=8.88671875
+    M(13): width=8.88671875
+    N(14): width=8.88671875
+    O(15): width=9.77734375
+    P(16): width=8.88671875
+    Q(17): width=10.21875
+    R(18): width=9.88671875
+    S(19): width=8.88671875
+
+  ROW HEIGHTS:
+    Row 1: height=21
+    Row 2: height=20.25
+    Row 3: height=76.5
+    Row 4: height=32.25
+    Row 5: height=undefined
+    Row 6: height=undefined
+    Row 7: height=undefined
+    Row 8: height=undefined
+    Row 9: height=undefined
+    Row 10: height=undefined
+    Row 11: height=undefined
+    Row 12: height=undefined
+    Row 13: height=15.75
+    Row 14: height=105.75
+
+  HEADER ROW (row 4) - height=32.25:
+    A4: "Unidade Empresarial"
+    B4: "Fonte de Emissão"
+    C4: "Combustível"
+    D4: "Unidade de medida"
+    E4: "Mensal ou anual?"
+    F4: "Responsável pelo reporte"
+    G4: "Janeiro"
+    H4: "Fevereiro"
+    I4: "Março"
+    J4: "Abril"
+    K4: "Maio"
+    L4: "Junho"
+    M4: "Julho"
+    N4: "Agosto"
+    O4: "Setembro"
+    P4: "Outubro"
+    Q4: "Novembro"
+    R4: "Dezembro"
+    S4: "Anual"
+
+  TITLE (row 1): "Combustão Estacionária"
+  DETAIL ROW (row 3): "Se possível, colocar um pequeno textinho indicando como o template deve ser preenchido. Ex: Preencher o consumo para cad"
+
+  MERGED CELLS: G14, A3
+
+  DATA SAMPLE (row 5):
+    A5: "Diretoria de Governança de TIC", fill={"theme":0,"tint":-0.249977111117893}
+    B5: "Gerador 1", fill={"theme":0,"tint":-0.249977111117893}
+    C5: "Óleo Diesel", fill={"theme":0,"tint":-0.249977111117893}
+    D5: "Litros", fill={"theme":0,"tint":-0.249977111117893}
+    E5: "Anual", fill={"theme":0,"tint":-0.249977111117893}
+    F5: "Alírio", fill={"theme":0,"tint":-0.249977111117893}
+
+------------------------------------------------------------
+
+
+=== Escopo 1 - Combustão Móvel.xlsx ===
+  Sheet: Template com comentários (state:visible)
+  Rows: 14, Cols: 20
+  Comments count: 0
+
+  COLUMN WIDTHS:
+    A(1): width=30.44140625
+    B(2): width=18.109375
+    C(3): width=18.109375
+    D(4): width=18.5546875
+    E(5): width=19.109375
+    F(6): width=14.5546875
+    G(7): width=14.5546875
+    H(8): width=10.77734375
+    I(9): width=8.88671875
+    J(10): width=8.88671875
+    K(11): width=8.88671875
+    L(12): width=8.88671875
+    M(13): width=8.88671875
+    N(14): width=8.88671875
+    O(15): width=8.88671875
+    P(16): width=9.77734375
+    Q(17): width=8.88671875
+    R(18): width=10.21875
+    S(19): width=9.88671875
+    T(20): width=8.88671875
+
+  ROW HEIGHTS:
+    Row 1: height=21
+    Row 2: height=20.25
+    Row 3: height=76.5
+    Row 4: height=32.25
+    Row 5: height=undefined
+    Row 6: height=undefined
+    Row 7: height=undefined
+    Row 8: height=undefined
+    Row 9: height=undefined
+    Row 10: height=undefined
+    Row 11: height=undefined
+    Row 12: height=undefined
+    Row 13: height=15.75
+    Row 14: height=105.75
+
+  HEADER ROW (row 4) - height=32.25:
+    A4: "Unidade Empresarial"
+    B4: "Fonte de Emissão"
+    C4: "Tipo de Reporte"
+    D4: "Combustível / Veículo utilizado"
+    E4: "Unidade de medida"
+    F4: "Mensal ou anual?"
+    G4: "Responsável pelo reporte"
+    H4: "Janeiro"
+    I4: "Fevereiro"
+    J4: "Março"
+    K4: "Abril"
+    L4: "Maio"
+    M4: "Junho"
+    N4: "Julho"
+    O4: "Agosto"
+    P4: "Setembro"
+    Q4: "Outubro"
+    R4: "Novembro"
+    S4: "Dezembro"
+    T4: "Anual"
+
+  TITLE (row 1): "Combustão Móvel"
+  DETAIL ROW (row 3): "Se possível, colocar um pequeno textinho indicando como o template deve ser preenchido. Ex: Preencher o consumo para cad"
+
+  MERGED CELLS: H14, A3
+
+  DATA SAMPLE (row 5):
+    A5: "Diretoria de Governança de TIC", fill={"theme":0,"tint":-0.249977111117893}
+    B5: "Frota de automóveis", fill={"theme":0,"tint":-0.249977111117893}
+    C5: "Distância percorrida", fill={"theme":0,"tint":-0.249977111117893}
+    D5: "Automóvel a Etanol", fill={"theme":0,"tint":-0.249977111117893}
+    E5: "km", fill={"theme":0,"tint":-0.249977111117893}
+    F5: "Anual", fill={"theme":0,"tint":-0.249977111117893}
+    G5: "Alírio", fill={"theme":0,"tint":-0.249977111117893}
+
+------------------------------------------------------------
+  Sheet: Template Limpo (state:visible)
+  Rows: 1048575, Cols: 20
+  Comments count: 0
+
+  COLUMN WIDTHS:
+    A(1): width=30.44140625
+    B(2): width=18.109375
+    C(3): width=18.109375
+    D(4): width=18.5546875
+    E(5): width=19.109375
+    F(6): width=14.5546875
+    G(7): width=14.5546875
+    H(8): width=10.77734375
+    I(9): width=8.88671875
+    J(10): width=8.88671875
+    K(11): width=8.88671875
+    L(12): width=8.88671875
+    M(13): width=8.88671875
+    N(14): width=8.88671875
+    O(15): width=8.88671875
+    P(16): width=9.77734375
+    Q(17): width=8.88671875
+    R(18): width=10.21875
+    S(19): width=9.88671875
+    T(20): width=8.88671875
+
+  ROW HEIGHTS:
+    Row 1: height=21
+    Row 2: height=15.75
+    Row 3: height=33.75
+    Row 4: height=32.25
+    Row 5: height=undefined
+    Row 6: height=undefined
+    Row 7: height=undefined
+    Row 8: height=undefined
+    Row 9: height=undefined
+    Row 10: height=undefined
+    Row 11: height=undefined
+    Row 12: height=undefined
+    Row 13: height=undefined
+
+  HEADER ROW (row 4) - height=32.25:
+    A4: "Unidade Empresarial"
+    B4: "Fonte de Emissão"
+    C4: "Tipo de Reporte"
+    D4: "Combustível / Veículo utilizado"
+    E4: "Unidade de medida"
+    F4: "Mensal ou anual?"
+    G4: "Responsável pelo reporte"
+    H4: "Janeiro"
+    I4: "Fevereiro"
+    J4: "Março"
+    K4: "Abril"
+    L4: "Maio"
+    M4: "Junho"
+    N4: "Julho"
+    O4: "Agosto"
+    P4: "Setembro"
+    Q4: "Outubro"
+    R4: "Novembro"
+    S4: "Dezembro"
+    T4: "Anual"
+
+  TITLE (row 1): "Combustão Móvel"
+  INSTRUCTION (row 2): "Caso o controle do combustível seja feito em uma unidade diferente da solicitada (ex. lenha é controlada em m3 invés de "
+
+  MERGED CELLS: none
+
+  DATA SAMPLE (row 5):
+    A5: "Diretoria de Governança de TIC", fill={"theme":0,"tint":-0.249977111117893}
+    B5: "Frota de automóveis", fill={"theme":0,"tint":-0.249977111117893}
+    C5: "Distância percorrida", fill={"theme":0,"tint":-0.249977111117893}
+    D5: "Automóvel a Etanol", fill={"theme":0,"tint":-0.249977111117893}
+    E5: "km", fill={"theme":0,"tint":-0.249977111117893}
+    F5: "Anual", fill={"theme":0,"tint":-0.249977111117893}
+    G5: "Alírio", fill={"theme":0,"tint":-0.249977111117893}
+
+------------------------------------------------------------
+
+
+=== Escopo 1 - Emissões Fugitivas.xlsx ===
+  Sheet: Template limpo (state:visible)
+  Rows: 1048575, Cols: 19
+  Comments count: 0
+
+  COLUMN WIDTHS:
+    A(1): width=30.44140625
+    B(2): width=18.109375
+    C(3): width=18.5546875
+    D(4): width=19.109375
+    E(5): width=14.5546875
+    F(6): width=14.5546875
+    G(7): width=10.77734375
+    H(8): width=8.88671875
+    I(9): width=8.88671875
+    J(10): width=8.88671875
+    K(11): width=8.88671875
+    L(12): width=8.88671875
+    M(13): width=8.88671875
+    N(14): width=8.88671875
+    O(15): width=9.77734375
+    P(16): width=8.88671875
+    Q(17): width=10.21875
+    R(18): width=9.88671875
+    S(19): width=8.88671875
+
+  ROW HEIGHTS:
+    Row 1: height=25.5
+    Row 2: height=25.5
+    Row 3: height=16.5
+    Row 4: height=36.75
+    Row 5: height=undefined
+    Row 6: height=undefined
+    Row 7: height=undefined
+    Row 8: height=undefined
+    Row 9: height=undefined
+    Row 10: height=undefined
+    Row 11: height=undefined
+    Row 12: height=undefined
+    Row 13: height=undefined
+
+  HEADER ROW (row 4) - height=36.75:
+    A4: "Unidade Empresarial"
+    B4: "Fonte de Emissão"
+    C4: "Gás reposto"
+    D4: "Unidade de medida"
+    E4: "Mensal ou anual?"
+    F4: "Responsável pelo reporte"
+    G4: "Janeiro"
+    H4: "Fevereiro"
+    I4: "Março"
+    J4: "Abril"
+    K4: "Maio"
+    L4: "Junho"
+    M4: "Julho"
+    N4: "Agosto"
+    O4: "Setembro"
+    P4: "Outubro"
+    Q4: "Novembro"
+    R4: "Dezembro"
+    S4: "Anual"
+
+  TITLE (row 1): "Emissões Fugitivas"
+  INSTRUCTION (row 2): "Caso o controle do combustível seja feito em uma unidade diferente da solicitada (ex. lenha é controlada em m3 invés de "
+
+  MERGED CELLS: A3
+
+  DATA SAMPLE (row 5):
+    A5: "Diretoria de Governança de TIC", fill={"theme":0,"tint":-0.249977111117893}
+    B5: "Ar-Condicionado 1", fill={"theme":0,"tint":-0.249977111117893}
+    C5: "HFC-23", fill={"theme":0,"tint":-0.249977111117893}
+    D5: "kg", fill={"theme":0,"tint":-0.249977111117893}
+    E5: "mensal", fill={"theme":0,"tint":-0.249977111117893}
+    F5: "Alírio", fill={"theme":0,"tint":-0.249977111117893}
+
+------------------------------------------------------------
+  Sheet: Template com comentários (state:visible)
+  Rows: 1048576, Cols: 19
+  Comments count: 0
+
+  COLUMN WIDTHS:
+    A(1): width=30.44140625
+    B(2): width=18.109375
+    C(3): width=18.5546875
+    D(4): width=19.109375
+    E(5): width=14.5546875
+    F(6): width=14.5546875
+    G(7): width=10.77734375
+    H(8): width=8.88671875
+    I(9): width=8.88671875
+    J(10): width=8.88671875
+    K(11): width=8.88671875
+    L(12): width=8.88671875
+    M(13): width=8.88671875
+    N(14): width=8.88671875
+    O(15): width=9.77734375
+    P(16): width=8.88671875
+    Q(17): width=10.21875
+    R(18): width=9.88671875
+    S(19): width=8.88671875
+
+  ROW HEIGHTS:
+    Row 1: height=25.5
+    Row 2: height=18
+    Row 3: height=76.5
+    Row 4: height=36.75
+    Row 5: height=undefined
+    Row 6: height=undefined
+    Row 7: height=undefined
+    Row 8: height=undefined
+    Row 9: height=undefined
+    Row 10: height=undefined
+    Row 11: height=undefined
+    Row 12: height=undefined
+    Row 13: height=15.75
+    Row 14: height=90.75
+
+  HEADER ROW (row 4) - height=36.75:
+    A4: "Unidade Empresarial"
+    B4: "Fonte de Emissão"
+    C4: "Gás reposto"
+    D4: "Unidade de medida"
+    E4: "Mensal ou anual?"
+    F4: "Responsável pelo reporte"
+    G4: "Janeiro"
+    H4: "Fevereiro"
+    I4: "Março"
+    J4: "Abril"
+    K4: "Maio"
+    L4: "Junho"
+    M4: "Julho"
+    N4: "Agosto"
+    O4: "Setembro"
+    P4: "Outubro"
+    Q4: "Novembro"
+    R4: "Dezembro"
+    S4: "Anual"
+
+  TITLE (row 1): "Emissões Fugitivas"
+  DETAIL ROW (row 3): "Se possível, colocar um pequeno textinho indicando como o template deve ser preenchido. Ex: Preencher o consumo para cad"
+
+  MERGED CELLS: G14, A3
+
+  DATA SAMPLE (row 5):
+    A5: "Diretoria de Governança de TIC", fill={"theme":0,"tint":-0.249977111117893}
+    B5: "Ar-Condicionado 1", fill={"theme":0,"tint":-0.249977111117893}
+    C5: "HFC-23", fill={"theme":0,"tint":-0.249977111117893}
+    D5: "kg", fill={"theme":0,"tint":-0.249977111117893}
+    E5: "mensal", fill={"theme":0,"tint":-0.249977111117893}
+    F5: "Alírio", fill={"theme":0,"tint":-0.249977111117893}
+
+------------------------------------------------------------
+
+

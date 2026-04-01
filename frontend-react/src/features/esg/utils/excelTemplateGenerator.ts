@@ -1,21 +1,17 @@
 /**
  * Gera um template Excel avançado ("UI Offline") para preenchimento de dados ESG.
- * Layout baseado no template do cliente (Combustão Móvel).
+ * Layout baseado nos templates de referência do cliente, com configuração por escopo.
  *
- * Estrutura de colunas (fixas):
- *   A: __assetId (OCULTA) — para identificação na importação
- *   B: Unidade Empresarial
- *   C: Fonte de Emissão
- *   D: Tipo de Reporte (ex: "Consumo de Combustível", "Distância percorrida")
- *   E: Combustível / Veículo utilizado
- *   F: Unidade de medida
- *   G: Mensal ou anual?
- *   H: Responsável pelo reporte
- *   I-T: Janeiro a Dezembro
- *   U: Anual
+ * Estrutura de colunas (variável por escopo):
+ *   Col 1: __assetId (OCULTA — para identificação na importação)
+ *   Col 2..N: Colunas fixas do escopo (Unidade, Fonte, Combustível/Gás, etc.)
+ *   Col N+1..N+12: Janeiro a Dezembro
+ *   Col N+13: Anual
  *
  * Features:
- * - Coluna A oculta com assetId
+ * - Coluna 1 oculta com assetId (retrocompatível com parser)
+ * - Layout de colunas específico por escopo (Estacionária, Móvel, Fugitivas, etc.)
+ * - Larguras, alturas e estilos aderentes aos templates de referência do cliente
  * - Proteção condicional: mensal → meses editáveis, anual → só "Anual" editável
  * - Dados existentes preenchidos automaticamente
  * - Aba oculta __metadata para validação na importação
@@ -34,6 +30,10 @@ import {
     HEADER_ROW,
     DATA_START_ROW,
     TITLE_FONT,
+    HEADER_FONT,
+    INSTRUCTION_FONT,
+    DETAIL_FONT,
+    DATA_FONT,
     HEADER_FILL,
     INSTRUCTION_FILL,
     LOCKED_FILL,
@@ -41,9 +41,13 @@ import {
     INFO_CELL_FILL,
     WRAP_ALIGNMENT,
     CENTER_ALIGNMENT,
+    HEADER_ALIGNMENT,
     CELL_BORDER,
     PROTECTION_PASSWORD,
+    PERIOD_COLUMN_WIDTHS,
+    DEFAULT_FONT_NAME,
     getModuleFriendlyName,
+    getScopeColumnLayout,
 } from "./excelConstants";
 
 // ── Types ───────────────────────────────────────────
@@ -83,20 +87,9 @@ interface GenerateTemplateOptions {
     units?: UnitInfo[];
 }
 
-// ── Column definitions matching client template ─────
+// ── Period columns ──────────────────────────────────
 
-const FIXED_COLS = [
-    { key: '__assetId', header: ASSET_ID_COLUMN_HEADER, width: 0.1 },    // A - HIDDEN
-    { key: 'unitName', header: 'Unidade Empresarial', width: 30 },       // B
-    { key: 'sourceDescription', header: 'Fonte de Emissão', width: 18 }, // C
-    { key: 'reportType', header: 'Tipo de Reporte', width: 18 },         // D
-    { key: 'fuelOrVehicle', header: 'Combustível / Veículo utilizado', width: 19 }, // E
-    { key: 'unitMeasure', header: 'Unidade de medida', width: 19 },      // F
-    { key: 'frequency', header: 'Mensal ou anual?', width: 15 },         // G
-    { key: 'responsible', header: 'Responsável pelo reporte', width: 15 }, // H
-];
-
-const PERIOD_COLS = [...MONTHS_LIST, "Anual"]; // I..U (13 cols)
+const PERIOD_COLS = [...MONTHS_LIST, "Anual"]; // 13 cols
 
 // ── Main function ───────────────────────────────────
 
@@ -115,8 +108,12 @@ export async function generateEsgExcelTemplate({
 
     const moduleName = getModuleFriendlyName(sourceType);
     const moduleFields = getModuleFields(sourceType);
+    const scopeLayout = getScopeColumnLayout(sourceType);
+    const fixedCols = scopeLayout.fixedColumns;
+    const heights = scopeLayout.rowHeights;
 
-    const totalCols = FIXED_COLS.length + PERIOD_COLS.length;
+    // Total columns = 1 (__assetId hidden) + fixedCols + 13 period cols
+    const totalCols = 1 + fixedCols.length + PERIOD_COLS.length;
 
     // ── 1. Create data sheet ──────────────────────────
     const ws = workbook.addWorksheet(DATA_SHEET_NAME);
@@ -125,57 +122,61 @@ export async function generateEsgExcelTemplate({
     ws.mergeCells(1, 1, 1, totalCols);
     const titleCell = ws.getCell(1, 1);
     titleCell.value = moduleName;
-    titleCell.font = { ...TITLE_FONT, size: 16 };
-    ws.getRow(1).height = 28;
+    titleCell.font = { ...TITLE_FONT };
+    ws.getRow(1).height = heights.title;
 
-    // ── 3. Row 2-3: Instructions ──────────────────────
-    // Row 2: short instruction (bold)
+    // ── 3. Row 2: Short instruction (bold red) ────────
     ws.mergeCells(2, 1, 2, totalCols);
     const instrCell = ws.getCell(2, 1);
     instrCell.value = getInstructionText(sourceType);
-    instrCell.font = { bold: true, size: 12 };
+    instrCell.font = { ...INSTRUCTION_FONT };
     instrCell.alignment = WRAP_ALIGNMENT;
-    ws.getRow(2).height = 35;
+    ws.getRow(2).height = heights.instruction;
 
-    // Row 3: detailed instruction (merged across all cols)
+    // ── 4. Row 3: Detailed instruction ────────────────
     ws.mergeCells(3, 1, 3, totalCols);
     const detailCell = ws.getCell(3, 1);
     detailCell.value = getDetailedInstructionText(sourceType);
-    detailCell.font = { size: 12 };
+    detailCell.font = { ...DETAIL_FONT };
     detailCell.alignment = WRAP_ALIGNMENT;
     detailCell.fill = INSTRUCTION_FILL;
-    ws.getRow(3).height = 55;
+    ws.getRow(3).height = heights.detail;
 
-    // ── 4. Row 4: Headers ─────────────────────────────
+    // ── 5. Row 4: Headers ─────────────────────────────
     const headerRow = ws.getRow(HEADER_ROW);
     const allHeaders = [
-        ...FIXED_COLS.map(c => c.header),
+        ASSET_ID_COLUMN_HEADER,
+        ...fixedCols.map(c => c.header),
         ...PERIOD_COLS,
     ];
 
     allHeaders.forEach((header, idx) => {
         const cell = headerRow.getCell(idx + 1);
         cell.value = header;
-        cell.font = { bold: true, size: 12 };
-        cell.alignment = { ...CENTER_ALIGNMENT, wrapText: true };
+        cell.font = { ...HEADER_FONT };
+        cell.alignment = HEADER_ALIGNMENT;
         cell.fill = HEADER_FILL;
         cell.border = CELL_BORDER;
     });
-    headerRow.height = 22;
+    headerRow.height = heights.header;
 
-    // ── 5. Column widths ──────────────────────────────
-    FIXED_COLS.forEach((col, idx) => {
-        ws.getColumn(idx + 1).width = col.width;
-    });
-    // Hide column A (__assetId)
+    // ── 6. Column widths ──────────────────────────────
+    // Col 1: __assetId (hidden)
+    ws.getColumn(1).width = 0.1;
     ws.getColumn(1).hidden = true;
 
-    // Period columns
-    for (let i = 0; i < PERIOD_COLS.length; i++) {
-        ws.getColumn(FIXED_COLS.length + 1 + i).width = i < 12 ? 10 : 10; // months + Anual
-    }
+    // Fixed info columns
+    fixedCols.forEach((col, idx) => {
+        ws.getColumn(idx + 2).width = col.width;
+    });
 
-    // ── 6. Data rows ──────────────────────────────────
+    // Period columns (with specific widths per month)
+    PERIOD_COLS.forEach((period, i) => {
+        const colIdx = 1 + fixedCols.length + 1 + i; // 1-based, after hidden + fixed
+        ws.getColumn(colIdx).width = PERIOD_COLUMN_WIDTHS[period] || 8.89;
+    });
+
+    // ── 7. Data rows ──────────────────────────────────
     const unitMap = new Map(units.map(u => [u.id, u.name]));
 
     assets.forEach((asset, rowIdx) => {
@@ -185,53 +186,47 @@ export async function generateEsgExcelTemplate({
         const assetConfig = parseAssetFields(asset.assetFields);
         const isMensal = asset.reportingFrequency?.toLowerCase() === "mensal";
 
-        // Resolve unit name
+        // Resolve values for each fixed column
         const assetUnitName = resolveUnitName(asset, unitId, unitName, unitMap);
-
-        // Determine report type and fuel/vehicle from assetFields
         const reportType = getReportType(assetConfig, sourceType);
         const fuelOrVehicle = getFuelOrVehicle(assetConfig, sourceType);
         const measureUnit = assetConfig.unitMeasure || assetConfig.consumptionUnit || assetConfig.distanceUnit || "";
         const responsible = asset.traceabilityResponsible || assetConfig.responsible || "";
 
-        // Col positions
-        let colIdx = 1;
+        // Build a values map keyed by column key
+        const valuesMap: Record<string, any> = {
+            unitName: assetUnitName,
+            sourceDescription: asset.description,
+            reportType: reportType,
+            fuelOrVehicle: fuelOrVehicle,
+            unitMeasure: measureUnit,
+            frequency: isMensal ? "Mensal" : "Anual",
+            responsible: responsible,
+        };
 
-        // A: __assetId (hidden)
-        setCellLocked(row.getCell(colIdx++), asset.id, INFO_CELL_FILL, { size: 8, color: { argb: 'FF999999' } });
+        // Col 1: __assetId (hidden)
+        const assetIdCell = row.getCell(1);
+        setCellLocked(assetIdCell, asset.id, INFO_CELL_FILL, { size: 8, color: { argb: 'FF999999' }, name: DEFAULT_FONT_NAME });
 
-        // B: Unidade Empresarial
-        setCellLocked(row.getCell(colIdx++), assetUnitName);
+        // Fixed columns (col 2..N+1)
+        fixedCols.forEach((colDef, idx) => {
+            const cell = row.getCell(idx + 2);
+            setCellLocked(cell, valuesMap[colDef.key] || "");
+        });
 
-        // C: Fonte de Emissão
-        setCellLocked(row.getCell(colIdx++), asset.description);
-
-        // D: Tipo de Reporte
-        setCellLocked(row.getCell(colIdx++), reportType);
-
-        // E: Combustível / Veículo utilizado
-        setCellLocked(row.getCell(colIdx++), fuelOrVehicle);
-
-        // F: Unidade de medida
-        setCellLocked(row.getCell(colIdx++), measureUnit);
-
-        // G: Mensal ou anual?
-        setCellLocked(row.getCell(colIdx++), isMensal ? "Mensal" : "Anual");
-
-        // H: Responsável pelo reporte
-        setCellLocked(row.getCell(colIdx++), responsible);
-
-        // I-T: Janeiro a Dezembro (12 cols)
+        // Period columns (months + Anual)
+        const periodStartCol = 1 + fixedCols.length + 1; // 1-based
         const primaryField = moduleFields[0]?.name || 'consumption';
 
-        MONTHS_LIST.forEach(month => {
-            const cell = row.getCell(colIdx++);
+        MONTHS_LIST.forEach((month, i) => {
+            const cell = row.getCell(periodStartCol + i);
             const isEditable = isMensal;
 
             cell.protection = { locked: !isEditable };
             cell.fill = isEditable ? EDITABLE_FILL : LOCKED_FILL;
             cell.border = CELL_BORDER;
             cell.alignment = CENTER_ALIGNMENT;
+            cell.font = { ...DATA_FONT };
 
             if (isEditable) {
                 const existing = findReport(reports, asset, month, currentYear);
@@ -241,13 +236,14 @@ export async function generateEsgExcelTemplate({
             }
         });
 
-        // U: Anual
-        const annualCell = row.getCell(colIdx++);
+        // Anual column
+        const annualCell = row.getCell(periodStartCol + 12);
         const isAnnualEditable = !isMensal;
         annualCell.protection = { locked: !isAnnualEditable };
         annualCell.fill = isAnnualEditable ? EDITABLE_FILL : LOCKED_FILL;
         annualCell.border = CELL_BORDER;
         annualCell.alignment = CENTER_ALIGNMENT;
+        annualCell.font = { ...DATA_FONT };
 
         if (isAnnualEditable) {
             const existing = findReport(reports, asset, "Anual", currentYear);
@@ -257,7 +253,7 @@ export async function generateEsgExcelTemplate({
         }
     });
 
-    // ── 7. Protect worksheet ──────────────────────────
+    // ── 8. Protect worksheet ──────────────────────────
     await ws.protect(PROTECTION_PASSWORD, {
         selectLockedCells: true,
         selectUnlockedCells: true,
@@ -272,7 +268,7 @@ export async function generateEsgExcelTemplate({
         autoFilter: false,
     });
 
-    // ── 8. Metadata sheet (hidden) ────────────────────
+    // ── 9. Metadata sheet (hidden) ────────────────────
     const metaSheet = workbook.addWorksheet(METADATA_SHEET_NAME);
     metaSheet.state = "hidden";
 
@@ -284,7 +280,7 @@ export async function generateEsgExcelTemplate({
         metaSheet.getCell("A5").value = `unitId=${unitId}`;
     }
 
-    // ── 9. Generate and download ──────────────────────
+    // ── 10. Generate and download ─────────────────────
     const buffer = await workbook.xlsx.writeBuffer();
     const blob = new Blob([buffer], {
         type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
@@ -302,7 +298,7 @@ function setCellLocked(cell: ExcelJS.Cell, value: any, fill?: ExcelJS.Fill, font
     cell.protection = { locked: true };
     cell.fill = fill || INFO_CELL_FILL;
     cell.border = CELL_BORDER;
-    cell.font = font || { size: 12 };
+    cell.font = font || { ...DATA_FONT };
 }
 
 function parseAssetFields(assetFields: string | Record<string, any>): Record<string, any> {
@@ -363,7 +359,7 @@ function getReportType(config: Record<string, any>, sourceType: string): string 
 }
 
 /**
- * Determina o "Combustível / Veículo utilizado" baseado no assetFields.
+ * Determina o "Combustível / Veículo utilizado" ou "Gás reposto" baseado no assetFields.
  */
 function getFuelOrVehicle(config: Record<string, any>, _sourceType: string): string {
     // Try common field names
@@ -398,7 +394,8 @@ function findReport(
 function getInstructionText(sourceType: string): string {
     const moduleInstructions: Record<string, string> = {
         'mobile_combustion': "Caso o controle do combustível seja feito em uma unidade diferente da solicitada (ex. lenha é controlada em m³ em vez de toneladas), verificar documento de conversão de unidades.",
-        'stationary_combustion': "Preencher o consumo de combustível para cada fonte estacionária cadastrada, atentando-se à unidade de medida.",
+        'stationary_combustion': "Caso o controle do combustível seja feito em uma unidade diferente da solicitada (ex. lenha é controlada em m³ em vez de toneladas), verificar documento de conversão de unidades.",
+        'fugitive_emissions': "Caso o controle do combustível seja feito em uma unidade diferente da solicitada (ex. lenha é controlada em m³ em vez de toneladas), verificar documento de conversão de unidades.",
         'electricity_purchase': "Preencher o consumo de energia elétrica para cada fonte cadastrada.",
     };
     return moduleInstructions[sourceType]

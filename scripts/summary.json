@@ -1,0 +1,1258 @@
+[
+  {
+    "file": "Escopo 1 - Combustão Estacionária.xlsx",
+    "sheets": [
+      {
+        "name": "Template Limpo",
+        "state": "visible",
+        "rowCount": 13,
+        "colCount": 19,
+        "commentsCount": 0,
+        "columnWidths": {
+          "A": {
+            "w": 30.44140625,
+            "hidden": false
+          },
+          "B": {
+            "w": 18.109375,
+            "hidden": false
+          },
+          "C": {
+            "w": 18.5546875,
+            "hidden": false
+          },
+          "D": {
+            "w": 19.109375,
+            "hidden": false
+          },
+          "E": {
+            "w": 14.5546875,
+            "hidden": false
+          },
+          "F": {
+            "w": 14.5546875,
+            "hidden": false
+          },
+          "G": {
+            "w": 10.77734375,
+            "hidden": false
+          },
+          "H": {
+            "w": 8.88671875,
+            "hidden": false
+          },
+          "I": {
+            "w": 8.88671875,
+            "hidden": false
+          },
+          "J": {
+            "w": 8.88671875,
+            "hidden": false
+          },
+          "K": {
+            "w": 8.88671875,
+            "hidden": false
+          },
+          "L": {
+            "w": 8.88671875,
+            "hidden": false
+          },
+          "M": {
+            "w": 8.88671875,
+            "hidden": false
+          },
+          "N": {
+            "w": 8.88671875,
+            "hidden": false
+          },
+          "O": {
+            "w": 9.77734375,
+            "hidden": false
+          },
+          "P": {
+            "w": 8.88671875,
+            "hidden": false
+          },
+          "Q": {
+            "w": 10.21875,
+            "hidden": false
+          },
+          "R": {
+            "w": 9.88671875,
+            "hidden": false
+          },
+          "S": {
+            "w": 8.88671875,
+            "hidden": false
+          }
+        },
+        "rowHeights": {
+          "1": 21,
+          "2": 15.75,
+          "3": 76.5,
+          "4": 32.25
+        },
+        "headers": [
+          {
+            "ref": "A4",
+            "val": "Unidade Empresarial"
+          },
+          {
+            "ref": "B4",
+            "val": "Fonte de Emissão"
+          },
+          {
+            "ref": "C4",
+            "val": "Combustível"
+          },
+          {
+            "ref": "D4",
+            "val": "Unidade de medida"
+          },
+          {
+            "ref": "E4",
+            "val": "Mensal ou anual?"
+          },
+          {
+            "ref": "F4",
+            "val": "Responsável pelo reporte"
+          },
+          {
+            "ref": "G4",
+            "val": "Janeiro"
+          },
+          {
+            "ref": "H4",
+            "val": "Fevereiro"
+          },
+          {
+            "ref": "I4",
+            "val": "Março"
+          },
+          {
+            "ref": "J4",
+            "val": "Abril"
+          },
+          {
+            "ref": "K4",
+            "val": "Maio"
+          },
+          {
+            "ref": "L4",
+            "val": "Junho"
+          },
+          {
+            "ref": "M4",
+            "val": "Julho"
+          },
+          {
+            "ref": "N4",
+            "val": "Agosto"
+          },
+          {
+            "ref": "O4",
+            "val": "Setembro"
+          },
+          {
+            "ref": "P4",
+            "val": "Outubro"
+          },
+          {
+            "ref": "Q4",
+            "val": "Novembro"
+          },
+          {
+            "ref": "R4",
+            "val": "Dezembro"
+          },
+          {
+            "ref": "S4",
+            "val": "Anual"
+          }
+        ],
+        "mergedCells": [],
+        "comments": [],
+        "titleRow1": "Combustão Estacionária",
+        "instructionRow2": "Caso o controle do combustível seja feito em uma unidade diferente da solicitada (ex. lenha é controlada em m3 invés de ",
+        "detailRow3": "",
+        "dataRow5Sample": [
+          {
+            "ref": "A5",
+            "val": "Diretoria de Governança de TIC"
+          },
+          {
+            "ref": "B5",
+            "val": "Gerador 1"
+          },
+          {
+            "ref": "C5",
+            "val": "Óleo Diesel"
+          },
+          {
+            "ref": "D5",
+            "val": "Litros"
+          },
+          {
+            "ref": "E5",
+            "val": "Anual"
+          },
+          {
+            "ref": "F5",
+            "val": "Alírio"
+          }
+        ]
+      },
+      {
+        "name": "Template com Comentários",
+        "state": "visible",
+        "rowCount": 14,
+        "colCount": 19,
+        "commentsCount": 0,
+        "columnWidths": {
+          "A": {
+            "w": 30.44140625,
+            "hidden": false
+          },
+          "B": {
+            "w": 18.109375,
+            "hidden": false
+          },
+          "C": {
+            "w": 18.5546875,
+            "hidden": false
+          },
+          "D": {
+            "w": 19.109375,
+            "hidden": false
+          },
+          "E": {
+            "w": 14.5546875,
+            "hidden": false
+          },
+          "F": {
+            "w": 14.5546875,
+            "hidden": false
+          },
+          "G": {
+            "w": 10.77734375,
+            "hidden": false
+          },
+          "H": {
+            "w": 8.88671875,
+            "hidden": false
+          },
+          "I": {
+            "w": 8.88671875,
+            "hidden": false
+          },
+          "J": {
+            "w": 8.88671875,
+            "hidden": false
+          },
+          "K": {
+            "w": 8.88671875,
+            "hidden": false
+          },
+          "L": {
+            "w": 8.88671875,
+            "hidden": false
+          },
+          "M": {
+            "w": 8.88671875,
+            "hidden": false
+          },
+          "N": {
+            "w": 8.88671875,
+            "hidden": false
+          },
+          "O": {
+            "w": 9.77734375,
+            "hidden": false
+          },
+          "P": {
+            "w": 8.88671875,
+            "hidden": false
+          },
+          "Q": {
+            "w": 10.21875,
+            "hidden": false
+          },
+          "R": {
+            "w": 9.88671875,
+            "hidden": false
+          },
+          "S": {
+            "w": 8.88671875,
+            "hidden": false
+          }
+        },
+        "rowHeights": {
+          "1": 21,
+          "2": 20.25,
+          "3": 76.5,
+          "4": 32.25,
+          "13": 15.75,
+          "14": 105.75
+        },
+        "headers": [
+          {
+            "ref": "A4",
+            "val": "Unidade Empresarial"
+          },
+          {
+            "ref": "B4",
+            "val": "Fonte de Emissão"
+          },
+          {
+            "ref": "C4",
+            "val": "Combustível"
+          },
+          {
+            "ref": "D4",
+            "val": "Unidade de medida"
+          },
+          {
+            "ref": "E4",
+            "val": "Mensal ou anual?"
+          },
+          {
+            "ref": "F4",
+            "val": "Responsável pelo reporte"
+          },
+          {
+            "ref": "G4",
+            "val": "Janeiro"
+          },
+          {
+            "ref": "H4",
+            "val": "Fevereiro"
+          },
+          {
+            "ref": "I4",
+            "val": "Março"
+          },
+          {
+            "ref": "J4",
+            "val": "Abril"
+          },
+          {
+            "ref": "K4",
+            "val": "Maio"
+          },
+          {
+            "ref": "L4",
+            "val": "Junho"
+          },
+          {
+            "ref": "M4",
+            "val": "Julho"
+          },
+          {
+            "ref": "N4",
+            "val": "Agosto"
+          },
+          {
+            "ref": "O4",
+            "val": "Setembro"
+          },
+          {
+            "ref": "P4",
+            "val": "Outubro"
+          },
+          {
+            "ref": "Q4",
+            "val": "Novembro"
+          },
+          {
+            "ref": "R4",
+            "val": "Dezembro"
+          },
+          {
+            "ref": "S4",
+            "val": "Anual"
+          }
+        ],
+        "mergedCells": [
+          "G14",
+          "A3"
+        ],
+        "comments": [],
+        "titleRow1": "Combustão Estacionária",
+        "instructionRow2": "",
+        "detailRow3": "Se possível, colocar um pequeno textinho indicando como o template deve ser preenchido. Ex: Preencher o consumo para cad",
+        "dataRow5Sample": [
+          {
+            "ref": "A5",
+            "val": "Diretoria de Governança de TIC"
+          },
+          {
+            "ref": "B5",
+            "val": "Gerador 1"
+          },
+          {
+            "ref": "C5",
+            "val": "Óleo Diesel"
+          },
+          {
+            "ref": "D5",
+            "val": "Litros"
+          },
+          {
+            "ref": "E5",
+            "val": "Anual"
+          },
+          {
+            "ref": "F5",
+            "val": "Alírio"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "file": "Escopo 1 - Combustão Móvel.xlsx",
+    "sheets": [
+      {
+        "name": "Template com comentários",
+        "state": "visible",
+        "rowCount": 14,
+        "colCount": 20,
+        "commentsCount": 0,
+        "columnWidths": {
+          "A": {
+            "w": 30.44140625,
+            "hidden": false
+          },
+          "B": {
+            "w": 18.109375,
+            "hidden": false
+          },
+          "C": {
+            "w": 18.109375,
+            "hidden": false
+          },
+          "D": {
+            "w": 18.5546875,
+            "hidden": false
+          },
+          "E": {
+            "w": 19.109375,
+            "hidden": false
+          },
+          "F": {
+            "w": 14.5546875,
+            "hidden": false
+          },
+          "G": {
+            "w": 14.5546875,
+            "hidden": false
+          },
+          "H": {
+            "w": 10.77734375,
+            "hidden": false
+          },
+          "I": {
+            "w": 8.88671875,
+            "hidden": false
+          },
+          "J": {
+            "w": 8.88671875,
+            "hidden": false
+          },
+          "K": {
+            "w": 8.88671875,
+            "hidden": false
+          },
+          "L": {
+            "w": 8.88671875,
+            "hidden": false
+          },
+          "M": {
+            "w": 8.88671875,
+            "hidden": false
+          },
+          "N": {
+            "w": 8.88671875,
+            "hidden": false
+          },
+          "O": {
+            "w": 8.88671875,
+            "hidden": false
+          },
+          "P": {
+            "w": 9.77734375,
+            "hidden": false
+          },
+          "Q": {
+            "w": 8.88671875,
+            "hidden": false
+          },
+          "R": {
+            "w": 10.21875,
+            "hidden": false
+          },
+          "S": {
+            "w": 9.88671875,
+            "hidden": false
+          },
+          "T": {
+            "w": 8.88671875,
+            "hidden": false
+          }
+        },
+        "rowHeights": {
+          "1": 21,
+          "2": 20.25,
+          "3": 76.5,
+          "4": 32.25,
+          "13": 15.75,
+          "14": 105.75
+        },
+        "headers": [
+          {
+            "ref": "A4",
+            "val": "Unidade Empresarial"
+          },
+          {
+            "ref": "B4",
+            "val": "Fonte de Emissão"
+          },
+          {
+            "ref": "C4",
+            "val": "Tipo de Reporte"
+          },
+          {
+            "ref": "D4",
+            "val": "Combustível / Veículo utilizado"
+          },
+          {
+            "ref": "E4",
+            "val": "Unidade de medida"
+          },
+          {
+            "ref": "F4",
+            "val": "Mensal ou anual?"
+          },
+          {
+            "ref": "G4",
+            "val": "Responsável pelo reporte"
+          },
+          {
+            "ref": "H4",
+            "val": "Janeiro"
+          },
+          {
+            "ref": "I4",
+            "val": "Fevereiro"
+          },
+          {
+            "ref": "J4",
+            "val": "Março"
+          },
+          {
+            "ref": "K4",
+            "val": "Abril"
+          },
+          {
+            "ref": "L4",
+            "val": "Maio"
+          },
+          {
+            "ref": "M4",
+            "val": "Junho"
+          },
+          {
+            "ref": "N4",
+            "val": "Julho"
+          },
+          {
+            "ref": "O4",
+            "val": "Agosto"
+          },
+          {
+            "ref": "P4",
+            "val": "Setembro"
+          },
+          {
+            "ref": "Q4",
+            "val": "Outubro"
+          },
+          {
+            "ref": "R4",
+            "val": "Novembro"
+          },
+          {
+            "ref": "S4",
+            "val": "Dezembro"
+          },
+          {
+            "ref": "T4",
+            "val": "Anual"
+          }
+        ],
+        "mergedCells": [
+          "H14",
+          "A3"
+        ],
+        "comments": [],
+        "titleRow1": "Combustão Móvel",
+        "instructionRow2": "",
+        "detailRow3": "Se possível, colocar um pequeno textinho indicando como o template deve ser preenchido. Ex: Preencher o consumo para cad",
+        "dataRow5Sample": [
+          {
+            "ref": "A5",
+            "val": "Diretoria de Governança de TIC"
+          },
+          {
+            "ref": "B5",
+            "val": "Frota de automóveis"
+          },
+          {
+            "ref": "C5",
+            "val": "Distância percorrida"
+          },
+          {
+            "ref": "D5",
+            "val": "Automóvel a Etanol"
+          },
+          {
+            "ref": "E5",
+            "val": "km"
+          },
+          {
+            "ref": "F5",
+            "val": "Anual"
+          },
+          {
+            "ref": "G5",
+            "val": "Alírio"
+          }
+        ]
+      },
+      {
+        "name": "Template Limpo",
+        "state": "visible",
+        "rowCount": 1048575,
+        "colCount": 20,
+        "commentsCount": 0,
+        "columnWidths": {
+          "A": {
+            "w": 30.44140625,
+            "hidden": false
+          },
+          "B": {
+            "w": 18.109375,
+            "hidden": false
+          },
+          "C": {
+            "w": 18.109375,
+            "hidden": false
+          },
+          "D": {
+            "w": 18.5546875,
+            "hidden": false
+          },
+          "E": {
+            "w": 19.109375,
+            "hidden": false
+          },
+          "F": {
+            "w": 14.5546875,
+            "hidden": false
+          },
+          "G": {
+            "w": 14.5546875,
+            "hidden": false
+          },
+          "H": {
+            "w": 10.77734375,
+            "hidden": false
+          },
+          "I": {
+            "w": 8.88671875,
+            "hidden": false
+          },
+          "J": {
+            "w": 8.88671875,
+            "hidden": false
+          },
+          "K": {
+            "w": 8.88671875,
+            "hidden": false
+          },
+          "L": {
+            "w": 8.88671875,
+            "hidden": false
+          },
+          "M": {
+            "w": 8.88671875,
+            "hidden": false
+          },
+          "N": {
+            "w": 8.88671875,
+            "hidden": false
+          },
+          "O": {
+            "w": 8.88671875,
+            "hidden": false
+          },
+          "P": {
+            "w": 9.77734375,
+            "hidden": false
+          },
+          "Q": {
+            "w": 8.88671875,
+            "hidden": false
+          },
+          "R": {
+            "w": 10.21875,
+            "hidden": false
+          },
+          "S": {
+            "w": 9.88671875,
+            "hidden": false
+          },
+          "T": {
+            "w": 8.88671875,
+            "hidden": false
+          }
+        },
+        "rowHeights": {
+          "1": 21,
+          "2": 15.75,
+          "3": 33.75,
+          "4": 32.25
+        },
+        "headers": [
+          {
+            "ref": "A4",
+            "val": "Unidade Empresarial"
+          },
+          {
+            "ref": "B4",
+            "val": "Fonte de Emissão"
+          },
+          {
+            "ref": "C4",
+            "val": "Tipo de Reporte"
+          },
+          {
+            "ref": "D4",
+            "val": "Combustível / Veículo utilizado"
+          },
+          {
+            "ref": "E4",
+            "val": "Unidade de medida"
+          },
+          {
+            "ref": "F4",
+            "val": "Mensal ou anual?"
+          },
+          {
+            "ref": "G4",
+            "val": "Responsável pelo reporte"
+          },
+          {
+            "ref": "H4",
+            "val": "Janeiro"
+          },
+          {
+            "ref": "I4",
+            "val": "Fevereiro"
+          },
+          {
+            "ref": "J4",
+            "val": "Março"
+          },
+          {
+            "ref": "K4",
+            "val": "Abril"
+          },
+          {
+            "ref": "L4",
+            "val": "Maio"
+          },
+          {
+            "ref": "M4",
+            "val": "Junho"
+          },
+          {
+            "ref": "N4",
+            "val": "Julho"
+          },
+          {
+            "ref": "O4",
+            "val": "Agosto"
+          },
+          {
+            "ref": "P4",
+            "val": "Setembro"
+          },
+          {
+            "ref": "Q4",
+            "val": "Outubro"
+          },
+          {
+            "ref": "R4",
+            "val": "Novembro"
+          },
+          {
+            "ref": "S4",
+            "val": "Dezembro"
+          },
+          {
+            "ref": "T4",
+            "val": "Anual"
+          }
+        ],
+        "mergedCells": [],
+        "comments": [],
+        "titleRow1": "Combustão Móvel",
+        "instructionRow2": "Caso o controle do combustível seja feito em uma unidade diferente da solicitada (ex. lenha é controlada em m3 invés de ",
+        "detailRow3": "",
+        "dataRow5Sample": [
+          {
+            "ref": "A5",
+            "val": "Diretoria de Governança de TIC"
+          },
+          {
+            "ref": "B5",
+            "val": "Frota de automóveis"
+          },
+          {
+            "ref": "C5",
+            "val": "Distância percorrida"
+          },
+          {
+            "ref": "D5",
+            "val": "Automóvel a Etanol"
+          },
+          {
+            "ref": "E5",
+            "val": "km"
+          },
+          {
+            "ref": "F5",
+            "val": "Anual"
+          },
+          {
+            "ref": "G5",
+            "val": "Alírio"
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "file": "Escopo 1 - Emissões Fugitivas.xlsx",
+    "sheets": [
+      {
+        "name": "Template limpo",
+        "state": "visible",
+        "rowCount": 1048575,
+        "colCount": 19,
+        "commentsCount": 0,
+        "columnWidths": {
+          "A": {
+            "w": 30.44140625,
+            "hidden": false
+          },
+          "B": {
+            "w": 18.109375,
+            "hidden": false
+          },
+          "C": {
+            "w": 18.5546875,
+            "hidden": false
+          },
+          "D": {
+            "w": 19.109375,
+            "hidden": false
+          },
+          "E": {
+            "w": 14.5546875,
+            "hidden": false
+          },
+          "F": {
+            "w": 14.5546875,
+            "hidden": false
+          },
+          "G": {
+            "w": 10.77734375,
+            "hidden": false
+          },
+          "H": {
+            "w": 8.88671875,
+            "hidden": false
+          },
+          "I": {
+            "w": 8.88671875,
+            "hidden": false
+          },
+          "J": {
+            "w": 8.88671875,
+            "hidden": false
+          },
+          "K": {
+            "w": 8.88671875,
+            "hidden": false
+          },
+          "L": {
+            "w": 8.88671875,
+            "hidden": false
+          },
+          "M": {
+            "w": 8.88671875,
+            "hidden": false
+          },
+          "N": {
+            "w": 8.88671875,
+            "hidden": false
+          },
+          "O": {
+            "w": 9.77734375,
+            "hidden": false
+          },
+          "P": {
+            "w": 8.88671875,
+            "hidden": false
+          },
+          "Q": {
+            "w": 10.21875,
+            "hidden": false
+          },
+          "R": {
+            "w": 9.88671875,
+            "hidden": false
+          },
+          "S": {
+            "w": 8.88671875,
+            "hidden": false
+          }
+        },
+        "rowHeights": {
+          "1": 25.5,
+          "2": 25.5,
+          "3": 16.5,
+          "4": 36.75
+        },
+        "headers": [
+          {
+            "ref": "A4",
+            "val": "Unidade Empresarial"
+          },
+          {
+            "ref": "B4",
+            "val": "Fonte de Emissão"
+          },
+          {
+            "ref": "C4",
+            "val": "Gás reposto"
+          },
+          {
+            "ref": "D4",
+            "val": "Unidade de medida"
+          },
+          {
+            "ref": "E4",
+            "val": "Mensal ou anual?"
+          },
+          {
+            "ref": "F4",
+            "val": "Responsável pelo reporte"
+          },
+          {
+            "ref": "G4",
+            "val": "Janeiro"
+          },
+          {
+            "ref": "H4",
+            "val": "Fevereiro"
+          },
+          {
+            "ref": "I4",
+            "val": "Março"
+          },
+          {
+            "ref": "J4",
+            "val": "Abril"
+          },
+          {
+            "ref": "K4",
+            "val": "Maio"
+          },
+          {
+            "ref": "L4",
+            "val": "Junho"
+          },
+          {
+            "ref": "M4",
+            "val": "Julho"
+          },
+          {
+            "ref": "N4",
+            "val": "Agosto"
+          },
+          {
+            "ref": "O4",
+            "val": "Setembro"
+          },
+          {
+            "ref": "P4",
+            "val": "Outubro"
+          },
+          {
+            "ref": "Q4",
+            "val": "Novembro"
+          },
+          {
+            "ref": "R4",
+            "val": "Dezembro"
+          },
+          {
+            "ref": "S4",
+            "val": "Anual"
+          }
+        ],
+        "mergedCells": [
+          "A3"
+        ],
+        "comments": [],
+        "titleRow1": "Emissões Fugitivas",
+        "instructionRow2": "Caso o controle do combustível seja feito em uma unidade diferente da solicitada (ex. lenha é controlada em m3 invés de ",
+        "detailRow3": "",
+        "dataRow5Sample": [
+          {
+            "ref": "A5",
+            "val": "Diretoria de Governança de TIC"
+          },
+          {
+            "ref": "B5",
+            "val": "Ar-Condicionado 1"
+          },
+          {
+            "ref": "C5",
+            "val": "HFC-23"
+          },
+          {
+            "ref": "D5",
+            "val": "kg"
+          },
+          {
+            "ref": "E5",
+            "val": "mensal"
+          },
+          {
+            "ref": "F5",
+            "val": "Alírio"
+          }
+        ]
+      },
+      {
+        "name": "Template com comentários",
+        "state": "visible",
+        "rowCount": 1048576,
+        "colCount": 19,
+        "commentsCount": 0,
+        "columnWidths": {
+          "A": {
+            "w": 30.44140625,
+            "hidden": false
+          },
+          "B": {
+            "w": 18.109375,
+            "hidden": false
+          },
+          "C": {
+            "w": 18.5546875,
+            "hidden": false
+          },
+          "D": {
+            "w": 19.109375,
+            "hidden": false
+          },
+          "E": {
+            "w": 14.5546875,
+            "hidden": false
+          },
+          "F": {
+            "w": 14.5546875,
+            "hidden": false
+          },
+          "G": {
+            "w": 10.77734375,
+            "hidden": false
+          },
+          "H": {
+            "w": 8.88671875,
+            "hidden": false
+          },
+          "I": {
+            "w": 8.88671875,
+            "hidden": false
+          },
+          "J": {
+            "w": 8.88671875,
+            "hidden": false
+          },
+          "K": {
+            "w": 8.88671875,
+            "hidden": false
+          },
+          "L": {
+            "w": 8.88671875,
+            "hidden": false
+          },
+          "M": {
+            "w": 8.88671875,
+            "hidden": false
+          },
+          "N": {
+            "w": 8.88671875,
+            "hidden": false
+          },
+          "O": {
+            "w": 9.77734375,
+            "hidden": false
+          },
+          "P": {
+            "w": 8.88671875,
+            "hidden": false
+          },
+          "Q": {
+            "w": 10.21875,
+            "hidden": false
+          },
+          "R": {
+            "w": 9.88671875,
+            "hidden": false
+          },
+          "S": {
+            "w": 8.88671875,
+            "hidden": false
+          }
+        },
+        "rowHeights": {
+          "1": 25.5,
+          "2": 18,
+          "3": 76.5,
+          "4": 36.75,
+          "13": 15.75,
+          "14": 90.75
+        },
+        "headers": [
+          {
+            "ref": "A4",
+            "val": "Unidade Empresarial"
+          },
+          {
+            "ref": "B4",
+            "val": "Fonte de Emissão"
+          },
+          {
+            "ref": "C4",
+            "val": "Gás reposto"
+          },
+          {
+            "ref": "D4",
+            "val": "Unidade de medida"
+          },
+          {
+            "ref": "E4",
+            "val": "Mensal ou anual?"
+          },
+          {
+            "ref": "F4",
+            "val": "Responsável pelo reporte"
+          },
+          {
+            "ref": "G4",
+            "val": "Janeiro"
+          },
+          {
+            "ref": "H4",
+            "val": "Fevereiro"
+          },
+          {
+            "ref": "I4",
+            "val": "Março"
+          },
+          {
+            "ref": "J4",
+            "val": "Abril"
+          },
+          {
+            "ref": "K4",
+            "val": "Maio"
+          },
+          {
+            "ref": "L4",
+            "val": "Junho"
+          },
+          {
+            "ref": "M4",
+            "val": "Julho"
+          },
+          {
+            "ref": "N4",
+            "val": "Agosto"
+          },
+          {
+            "ref": "O4",
+            "val": "Setembro"
+          },
+          {
+            "ref": "P4",
+            "val": "Outubro"
+          },
+          {
+            "ref": "Q4",
+            "val": "Novembro"
+          },
+          {
+            "ref": "R4",
+            "val": "Dezembro"
+          },
+          {
+            "ref": "S4",
+            "val": "Anual"
+          }
+        ],
+        "mergedCells": [
+          "G14",
+          "A3"
+        ],
+        "comments": [],
+        "titleRow1": "Emissões Fugitivas",
+        "instructionRow2": "",
+        "detailRow3": "Se possível, colocar um pequeno textinho indicando como o template deve ser preenchido. Ex: Preencher o consumo para cad",
+        "dataRow5Sample": [
+          {
+            "ref": "A5",
+            "val": "Diretoria de Governança de TIC"
+          },
+          {
+            "ref": "B5",
+            "val": "Ar-Condicionado 1"
+          },
+          {
+            "ref": "C5",
+            "val": "HFC-23"
+          },
+          {
+            "ref": "D5",
+            "val": "kg"
+          },
+          {
+            "ref": "E5",
+            "val": "mensal"
+          },
+          {
+            "ref": "F5",
+            "val": "Alírio"
+          }
+        ]
+      }
+    ]
+  }
+]
