@@ -45,6 +45,15 @@ export function DataEntrySheet({ asset, year, unitId, open, onOpenChange }: Data
     // Campos dinâmicos do módulo
     const fields = useMemo(() => getModuleFields(moduleType!), [moduleType]);
 
+    // Parse configuration from asset to check the report type later
+    const assetConfig = useMemo(() => {
+        if (!asset || !asset.assetFields) return {};
+        return typeof asset.assetFields === 'string'
+            ? JSON.parse(asset.assetFields)
+            : asset.assetFields;
+    }, [asset?.assetFields]);
+    const reportType = assetConfig?.reportType;
+
     // 3. Populate Form — carrega TODOS os campos do módulo, não apenas consumption
     useEffect(() => {
         if (open && !isLoading) {
@@ -67,10 +76,6 @@ export function DataEntrySheet({ asset, year, unitId, open, onOpenChange }: Data
     }, [open, isLoading, existingEntries, form, fields]);
 
     const onSubmit = (data: any) => {
-        const assetConfig = typeof asset.assetFields === 'string'
-            ? JSON.parse(asset.assetFields)
-            : asset.assetFields;
-
         // Injeta campos do asset apenas se relevantes para este módulo
         const injectedFields = getAssetInjectedFields(moduleType!, assetConfig || {});
 
@@ -149,38 +154,46 @@ export function DataEntrySheet({ asset, year, unitId, open, onOpenChange }: Data
                                                     />
                                                 </div>
                                                 <div className="space-y-2">
-                                                    {fields.map(moduleField => (
-                                                        <FormField
-                                                            key={moduleField.name}
-                                                            control={form.control}
-                                                            name={`entries.${period}.${moduleField.name}`}
-                                                            render={({ field }) => (
-                                                                <FormItem className="space-y-0">
-                                                                    {fields.length > 1 && (
-                                                                        <label className="text-[11px] text-muted-foreground">
-                                                                            {moduleField.label}
-                                                                        </label>
-                                                                    )}
-                                                                    <FormControl>
-                                                                        <Input
-                                                                            type={moduleField.type}
-                                                                            placeholder="0.00"
-                                                                            className="h-8 text-right [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                                                                            {...field}
-                                                                            value={field.value ?? ''}
-                                                                            onChange={e => {
-                                                                                if (moduleField.type === 'number') {
-                                                                                    field.onChange(e.target.valueAsNumber);
-                                                                                } else {
-                                                                                    field.onChange(e.target.value);
-                                                                                }
-                                                                            }}
-                                                                        />
-                                                                    </FormControl>
-                                                                </FormItem>
-                                                            )}
-                                                        />
-                                                    ))}
+                                                    {fields.map(moduleField => {
+                                                        const isDistanceField = moduleField.name === 'distance' || moduleField.name === 'distanceKm';
+                                                        const isConsumptionField = moduleField.name === 'consumption';
+                                                        const isDisabled = (reportType === 'Consumo' && isDistanceField) || 
+                                                                           (reportType === 'Distância' && isConsumptionField);
+
+                                                        return (
+                                                            <FormField
+                                                                key={moduleField.name}
+                                                                control={form.control}
+                                                                name={`entries.${period}.${moduleField.name}`}
+                                                                render={({ field }) => (
+                                                                    <FormItem className="space-y-0">
+                                                                        {fields.length > 1 && (
+                                                                            <label className={`text-[11px] ${isDisabled ? "text-muted-foreground/50" : "text-muted-foreground"}`}>
+                                                                                {moduleField.label}
+                                                                            </label>
+                                                                        )}
+                                                                        <FormControl>
+                                                                            <Input
+                                                                                type={moduleField.type}
+                                                                                placeholder="0.00"
+                                                                                className="h-8 text-right [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                                                                disabled={isDisabled}
+                                                                                {...field}
+                                                                                value={field.value ?? ''}
+                                                                                onChange={e => {
+                                                                                    if (moduleField.type === 'number') {
+                                                                                        field.onChange(e.target.valueAsNumber);
+                                                                                    } else {
+                                                                                        field.onChange(e.target.value);
+                                                                                    }
+                                                                                }}
+                                                                            />
+                                                                        </FormControl>
+                                                                    </FormItem>
+                                                                )}
+                                                            />
+                                                        );
+                                                    })}
                                                 </div>
                                             </div>
                                         );
