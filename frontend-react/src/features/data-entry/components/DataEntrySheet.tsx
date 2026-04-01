@@ -9,8 +9,7 @@ import { MONTHS } from "@/features/assets/constants/esg-options";
 import { normalizeSlugToType } from "../utils/module-mapping";
 import type { AssetTypology } from "@/types/AssetTypology";
 import { useParams } from "wouter";
-import { useExcelImport } from "../hooks/useExcelImport";
-import { Download, FileSpreadsheet, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { EvidenceManager } from "./EvidenceManager";
 import { getModuleFields, getAssetInjectedFields } from "../config/module-fields";
 
@@ -41,14 +40,19 @@ export function DataEntrySheet({ asset, year, unitId, open, onOpenChange }: Data
         defaultValues: { entries: {} as Record<string, any> }
     });
 
-    const { downloadTemplate, handleFileUpload } = useExcelImport({
-        asset,
-        setValue: form.setValue,
-        moduleType
-    });
+
 
     // Campos dinâmicos do módulo
     const fields = useMemo(() => getModuleFields(moduleType!), [moduleType]);
+
+    // Parse configuration from asset to check the report type later
+    const assetConfig = useMemo(() => {
+        if (!asset || !asset.assetFields) return {};
+        return typeof asset.assetFields === 'string'
+            ? JSON.parse(asset.assetFields)
+            : asset.assetFields;
+    }, [asset?.assetFields]);
+    const reportType = assetConfig?.reportType;
 
     // 3. Populate Form — carrega TODOS os campos do módulo, não apenas consumption
     useEffect(() => {
@@ -72,10 +76,6 @@ export function DataEntrySheet({ asset, year, unitId, open, onOpenChange }: Data
     }, [open, isLoading, existingEntries, form, fields]);
 
     const onSubmit = (data: any) => {
-        const assetConfig = typeof asset.assetFields === 'string'
-            ? JSON.parse(asset.assetFields)
-            : asset.assetFields;
-
         // Injeta campos do asset apenas se relevantes para este módulo
         const injectedFields = getAssetInjectedFields(moduleType!, assetConfig || {});
 
@@ -132,38 +132,7 @@ export function DataEntrySheet({ asset, year, unitId, open, onOpenChange }: Data
 
                             {/* Área rolável nativa do navegador */}
                             <div className="flex-1 overflow-y-auto p-6">
-                                {/* Bloco Visual do Excel */}
-                                <div className="flex items-stretch gap-4 mb-6 p-4 rounded-lg border border-dashed bg-card/30">
-                                    <Button
-                                        type="button"
-                                        variant="outline"
-                                        onClick={downloadTemplate}
-                                        className="flex flex-col h-auto py-4 px-6 gap-2 bg-background hover:bg-muted shrink-0"
-                                    >
-                                        <Download className="h-5 w-5 text-muted-foreground" />
-                                        <span className="text-xs font-medium">Baixar Modelo</span>
-                                    </Button>
 
-                                    <div className="w-px bg-border my-2"></div>
-
-                                    <label className="flex-1 flex flex-col items-center justify-center rounded-md cursor-pointer hover:bg-muted/50 transition-colors border-2 border-transparent hover:border-dashed hover:border-muted-foreground/30 text-center">
-                                        <div className="flex items-center gap-3">
-                                            <div className="p-2 bg-primary/10 rounded-full shrink-0">
-                                                <FileSpreadsheet className="h-5 w-5 text-primary" />
-                                            </div>
-                                            <div className="flex flex-col text-left">
-                                                <span className="text-sm font-medium">Importar dados via Excel</span>
-                                                <span className="text-xs text-muted-foreground">Arraste a planilha ou clique para selecionar</span>
-                                            </div>
-                                        </div>
-                                        <input
-                                            type="file"
-                                            className="hidden"
-                                            accept=".xlsx, .xls, .csv"
-                                            onChange={handleFileUpload}
-                                        />
-                                    </label>
-                                </div>
 
                                 {/* Lista de Meses / Anual — campos dinâmicos por módulo */}
                                 <div className={isMensal ? "grid grid-cols-2 gap-4" : "space-y-4"}>
@@ -185,38 +154,46 @@ export function DataEntrySheet({ asset, year, unitId, open, onOpenChange }: Data
                                                     />
                                                 </div>
                                                 <div className="space-y-2">
-                                                    {fields.map(moduleField => (
-                                                        <FormField
-                                                            key={moduleField.name}
-                                                            control={form.control}
-                                                            name={`entries.${period}.${moduleField.name}`}
-                                                            render={({ field }) => (
-                                                                <FormItem className="space-y-0">
-                                                                    {fields.length > 1 && (
-                                                                        <label className="text-[11px] text-muted-foreground">
-                                                                            {moduleField.label}
-                                                                        </label>
-                                                                    )}
-                                                                    <FormControl>
-                                                                        <Input
-                                                                            type={moduleField.type}
-                                                                            placeholder="0.00"
-                                                                            className="h-8 text-right [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                                                                            {...field}
-                                                                            value={field.value ?? ''}
-                                                                            onChange={e => {
-                                                                                if (moduleField.type === 'number') {
-                                                                                    field.onChange(e.target.valueAsNumber);
-                                                                                } else {
-                                                                                    field.onChange(e.target.value);
-                                                                                }
-                                                                            }}
-                                                                        />
-                                                                    </FormControl>
-                                                                </FormItem>
-                                                            )}
-                                                        />
-                                                    ))}
+                                                    {fields.map(moduleField => {
+                                                        const isDistanceField = moduleField.name === 'distance' || moduleField.name === 'distanceKm';
+                                                        const isConsumptionField = moduleField.name === 'consumption';
+                                                        const isDisabled = (reportType === 'Consumo' && isDistanceField) || 
+                                                                           (reportType === 'Distância' && isConsumptionField);
+
+                                                        return (
+                                                            <FormField
+                                                                key={moduleField.name}
+                                                                control={form.control}
+                                                                name={`entries.${period}.${moduleField.name}`}
+                                                                render={({ field }) => (
+                                                                    <FormItem className="space-y-0">
+                                                                        {fields.length > 1 && (
+                                                                            <label className={`text-[11px] ${isDisabled ? "text-muted-foreground/50" : "text-muted-foreground"}`}>
+                                                                                {moduleField.label}
+                                                                            </label>
+                                                                        )}
+                                                                        <FormControl>
+                                                                            <Input
+                                                                                type={moduleField.type}
+                                                                                placeholder="0.00"
+                                                                                className="h-8 text-right [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                                                                                disabled={isDisabled}
+                                                                                {...field}
+                                                                                value={field.value ?? ''}
+                                                                                onChange={e => {
+                                                                                    if (moduleField.type === 'number') {
+                                                                                        field.onChange(e.target.valueAsNumber);
+                                                                                    } else {
+                                                                                        field.onChange(e.target.value);
+                                                                                    }
+                                                                                }}
+                                                                            />
+                                                                        </FormControl>
+                                                                    </FormItem>
+                                                                )}
+                                                            />
+                                                        );
+                                                    })}
                                                 </div>
                                             </div>
                                         );
