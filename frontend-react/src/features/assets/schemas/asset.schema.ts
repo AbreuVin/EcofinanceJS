@@ -17,11 +17,11 @@ export const assetFormSchema = z.object({
     // Allow empty string gracefully as optional
     responsibleContactId: z.string().optional(),
 
-    // Rastreabilidade Interna (agora obrigatórios)
-    traceabilityResponsible: z.string().min(1, "Responsável é obrigatório"),
-    traceabilityEmail: z.string().email("E-mail inválido").min(1, "E-mail é obrigatório"),
-    traceabilitySector: z.string().min(1, "Setor é obrigatório"),
-    traceabilityLocation: z.string().min(1, "Localização é obrigatória"),
+    // Rastreabilidade Interna (agora opcionais)
+    traceabilityResponsible: z.string().optional().nullable().or(z.literal('')),
+    traceabilityEmail: z.string().email("E-mail inválido").optional().nullable().or(z.literal('')),
+    traceabilitySector: z.string().optional().nullable().or(z.literal('')),
+    traceabilityLocation: z.string().optional().nullable().or(z.literal('')),
     // traceabilityFiles será tratado separadamente no upload
 
     // Removed .default({}). useForm provides the default.
@@ -33,12 +33,12 @@ export const assetFormSchema = z.object({
             const carbonate = parseFloat(data.assetFields?.carbonatePercent ?? "0");
             const total = nitrogen + carbonate;
 
-            return total >= 0.1 && total <= 100.0;
+            return total >= 0 && total <= 100;
         }
         return true;
     },
     {
-        message: "O Percentual de Nitrogênio + Percentual de Carbonato deve estar entre 0.1% e 100%.",
+        message: "A soma do Percentual de Nitrogênio e Carbonato deve estar entre 0% e 100%.",
         path: ["assetFields"],
     }
 );

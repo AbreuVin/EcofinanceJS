@@ -1,5 +1,6 @@
 import { useFormContext, useWatch } from "react-hook-form";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
     EFFLUENT_DESTINATION_TYPES,
@@ -26,12 +27,31 @@ export function EffluentsFields() {
                     render={({ field }) => (
                         <FormItem>
                             <FormLabel>Tipo de Trabalhador</FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value} required>
-                                <FormControl><SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger></FormControl>
-                                <SelectContent>
-                                    {WORKER_TYPES.map(opt => <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>)}
-                                </SelectContent>
-                            </Select>
+                            <FormControl>
+                                <div className="flex flex-col gap-2 mt-2">
+                                    {WORKER_TYPES.map((opt) => {
+                                        const isChecked = Array.isArray(field.value) && field.value.includes(opt.value);
+                                        return (
+                                            <div key={opt.value} className="flex items-center space-x-2">
+                                                <Checkbox
+                                                    checked={isChecked}
+                                                    onCheckedChange={(checked) => {
+                                                        const currentParams = Array.isArray(field.value) ? field.value : [];
+                                                        if (checked) {
+                                                            field.onChange([...currentParams, opt.value]);
+                                                        } else {
+                                                            field.onChange(currentParams.filter((v: string) => v !== opt.value));
+                                                        }
+                                                    }}
+                                                />
+                                                <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                                                    {opt.label}
+                                                </label>
+                                            </div>
+                                        )
+                                    })}
+                                </div>
+                            </FormControl>
                             <FormMessage />
                         </FormItem>
                     )}

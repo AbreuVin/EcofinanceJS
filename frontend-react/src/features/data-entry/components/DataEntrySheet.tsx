@@ -160,6 +160,8 @@ export function DataEntrySheet({ asset, year, unitId, open, onOpenChange }: Data
                                                         const isDisabled = (reportType === 'Consumo' && isDistanceField) || 
                                                                            (reportType === 'Distância' && isConsumptionField);
 
+                                                        if (isDisabled) return null;
+
                                                         return (
                                                             <FormField
                                                                 key={moduleField.name}
@@ -180,6 +182,11 @@ export function DataEntrySheet({ asset, year, unitId, open, onOpenChange }: Data
                                                                                 disabled={isDisabled}
                                                                                 {...field}
                                                                                 value={field.value ?? ''}
+                                                                                onKeyDown={(e) => {
+                                                                                    if (moduleField.type === 'number' && e.key === '-') {
+                                                                                        e.preventDefault();
+                                                                                    }
+                                                                                }}
                                                                                 onChange={e => {
                                                                                     if (moduleField.type === 'number') {
                                                                                         field.onChange(e.target.valueAsNumber);

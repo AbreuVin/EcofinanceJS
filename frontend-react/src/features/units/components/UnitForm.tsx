@@ -76,7 +76,7 @@ export function UnitForm({ initialData, onSubmit, onCancel, isLoading }: UnitFor
             country: initialData?.country || "Brasil",
             state: initialData?.state || "",
             city: initialData?.city || "",
-            numberOfWorkers: initialData?.numberOfWorkers || undefined,
+            numberOfWorkers: initialData?.numberOfWorkers ?? null,
         },
     });
 
@@ -90,14 +90,14 @@ export function UnitForm({ initialData, onSubmit, onCancel, isLoading }: UnitFor
     }, [defaultCompanyId, initialData, form]);
 
     // Filtragem Controlada do Combobox
-    const [countryQuery, setCountryQuery] = useState("");
+    const [countryQuery, setCountryQuery] = useState(initialData?.country || "Brasil");
     const filteredCountries = useMemo(() => {
-        if (!countryQuery) return WORLD_COUNTRIES;
+        if (!countryQuery || countryQuery === selectedCountry) return WORLD_COUNTRIES;
         const lowerQuery = countryQuery.toLowerCase();
         return WORLD_COUNTRIES.filter((c) =>
             c.label.toLowerCase().includes(lowerQuery)
         );
-    }, [countryQuery]);
+    }, [countryQuery, selectedCountry]);
 
     if (companiesError) {
         return (
@@ -170,7 +170,7 @@ export function UnitForm({ initialData, onSubmit, onCancel, isLoading }: UnitFor
                                         value={field.value || ""}
                                         onValueChange={(value) => {
                                             field.onChange(value as string);
-                                            setCountryQuery("");
+                                            setCountryQuery(value as string);
                                         }}
                                         inputValue={countryQuery}
                                         onInputValueChange={setCountryQuery}
@@ -262,10 +262,10 @@ export function UnitForm({ initialData, onSubmit, onCancel, isLoading }: UnitFor
                                             onChange={(e) => {
                                                 const val = e.target.value;
                                                 if (val === '') {
-                                                    field.onChange(undefined);
+                                                    field.onChange(null);
                                                 } else {
                                                     const numVal = parseInt(val, 10);
-                                                    field.onChange(isNaN(numVal) ? undefined : numVal);
+                                                    field.onChange(isNaN(numVal) ? null : numVal);
                                                 }
                                             }}
                                         />

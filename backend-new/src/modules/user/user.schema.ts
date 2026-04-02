@@ -20,4 +20,4 @@ export const createUserSchema = z.object({
     permissions: z.array(z.string()).optional(),
 });
 
-export const updateUserSchema = createUserSchema.partial().omit({ email: true });
+export const updateUserSchema = createUserSchema.partial();
