@@ -22,7 +22,7 @@ export function AssetTraceability({ form }: AssetTraceabilityProps) {
                         <FormItem>
                             <FormLabel>Responsável pela Informação</FormLabel>
                             <FormControl>
-                                <Input placeholder="Nome do responsável" {...field} />
+                                <Input placeholder="Nome do responsável" {...field} value={field.value ?? ""} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -36,7 +36,7 @@ export function AssetTraceability({ form }: AssetTraceabilityProps) {
                         <FormItem>
                             <FormLabel>E-mail</FormLabel>
                             <FormControl>
-                                <Input type="email" placeholder="email@exemplo.com" {...field} />
+                                <Input type="email" placeholder="email@exemplo.com" {...field} value={field.value ?? ""} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -50,7 +50,7 @@ export function AssetTraceability({ form }: AssetTraceabilityProps) {
                         <FormItem>
                             <FormLabel>Setor</FormLabel>
                             <FormControl>
-                                <Input placeholder="Ex: Financeiro, Operações" {...field} />
+                                <Input placeholder="Ex: Financeiro, Operações" {...field} value={field.value ?? ""} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
@@ -64,7 +64,7 @@ export function AssetTraceability({ form }: AssetTraceabilityProps) {
                         <FormItem>
                             <FormLabel>Localização da Informação</FormLabel>
                             <FormControl>
-                                <Input placeholder="Ex: Pasta X, Sistema Y" {...field} />
+                                <Input placeholder="Ex: Pasta X, Sistema Y" {...field} value={field.value ?? ""} />
                             </FormControl>
                             <FormMessage />
                         </FormItem>
