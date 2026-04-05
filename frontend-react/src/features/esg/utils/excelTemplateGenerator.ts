@@ -389,7 +389,7 @@ function findReport(
     return reports.find(r =>
         r.year === year &&
         r.period === period &&
-        r.sourceDescription === asset.description
+        (r.sourceDescription ?? r.emissionSource) === asset.description
     );
 }
 

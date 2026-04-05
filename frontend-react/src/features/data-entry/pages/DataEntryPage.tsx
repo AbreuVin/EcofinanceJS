@@ -68,7 +68,7 @@ export default function DataEntryPage() {
 
     const assetsWithProgress = useMemo(() => {
         return processedAssets.map(asset => {
-            const assetEntries = entries.filter(e => e.sourceDescription === asset.description);
+            const assetEntries = entries.filter(e => (e.sourceDescription ?? e.emissionSource) === asset.description);
             const isMensal = asset.reportingFrequency?.toLowerCase() === 'mensal';
             const requiredCount = isMensal ? 12 : 1;
 

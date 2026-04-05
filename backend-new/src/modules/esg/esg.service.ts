@@ -96,7 +96,14 @@ export class EsgGenericService<T> {
         let updated = 0;
 
         for (const entry of entries) {
-            const cleanData: any = await this.schema.parseAsync(entry);
+            // Normalize: some schemas use emissionSource instead of sourceDescription.
+            // Map sourceDescription → emissionSource so the value is not stripped by Zod.
+            const normalizedEntry = {
+                ...entry,
+                emissionSource: entry.emissionSource ?? entry.sourceDescription,
+            };
+
+            const cleanData: any = await this.schema.parseAsync(normalizedEntry);
 
             // Build match criteria
             const where: any = {
@@ -105,9 +112,12 @@ export class EsgGenericService<T> {
                 period: cleanData.period,
             };
 
-            // Include sourceDescription in match if present
+            // Include source identifier in match (field name varies by module)
             if (cleanData.sourceDescription !== undefined) {
                 where.sourceDescription = cleanData.sourceDescription;
+            }
+            if (cleanData.emissionSource !== undefined) {
+                where.emissionSource = cleanData.emissionSource;
             }
 
             const existing = await this.delegate.findFirst({ where }) as any;

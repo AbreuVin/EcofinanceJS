@@ -38,7 +38,7 @@ export function useDataEntryMutation(module: EsgModuleType, unitId: number | nul
 
                 const existing = existingRecords.find(r =>
                     periodsMatch(r.period, period) &&
-                    r.sourceDescription === assetDescription
+                    (r.sourceDescription ?? r.emissionSource) === assetDescription
                 );
 
                 const payload = {

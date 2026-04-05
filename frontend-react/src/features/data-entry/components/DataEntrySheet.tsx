@@ -31,7 +31,7 @@ export function DataEntrySheet({ asset, year, unitId, open, onOpenChange }: Data
     // 2. Filter for THIS asset
     const existingEntries = useMemo(() => {
         if (!asset || !allEntries.length) return [];
-        return allEntries.filter(e => e.sourceDescription === asset.description);
+        return allEntries.filter(e => (e.sourceDescription ?? e.emissionSource) === asset.description);
     }, [allEntries, asset?.description]);
 
     const { mutate, isPending } = useDataEntryMutation(moduleType!, unitId, year);
