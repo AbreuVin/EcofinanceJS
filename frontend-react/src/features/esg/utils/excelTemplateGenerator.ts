@@ -190,7 +190,12 @@ export async function generateEsgExcelTemplate({
         const assetUnitName = resolveUnitName(asset, unitId, unitName, unitMap);
         const reportType = getReportType(assetConfig, sourceType);
         const fuelOrVehicle = getFuelOrVehicle(assetConfig, sourceType);
-        const measureUnit = assetConfig.unitMeasure || assetConfig.consumptionUnit || assetConfig.distanceUnit || "";
+        const isDistanceMode = assetConfig.reportType === "Distância" || assetConfig.reportType === "distancia";
+        const distanceModeModules = ["mobile_combustion", "upstream_transport", "downstream_transport", "waste_transport", "business_travel_land", "employee_commuting"];
+        const measureUnit = assetConfig.unitMeasure || assetConfig.consumptionUnit || assetConfig.distanceUnit
+            || (sourceType === "fugitive_emissions" ? "kg" : "")
+            || (sourceType === "fertilizers" ? "kg" : "")
+            || (distanceModeModules.includes(sourceType) && isDistanceMode ? "km" : "");
         const responsible = asset.traceabilityResponsible || assetConfig.responsible || "";
 
         // Build a values map keyed by column key

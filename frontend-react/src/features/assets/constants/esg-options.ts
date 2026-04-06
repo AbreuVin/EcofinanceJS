@@ -296,39 +296,55 @@ export const MOBILE_FUEL_UNITS_MAP: Record<string, string> = {
 };
 
 export const VEHICLE_TYPES = [
+    // Automóveis
     "Automóvel a gasolina", "Automóvel a etanol", "Automóvel flex a gasolina", "Automóvel flex a etanol",
+    "Automóvel a GNV", "Automóvel a biometano",
+    // Motocicletas
     "Motocicleta a gasolina", "Motocicleta flex a gasolina", "Motocicleta flex a etanol",
+    // Veículos comerciais leves
     "Veículo comercial leve a gasolina", "Veículo comercial leve a etanol",
     "Veículo comercial leve flex a gasolina", "Veículo comercial leve flex a etanol",
-    "Veículo comercial leve a diesel", "Micro-ônibus a diesel", "Ônibus rodoviário a diesel",
-    "Ônibus urbano a diesel", "Caminhão - rígido (3,5 a 7,5 toneladas)",
-    "Caminhão - rígido (7,5 a 17 toneladas)", "Caminhão - rígido (acima de 17 toneladas)",
-    "Caminhão - rígido (média)", "Caminhão - articulado (3,5 a 33 toneladas)",
-    "Caminhão - articulado (acima de 33 toneladas)", "Caminhão - articulado (média)",
-    "Caminhão - caminhão (média)", "Caminhão refrigerado - rígido (3,5 a 7,5 toneladas)",
-    "Caminhão refrigerado - rígido (7,5 a 17 toneladas)", "Caminhão refrigerado - rígido (acima de 17 toneladas)",
-    "Caminhão refrigerado - rígido (média)", "Caminhão refrigerado - articulado (3,5 a 33 toneladas)",
-    "Caminhão refrigerado - articulado (acima de 33 toneladas)", "Caminhão refrigerado - articulado (média)",
-    "Caminhão refrigerado - caminhão (média)", "Automóvel a GNV"
+    "Veículo comercial leve a diesel",
+    // Ônibus e caminhões
+    "Micro-ônibus a diesel", "Ônibus rodoviário a diesel", "Ônibus urbano a diesel",
+    "Caminhão - rígido (3,5 a 7,5 toneladas)", "Caminhão - rígido (7,5 a 17 toneladas)",
+    "Caminhão - rígido (acima de 17 toneladas)", "Caminhão - rígido (média)",
+    "Caminhão - articulado (3,5 a 33 toneladas)", "Caminhão - articulado (acima de 33 toneladas)",
+    "Caminhão - articulado (média)", "Caminhão - caminhão (média)",
+    "Caminhão refrigerado - rígido (3,5 a 7,5 toneladas)", "Caminhão refrigerado - rígido (7,5 a 17 toneladas)",
+    "Caminhão refrigerado - rígido (acima de 17 toneladas)", "Caminhão refrigerado - rígido (média)",
+    "Caminhão refrigerado - articulado (3,5 a 33 toneladas)", "Caminhão refrigerado - articulado (acima de 33 toneladas)",
+    "Caminhão refrigerado - articulado (média)", "Caminhão refrigerado - caminhão (média)",
+    // Híbridos e elétricos
+    "Automóvel híbrido a gasolina", "Automóvel híbrido a etanol",
+    "Automóvel híbrido plug-in a gasolina", "Automóvel híbrido plug-in a etanol",
+    "Automóvel híbrido plug-in a eletricidade", "Automóvel elétrico",
+    "Van elétrica - classe I (até 1,305 toneladas)", "Van elétrica - classe II (1,305 a 1,74 toneladas)",
+    "Van elétrica - classe III (1,74 a 3,5 toneladas)", "Van elétrica - média (até 3,5 toneladas)",
+    "Van plug-in - média (até 3,5 toneladas)",
 ].map(v => ({ label: v, value: v }));
 
 // 5. Combustão Estacionária
 export const STATIONARY_FUELS = [
-    "Acetileno", "Alcatrão", "Asfaltos", "Bagaço de Cana", "Biodiesel (B100)",
-    "Biogás (outros)", "Biogás de aterro", "Biometano", "Caldo de Cana", "Carvão Metalúrgico Importado",
-    "Carvão Metalúrgico Nacional", "Carvão Vapor 3100 kcal / kg", "Carvão Vapor 3300 kcal / kg",
-    "Carvão Vapor 3700 kcal / kg", "Carvão Vapor 4200 kcal / kg", "Carvão Vapor 4500 kcal / kg",
-    "Carvão Vapor 4700 kcal / kg", "Carvão Vapor 5200 kcal / kg", "Carvão Vapor 5900 kcal / kg",
-    "Carvão Vapor 6000 kcal / kg", "Carvão Vapor sem Especificação", "Carvão Vegetal",
-    "Coque de Carvão Mineral", "Coque de Petróleo", "Etano", "Etanol Anidro", "Etanol Hidratado",
-    "Gás de Coqueria", "Gás de Refinaria", "Gás Liquefeito de Petróleo (GLP)", "Gás Natural Seco",
-    "Gás Natural Úmido", "Gasolina Automotiva (pura)", "Gasolina de Aviação", "Lenha Comercial",
-    "Licor Negro (Lixívia)", "Líquidos de Gás Natural (LGN)", "Lubrificantes", "Melaço", "Nafta",
-    "Óleo Combustível", "Óleo de Xisto", "Óleo Diesel (puro)", "Óleos Residuais",
-    "Outros Produtos de Petróleo", "Parafina", "Petróleo Bruto", "Querosene de Aviação",
-    "Querosene Iluminante", "Resíduos Industriais", "Resíduos Municipais (fração biomassa)",
-    "Resíduos Municipais (fração não-biomassa)", "Resíduos Vegetais", "Solventes", "Turfa",
-    "Xisto Betuminoso e Areias Betuminosas"
+    // Não-biomassa
+    "Acetileno", "Alcatrão", "Asfaltos",
+    "Carvão Metalúrgico Importado", "Carvão Metalúrgico Nacional",
+    "Carvão Vapor 3100 kcal / kg", "Carvão Vapor 3300 kcal / kg", "Carvão Vapor 3700 kcal / kg",
+    "Carvão Vapor 4200 kcal / kg", "Carvão Vapor 4500 kcal / kg", "Carvão Vapor 4700 kcal / kg",
+    "Carvão Vapor 5200 kcal / kg", "Carvão Vapor 5900 kcal / kg", "Carvão Vapor 6000 kcal / kg",
+    "Carvão Vapor sem Especificação", "Coque de Carvão Mineral", "Coque de Petróleo",
+    "Etano", "Gás de Coqueria", "Gás de Refinaria", "Gás Liquefeito de Petróleo (GLP)",
+    "Gás Natural Seco", "Gás Natural Úmido", "Gasolina Automotiva (pura)", "Gasolina de Aviação",
+    "Líquidos de Gás Natural (LGN)", "Lubrificantes", "Nafta", "Óleo Combustível",
+    "Óleo de Xisto", "Óleo Diesel (puro)", "Óleos Residuais", "Outros Produtos de Petróleo",
+    "Parafina", "Petróleo Bruto", "Querosene de Aviação", "Querosene Iluminante",
+    "Resíduos Industriais", "Resíduos Municipais (fração não-biomassa)", "Solventes", "Turfa",
+    "Xisto Betuminoso e Areias Betuminosas",
+    // Biomassa
+    "Etanol Anidro", "Etanol Hidratado", "Bagaço de Cana", "Biodiesel (B100)",
+    "Biogás (outros)", "Biogás de aterro", "Biometano", "Caldo de Cana", "Carvão Vegetal",
+    "Lenha Comercial", "Licor Negro (Lixívia)", "Melaço",
+    "Resíduos Municipais (fração biomassa)", "Resíduos Vegetais",
 ].map(f => ({ label: f, value: f }));
 
 export const STATIONARY_UNITS = [
@@ -361,7 +377,7 @@ export const GAS_TYPES = [
     "R-421A", "R-421B", "R-422A", "R-422B", "R-422C", "R-422D", "R-422E", "R-423A", "R-424A", "R-425A",
     "R-426A", "R-427A", "R-428A", "R-429A", "R-430A", "R-431A", "R-432A", "R-433A", "R-433B", "R-433C",
     "R-434A", "R-435A", "R-436A", "R-436B", "R-436C", "R-437A", "R-438A", "R-439A", "R-440A", "R-441A",
-    "R-442A", "R-443A", "R-444B", "R-445A", "R-446A", "R-447A", "R-447B", "R-448A", "R-449A", "R-449B",
+    "R-442A", "R-443A", "R-444A", "R-444B", "R-445A", "R-446A", "R-447A", "R-447B", "R-448A", "R-449A", "R-449B",
     "R-449C", "R-450A", "R-451A", "R-451B", "R-452A", "R-452B", "R-452C", "R-453A", "R-454A", "R-454B",
     "R-454C", "R-455A", "R-456A", "R-457A", "R-458A", "R-459A", "R-459B", "R-460A", "R-460B", "R-460C",
     "R-461A", "R-462A", "R-463A", "R-464A", "R-465A", "R-500", "R-501", "R-502", "R-503", "R-504",
