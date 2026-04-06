@@ -292,7 +292,7 @@ export const MODULE_FRIENDLY_NAMES: Record<string, string> = {
     'purchased_goods': 'Bens e Serviços Comprados',
     'capital_goods': 'Bens de Capital',
     'production_sales': 'Produção e Vendas',
-    'ippu_lubricants': 'IPPU Lubrificantes',
+    'lubricants_ippu': 'IPPU Lubrificantes',
     'fugitive_emissions': 'Emissões Fugitivas',
     'fertilizers': 'Fertilizantes',
     'effluents_controlled': 'Efluentes Controlados',

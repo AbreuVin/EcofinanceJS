@@ -91,11 +91,11 @@ export const esgRegistry: Record<string, RegistryEntry> = {
         name: 'Production & Sales',
         modelName: 'productionSalesData'
     },
-    'ippu_lubricants': {
+    'lubricants_ippu': {
         service: createService(prisma.lubricantsIppuData, schemas.lubricantsIppuSchema),
         schema: schemas.lubricantsIppuSchema,
         name: 'IPPU Lubricants',
-        modelName: 'ippuLubricantsData'
+        modelName: 'lubricantsIppuData'
     },
     'fugitive_emissions': {
         service: createService(prisma.fugitiveEmissionsData, schemas.fugitiveEmissionsSchema),
