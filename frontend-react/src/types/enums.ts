@@ -40,13 +40,13 @@ Atenção para a unidade de medida de cada combustível. Caso o controle do comb
         assetDesc: `A informação de resposição de gases em ar-condicionado, sistemas de refrigeração e extintores podem ser conseguidas com os prestadores de serviço resposáveis por essas atividades.`
     },
     {
-        label: 'IPPU - Lubrificantes',
+        label: 'Uso de Lubrificantes',
         value: 'lubricants_ippu',
         description: '',
         assetDesc: `Preencher nessa planilha as informações de uso de lubrificantes.`
     },
     {
-        label: 'Fertilizantes',
+        label: 'Uso de Fertilizantes e Corretivos',
         value: 'fertilizers',
         description: '',
         assetDesc: `Orientação: Fornecer os dados de consumo de Fertilizantes nitrogenados e calcário utilizado em atividades de plantio.`

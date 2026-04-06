@@ -1,0 +1,76 @@
+Unidades Empresariais
+
+
+
+Não consigo cadastrar uma unidade se o campo “cidade” estiver vazio, mas consigo colocar um espaço para o campo parecer vazio.
+
+
+
+Ao editar uma unidade, não é possível limpar o campo “nº de colaboradores”. Quando tento apagar, ele sempre mantém o primeiro número travado ali. Isso dificultaria, por exemplo, uma correção no número de colaboradores, mas é um caso bem específico.
+
+
+
+Ao editar uma unidade, o campo de País é esvaziado visualmente, mas aparenta preservar o valor preenchido anteriormente.
+
+
+
+Cadastro de Responsáveis
+
+
+
+No cadastro de responsáveis, não consigo editar o e-mail dos responsáveis cadastrados.
+
+
+
+Cadastro de Fontes
+
+
+
+Não consigo cadastrar nenhuma fonte.
+
+
+
+
+
+A rastreabilidade interna não precisa ser obrigatória. Colocar os 4 campos como opcionais
+
+
+
+Para o cadastro de efluentes domésticos, o tipo de funcionário deve ser uma checkbox, que pode gerar 2 linhas no banco de dados, para que não seja necessário cadastrar internos e terceiros separadamente.
+
+
+
+
+
+Para fertilizantes, o somatório não precisa ser 100%, e devemos poder colocar 0 nos dois campos (nitrogênio e carbonato) 
+
+
+
+
+
+Reporte de dados
+
+
+
+Consigo salvar números negativos no reporte de dados.
+
+
+
+
+
+
+
+Se a fonte foi cadastrada como “anual”, não consigo salvar de jeito nenhum.
+
+
+
+
+
+Nos preenchimentos de combustão móvel, posso preencher tanto o consumo quanto a distância. Não seria melhor deixar um único campo de preenchimento, condicionado pelo cadastro da fonte? (se cadastrou distância, só preenche distância). Isso dá brecha para o cliente cadastras informações conflitantes, e gera a necessidade de retorno com o cliente para entender de onde ele tirou isso, e qual é a informação real/primária.
+
+
+
+
+
+
+

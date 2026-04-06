@@ -198,9 +198,9 @@ export function AssetForm({ initialData, onSubmit, onCancel, isLoading, preSelec
                             name="description"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Descrição / Identificação</FormLabel>
+                                    <FormLabel>Descrição/Identificação da fonte de emissão</FormLabel>
                                     <FormControl>
-                                        <Input placeholder="Ex: Frota Caminhões, Caldeira 01" {...field} />
+                                        <Input placeholder="Descreva a fonte de emissão" {...field} />
                                     </FormControl>
                                     <FormMessage/>
                                 </FormItem>

@@ -16,7 +16,7 @@ export function FertilizerFields() {
     const nitrogenNum = parseFloat(nitrogen ?? "0");
     const carbonateNum = parseFloat(carbonate ?? "0");
     const total = nitrogenNum + carbonateNum;
-    const isValid = total === 100;
+    const isInvalid = total < 0 || nitrogenNum < 0 || carbonateNum < 0;
 
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -45,11 +45,11 @@ export function FertilizerFields() {
             />
 
             <div className={`col-span-1 md:col-span-2 p-3 rounded-md border ${
-                isValid ? 'bg-green-50 border-green-300' : 'bg-red-50 border-red-300'
+                isInvalid ? 'bg-red-50 border-red-300' : 'bg-green-50 border-green-300'
             }`}>
-                <p className={`text-sm font-semibold ${isValid ? 'text-green-700' : 'text-red-700'}`}>
+                <p className={`text-sm font-semibold ${isInvalid ? 'text-red-700' : 'text-green-700'}`}>
                     Total: {total.toFixed(2)}%
-                    {isValid ? ' ✓' : ' (deve ser exatamente 100%)'}
+                    {isInvalid ? ' (valores não podem ser negativos)' : ' ✓'}
                 </p>
             </div>
 
