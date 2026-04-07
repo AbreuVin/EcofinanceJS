@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { CheckCircle2, XCircle, Loader2, Leaf } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import api from "@/shared/services/api";
+import api from "@/api/api";
 
 type Status = "loading" | "success" | "error";
 
@@ -22,11 +22,11 @@ export default function ConfirmEmailPage() {
         }
 
         api.get(`/users/confirm?token=${encodeURIComponent(token)}`)
-            .then((res) => {
+            .then((res: { data: { message?: string } }) => {
                 setStatus("success");
                 setMessage(res.data.message || "Cadastro confirmado com sucesso!");
             })
-            .catch((err) => {
+            .catch((err: { response?: { data?: { message?: string } } }) => {
                 setStatus("error");
                 setMessage(
                     err.response?.data?.message ||
