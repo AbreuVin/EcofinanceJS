@@ -10,5 +10,9 @@ export const login = async (email: string, pass: string) => {
         throw new AppError('Invalid credentials', 401);
     }
 
+    if (!user.isConfirmed) {
+        throw new AppError('Confirme seu e-mail antes de fazer login. Verifique sua caixa de entrada.', 403);
+    }
+
     return generateToken({ id: user.id, role: user.role, companyId: user.companyId });
 };

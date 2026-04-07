@@ -29,3 +29,13 @@ export const remove = async (req: Request, res: Response) => {
     await userService.remove(req.params.id as string);
     res.status(204).send();
 };
+
+export const confirm = async (req: Request, res: Response) => {
+    const { token } = req.query as { token: string };
+    if (!token) {
+        res.status(400).json({ message: 'Token não informado.' });
+        return;
+    }
+    const result = await userService.confirmEmail(token);
+    res.json(result);
+};

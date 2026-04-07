@@ -2,6 +2,8 @@ import { Prisma } from "../../../generated/prisma"
 import prisma from '../../shared/database/prisma';
 import { hashPassword } from '../auth/password.utils';
 import { AppError } from '../../shared/error/AppError';
+import { v4 as uuidv4 } from 'uuid';
+import { sendConfirmationEmail } from '../email/email.service';
 
 export const getAll = async () => {
     return prisma.user.findMany({
@@ -49,17 +51,33 @@ export const create = async (data: any) => {
 
     const hashedPassword = await hashPassword(password || "123456");
 
-    return prisma.$transaction(async (tx) => {
+    const confirmationToken = uuidv4();
+    const confirmationTokenExpiry = new Date(Date.now() + 48 * 60 * 60 * 1000); // 48h
+
+    const user = await prisma.$transaction(async (tx) => {
         return await tx.user.create({
             data: {
                 ...userData,
                 password: hashedPassword,
+                isConfirmed: false,
+                confirmationToken,
+                confirmationTokenExpiry,
                 permissions: permissions ? {
                     create: permissions.map((p: string) => ({ sourceType: p }))
                 } : undefined
             }
         });
     });
+
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const confirmationUrl = `${frontendUrl}/confirm-email?token=${confirmationToken}`;
+
+    // Fire and forget — não bloqueia a resposta se o email falhar
+    sendConfirmationEmail(user.email, user.name, confirmationUrl).catch((err) => {
+        console.error('[Email] Falha ao enviar email de confirmação:', err.message);
+    });
+
+    return user;
 };
 
 export const update = async (id: string, data: any) => {
@@ -101,4 +119,25 @@ export const update = async (id: string, data: any) => {
 
 export const remove = async (id: string) => {
     return prisma.user.delete({ where: { id } });
+};
+
+export const confirmEmail = async (token: string) => {
+    const user = await prisma.user.findUnique({ where: { confirmationToken: token } });
+
+    if (!user) throw new AppError('Token inválido ou já utilizado.', 400);
+
+    if (user.confirmationTokenExpiry && user.confirmationTokenExpiry < new Date()) {
+        throw new AppError('Este link de confirmação expirou. Solicite um novo convite ao administrador.', 400);
+    }
+
+    await prisma.user.update({
+        where: { id: user.id },
+        data: {
+            isConfirmed: true,
+            confirmationToken: null,
+            confirmationTokenExpiry: null,
+        },
+    });
+
+    return { message: 'Cadastro confirmado com sucesso! Você já pode fazer login.' };
 };

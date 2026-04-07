@@ -5,6 +5,10 @@ import { validate } from "../../shared/middleware/validationMiddleware";
 import { createUserSchema, updateUserSchema } from "./user.schema";
 
 const router = Router();
+
+// Rota pública — não requer autenticação
+router.get("/confirm", userController.confirm);
+
 router.use(authenticate);
 
 router.post("/", validate(createUserSchema), userController.create);

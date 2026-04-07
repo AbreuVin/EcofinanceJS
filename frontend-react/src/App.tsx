@@ -17,6 +17,7 @@ import { MasterGuard } from "@/shared/components/guards/MasterGuard.tsx";
 import AuditCompaniesPage from "@/features/audit/pages/AuditCompaniesPage.tsx";
 import AuditUnitsPage from "@/features/audit/pages/AuditUnitsPage.tsx";
 import AuditReportsPage from "@/features/audit/pages/AuditReportsPage.tsx";
+import ConfirmEmailPage from "@/shared/pages/ConfirmEmailPage.tsx";
 
 const queryClient = new QueryClient();
 
@@ -110,6 +111,8 @@ function App() {
                             <AuditReportsPage />
                         </MasterGuard>
                     </Route>
+
+                    <Route path="/confirm-email" component={ConfirmEmailPage}/>
 
                     <Route>404 - Not Found</Route>
                     <Toaster/>

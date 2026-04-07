@@ -44,6 +44,11 @@ model User {
   // Permissions: These define which Spreadsheets (SourceTypes) the user manages
   permissions UserPermission[]
 
+  // Email confirmation
+  isConfirmed              Boolean   @default(false)
+  confirmationToken        String?   @unique
+  confirmationTokenExpiry  DateTime?
+
   createdAt     DateTime        @default(now())
   updatedAt     DateTime        @updatedAt
   AssetTypology AssetTypology[]
