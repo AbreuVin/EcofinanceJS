@@ -9,7 +9,7 @@ const jwt_utils_1 = require("./jwt.utils");
 const prisma_1 = __importDefault(require("../../shared/database/prisma"));
 const AppError_1 = require("../../shared/error/AppError");
 const login = async (email, pass) => {
-    const user = await prisma_1.default.user.findUnique({ where: { email } });
+    const user = await prisma_1.default.user.findFirst({ where: { email } });
     if (!user || !(await (0, password_utils_1.comparePassword)(pass, user.password))) {
         throw new AppError_1.AppError('Invalid credentials', 401);
     }
